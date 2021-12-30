@@ -7,12 +7,17 @@
 
   <ItemGroup>
     <None Remove="Day01\" />
+    <None Remove="Day02\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Day01\" />
+    <Folder Include="Day02\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Day01\input.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Day02\input.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -12,11 +12,13 @@ namespace AdventOfCode.AdventOfCode
             var days = new List<IDay>
             {
                 new _2015.Day01.Day01(),
+                new _2015.Day02.Day02(),
             };
 
             var invalidCount = 0;
             foreach (var day in days)
             {
+                day.Initialise();
                 invalidCount += ResultForDay(day.DayNumber, 1, () => day.Part1(), day.ValidatedPart1);
                 invalidCount += ResultForDay(day.DayNumber, 2, () => day.Part2(), day.ValidatedPart2);
             }
