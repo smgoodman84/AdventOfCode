@@ -29,7 +29,15 @@ namespace AdventOfCode.AdventOfCode
         private static int ResultForDay(int day, int part, Func<string> resultFunc, string validatedResult)
         {
             var stopwatch = Stopwatch.StartNew();
-            var result = resultFunc();
+            string result;
+            try
+            {
+                result = resultFunc();
+            }
+            catch (Exception ex)
+            {
+                result = $"EXCEPTION: {ex.Message}";
+            }
             stopwatch.Stop();
 
             var invalid = !string.IsNullOrWhiteSpace(validatedResult)

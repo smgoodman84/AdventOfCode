@@ -6,7 +6,7 @@ namespace AdventOfCode._2015.Day02
 {
     public class Day02 : Day
     {
-        public Day02() : base(2015, 1, @"Day02/input.txt", "1586300", "")
+        public Day02() : base(2015, 2, @"Day02/input.txt", "1586300", "3737498")
         {
         }
 
@@ -14,33 +14,34 @@ namespace AdventOfCode._2015.Day02
         public override void Initialise()
         {
             _presents = InputLines
-                .Select(l => new Present(l))
+                .Select(l => Present.Parse(l))
                 .ToList();
         }
 
-        private class Present
+        private class Present : RectangularCuboid
         {
-            public Present(string dimensions)
+            public Present(long width, long height, long length)
+                : base (width, height, length)
+            {
+            }
+
+            public static Present Parse(string dimensions)
             {
                 var dims = dimensions
                     .Split('x')
-                    .Select(int.Parse)
+                    .Select(long.Parse)
                     .OrderBy(x => x)
                     .ToArray();
 
-                Height = dims[0];
-                Width = dims[1];
-                Length = dims[2];
+                return new Present(dims[0], dims[1], dims[2]);
             }
 
-            public int Height { get; private set; }
-            public int Width { get; private set; }
-            public int Length { get; private set; }
+            public long WrappingPaperRequired => SurfaceArea + SmallArea;
 
-            public int WrappingPaperRequired =>
-                2 * Length * Width +
-                3 * Width * Height +
-                2 * Height * Length;
+            public long RibbonRequired =>
+                2 * SmallDimension +
+                2 * MiddleDimension +
+                Volume;
         }
 
         public override string Part1()
@@ -52,32 +53,9 @@ namespace AdventOfCode._2015.Day02
 
         public override string Part2()
         {
-            var line = InputLines.First();
+            var result = _presents.Sum(x => x.RibbonRequired);
 
-            var position = 0;
-            var floor = 0;
-
-            foreach (var c in line)
-            {
-                if (c == '(')
-                {
-                    floor += 1;
-                }
-
-                if (c == ')')
-                {
-                    floor -= 1;
-                }
-
-                position += 1;
-
-                if (floor == -1)
-                {
-                    return position.ToString();
-                }
-            }
-
-            return "";
+            return result.ToString();
         }
     }
 }
