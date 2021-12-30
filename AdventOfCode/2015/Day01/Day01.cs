@@ -27,6 +27,31 @@ namespace AdventOfCode._2015.Day01
 
         public override string Part2()
         {
+            var line = InputLines.First();
+
+            var position = 0;
+            var floor = 0;
+
+            foreach (var c in line)
+            {
+                if (c == '(')
+                {
+                    floor += 1;
+                }
+
+                if (c == ')')
+                {
+                    floor -= 1;
+                }
+
+                position += 1;
+
+                if (floor == -1)
+                {
+                    return position.ToString();
+                }
+            }
+
             return "";
         }
     }
