@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode.AdventOfCode
@@ -15,10 +16,13 @@ namespace AdventOfCode.AdventOfCode
                 new _2015.Day02.Day02(),
                 new _2015.Day03.Day03(),
                 new _2015.Day04.Day04(),
+                new _2015.Day05.Day05(),
             };
 
+            var yearToRun = 2015;
+            var dayToRun = 5;
             var invalidCount = 0;
-            foreach (var day in days)
+            foreach (var day in days.Where(x => x.Year == yearToRun && x.DayNumber == dayToRun))
             {
                 day.Initialise();
                 invalidCount += ResultForDay(day.DayNumber, 1, () => day.Part1(), day.ValidatedPart1);
