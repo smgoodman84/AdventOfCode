@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode.Shared;
+using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2015.Day02
 {

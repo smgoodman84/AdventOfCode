@@ -1,4 +1,4 @@
-﻿namespace AdventOfCode.Shared
+﻿namespace AdventOfCode.Shared.Geometry
 {
     public class Coordinate2D
     {

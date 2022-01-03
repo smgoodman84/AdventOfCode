@@ -5,4 +5,14 @@
     <RootNamespace>AdventOfCode.Shared</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Cryptography\" />
+    <None Remove="Geometry\" />
+    <None Remove="PrimitiveExtensions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Cryptography\" />
+    <Folder Include="Geometry\" />
+    <Folder Include="PrimitiveExtensions\" />
+  </ItemGroup>
 </Project>
