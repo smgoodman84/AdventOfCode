@@ -6,27 +6,31 @@ namespace AdventOfCode._2015.Day03
 {
     public class Day03 : Day
     {
-        public Day03() : base(2015, 3, @"Day03/input.txt", "", "")
+        public Day03() : base(2015, 3, @"Day03/input.txt", "2565", "2639")
         {
         }
 
-        public override void Initialise()
-        {
-        }
+        public override string Part1() => GetVisitsForSantas(1).ToString();
+        public override string Part2() => GetVisitsForSantas(2).ToString();
 
-        public override string Part1()
+        public int GetVisitsForSantas(int numberOfSantas)
         {
             var visitCounts = new Dictionary<string, int>();
-            var position = new Coordinate2D(0, 0);
 
-            visitCounts.Add(position.ToString(), 1);
+            var santas = Enumerable.Range(1, 2)
+                .Select(i => Coordinate2D.Origin)
+                .ToArray();
 
-            foreach(var c in InputLines.Single())
+            var santaIndex = 0;
+
+            visitCounts.Add(Coordinate2D.Origin.ToString(), numberOfSantas);
+
+            foreach (var c in InputLines.Single())
             {
-                var x = position.X;
-                var y = position.Y;
+                var x = santas[santaIndex].X;
+                var y = santas[santaIndex].Y;
 
-                switch(c)
+                switch (c)
                 {
                     case '<':
                         x -= 1;
@@ -42,8 +46,8 @@ namespace AdventOfCode._2015.Day03
                         break;
                 }
 
-                position = new Coordinate2D(x, y);
-                var positionKey = position.ToString();
+                santas[santaIndex] = new Coordinate2D(x, y);
+                var positionKey = santas[santaIndex].ToString();
                 if (visitCounts.ContainsKey(positionKey))
                 {
                     visitCounts[positionKey] += 1;
@@ -52,15 +56,15 @@ namespace AdventOfCode._2015.Day03
                 {
                     visitCounts.Add(positionKey, 1);
                 }
+
+                santaIndex += 1;
+                if (santaIndex >= numberOfSantas)
+                {
+                    santaIndex = 0;
+                }
             }
 
-
-            return visitCounts.Count.ToString();
-        }
-
-        public override string Part2()
-        {
-            return "";
+            return visitCounts.Count;
         }
     }
 }

@@ -6,7 +6,10 @@ namespace AdventOfCode.Shared
 {
     public abstract class Day : IDay
     {
-        public abstract void Initialise();
+        public virtual void Initialise()
+        {
+
+        }
         public abstract string Part1();
         public abstract string Part2();
 

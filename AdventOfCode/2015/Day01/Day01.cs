@@ -9,10 +9,6 @@ namespace AdventOfCode._2015.Day01
         {
         }
 
-        public override void Initialise()
-        {
-        }
-
         public override string Part1()
         {
             var line = InputLines.First();
