@@ -6,28 +6,27 @@ namespace AdventOfCode._2015.Day04
 {
     public class Day04 : Day
     {
-        public Day04() : base(2015, 4, @"Day04/input.txt", "282749", "")
+        public Day04() : base(2015, 4, @"Day04/input.txt", "282749", "9962624")
         {
         }
 
-        public override string Part1()
+        public override string Part1() => FindNumberSuffixForHashPrefix(InputLines.Single(), "00000").ToString();
+        public override string Part2() => FindNumberSuffixForHashPrefix(InputLines.Single(), "000000").ToString();
+
+        private int FindNumberSuffixForHashPrefix(string prefix, string desiredHashPrefix)
         {
-            var prefix = InputLines.Single();
             var number = 0;
 
             while (true)
             {
                 var md5 = MD5.GetMD5String($"{prefix}{number}");
-                if (md5.StartsWith("00000"))
+                if (md5.StartsWith(desiredHashPrefix))
                 {
-                    return number.ToString();
+                    return number;
                 }
 
                 number += 1;
             }
         }
-
-        public override string Part2() => "";
-
     }
 }
