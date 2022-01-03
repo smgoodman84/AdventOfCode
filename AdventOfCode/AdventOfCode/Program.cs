@@ -13,6 +13,7 @@ namespace AdventOfCode.AdventOfCode
             {
                 new _2015.Day01.Day01(),
                 new _2015.Day02.Day02(),
+                new _2015.Day03.Day03(),
             };
 
             var invalidCount = 0;
