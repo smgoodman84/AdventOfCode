@@ -7,7 +7,7 @@ namespace AdventOfCode._2015.Day02
 {
     public class Day02 : Day
     {
-        public Day02() : base(2015, 2, @"Day02/input.txt", "1586300", "3737498")
+        public Day02() : base(2015, 2, @"Day02/input_2015_02.txt", "1586300", "3737498")
         {
         }
 
