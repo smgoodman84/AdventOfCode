@@ -5,19 +5,15 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day15
 {
-    public class Day15 : IDay
+    public class Day15 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 15;
-        public string ValidatedPart1 => "361";
-        public string ValidatedPart2 => "2838";
-
-        public void Initialise()
+        public Day15() : base(2021, 15, "Day15/input.txt", "361", "2838")
         {
+
         }
 
-        public string Part1() => FindShortestPath(1, 1);
-        public string Part2() => FindShortestPath(5, 5);
+        public override string Part1() => FindShortestPath(1, 1);
+        public override string Part2() => FindShortestPath(5, 5);
 
         public string FindShortestPath(int tileWidth, int tileHeight)
         {

@@ -6,27 +6,15 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day18
 {
-    public class Day18 : IDay
+    public class Day18 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 18;
-        public string ValidatedPart1 => "3359";
-        public string ValidatedPart2 => "4616";
-
-        private List<string> _lines;
-
-        public Day18()
-        {
-            _lines = File.ReadAllLines("Day18/input.txt").ToList();
-        }
-
-        public void Initialise()
+        public Day18() : base(2021, 18, "Day18/input.txt", "3359", "4616")
         {
         }
 
-        public string Part1()
+        public override string Part1()
         {
-            var pairs = _lines.Select(l => Parse(l)).ToList();
+            var pairs = InputLines.Select(l => Parse(l)).ToList();
 
             var sum = pairs.First();
             foreach (var pair in pairs.Skip(1))
@@ -39,13 +27,13 @@ namespace AdventOfCode._2021.Day18
             return magnitude.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var maxMagnitude = 0;
 
-            foreach (var line1 in _lines)
+            foreach (var line1 in InputLines)
             {
-                foreach (var line2 in _lines)
+                foreach (var line2 in InputLines)
                 {
                     var left = Parse(line1);
                     var right = Parse(line2);

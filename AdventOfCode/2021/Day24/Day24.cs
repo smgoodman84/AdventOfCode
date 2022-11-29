@@ -6,27 +6,16 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day24
 {
-    public class Day24 : IDay
+    public class Day24 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 24;
-        public string ValidatedPart1 => "";
-        public string ValidatedPart2 => "";
-
-        private List<string> _lines;
-
-        public Day24()
+        public Day24() : base(2021, 24, "Day24/input.txt", "", "")
         {
-            _lines = File.ReadAllLines("Day24/input.txt").ToList();
+
         }
 
-        public void Initialise()
+        public override string Part1()
         {
-        }
-
-        public string Part1()
-        {
-            var alu = new ArithmeticLogicUnit(_lines);
+            var alu = new ArithmeticLogicUnit(InputLines);
 
             var inputs = GetPart1Inputs();
             foreach(var input in inputs)
@@ -47,7 +36,7 @@ namespace AdventOfCode._2021.Day24
             return "";
         }
 
-        public string Part2()
+        public override string Part2()
         {
             return "";
         }

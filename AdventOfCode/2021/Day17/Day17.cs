@@ -5,23 +5,22 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day17
 {
-    public class Day17 : IDay
+    public class Day17 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 17;
-        public string ValidatedPart1 => "15931";
-        public string ValidatedPart2 => "2555";
-
         private int _left;
         private int _right;
         private int _top;
         private int _bottom;
         private int _xMiddle;
 
-        public Day17()
+        public Day17() : base(2021, 17, "Day17/input.txt", "15931", "2555")
+        {
+        }
+
+        public override void Initialise()
         {
             var targetParser = new Regex("target area: x=(?<left>[0-9]*)..(?<right>[0-9]*), y=(?<bottom>-?[0-9]*)..(?<top>-?[0-9]*)");
-            var line = File.ReadAllLines("Day17/input.txt").First();
+            var line = InputLines.First();
 
             var matches = targetParser.Match(line);
             _left = int.Parse(matches.Groups["left"].Value);
@@ -29,10 +28,6 @@ namespace AdventOfCode._2021.Day17
             _top = int.Parse(matches.Groups["top"].Value);
             _bottom = int.Parse(matches.Groups["bottom"].Value);
             _xMiddle = (_left + _right) / 2;
-        }
-
-        public void Initialise()
-        {
         }
 
         private class ProbeState
@@ -78,7 +73,7 @@ namespace AdventOfCode._2021.Day17
             }
         }
 
-        public string Part1()
+        public override string Part1()
         {
             var yResults = Enumerable.Range(0, 1000)
                 .Select(i => (i, GetResultForYVelocity(i)))
@@ -97,7 +92,7 @@ namespace AdventOfCode._2021.Day17
             return maxHeight.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var yResults = Enumerable.Range(-1000, 2000)
                 .Select(i => (i, GetResultForYVelocity(i)))

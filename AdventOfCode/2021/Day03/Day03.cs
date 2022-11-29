@@ -6,26 +6,21 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day03
 {
-    public class Day03 : IDay
+    public class Day03 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 3;
-        public string ValidatedPart1 => "2035764";
-        public string ValidatedPart2 => "2817661";
-
         private List<BinaryString> _numbers;
-        public Day03()
+        public Day03() : base(2021, 3, "Day03/input.txt", "2035764", "2817661")
         {
-            _numbers = File.ReadAllLines("Day03/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _numbers = InputLines
                 .Select(l => new BinaryString(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             var totalNumbers = _numbers.Count;
             var threshold = totalNumbers / 2;
@@ -55,7 +50,7 @@ namespace AdventOfCode._2021.Day03
             return powerConsumption.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var currentOxygenRatingList = _numbers;
 

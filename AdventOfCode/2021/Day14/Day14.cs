@@ -5,34 +5,26 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day14
 {
-    public class Day14 : IDay
+    public class Day14 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 14;
-        public string ValidatedPart1 => "3342";
-        public string ValidatedPart2 => "3776553567525";
-
         private string _template;
         private List<InsertionRule> _insertionRules;
 
-        public Day14()
+        public Day14() : base(2021, 14, "Day14/input.txt", "3342", "3776553567525")
         {
-            var lines = File.ReadAllLines("Day14/input.txt")
-                .ToList();
+        }
 
-            _template = lines.First();
+        public override void Initialise()
+        {
+            _template = InputLines.First();
 
-            _insertionRules = lines.Skip(2)
+            _insertionRules = InputLines.Skip(2)
                 .Select(l => new InsertionRule(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1() => CalculateForIterations(10);
-        public string Part2() => CalculateForIterations(40);
+        public override string Part1() => CalculateForIterations(10);
+        public override string Part2() => CalculateForIterations(40);
 
         private string CalculateForIterations(int iterations)
         {

@@ -7,22 +7,17 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day16
 {
-    public class Day16 : IDay
+    public class Day16 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 16;
-        public string ValidatedPart1 => "945";
-        public string ValidatedPart2 => "10637009915279";
-
         private string _hexTransmission;
 
-        public Day16()
+        public Day16() : base(2021, 16, "Day16/input.txt", "945", "10637009915279")
         {
-            _hexTransmission = File.ReadAllLines("Day16/input.txt").First();
         }
 
-        public void Initialise()
+        public override void Initialise()
         {
+            _hexTransmission = InputLines.First();
         }
 
         private enum SymbolType
@@ -266,7 +261,7 @@ namespace AdventOfCode._2021.Day16
             }
         }
 
-        public string Part1()
+        public override string Part1()
         {
             var binaryData = ExpandHex(_hexTransmission).ToArray();
 
@@ -290,7 +285,7 @@ namespace AdventOfCode._2021.Day16
             return sum;
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var binaryData = ExpandHex(_hexTransmission).ToArray();
 

@@ -6,26 +6,21 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day05
 {
-    public class Day05 : IDay
+    public class Day05 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 5;
-        public string ValidatedPart1 => "6267";
-        public string ValidatedPart2 => "20196";
-
         private List<Line> _lines;
-        public Day05()
+        public Day05() : base(2021, 5, "Day05/input.txt", "6267", "20196")
         {
-            _lines = File.ReadAllLines("Day05/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _lines = InputLines
                 .Select(l => new Line(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             var lines = _lines
                 .Where(l => l.IsHorizontal || l.IsVertical)
@@ -46,7 +41,7 @@ namespace AdventOfCode._2021.Day05
             return result.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var allPoints = _lines
                 .SelectMany(l => l.GetPoints())

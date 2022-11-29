@@ -7,22 +7,18 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day21
 {
-    public class Day21 : IDay
+    public class Day21 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 21;
-        public string ValidatedPart1 => "802452";
-        public string ValidatedPart2 => "270005289024391";
-
-        private List<string> _lines;
         private Dictionary<int, int> _startingPositions = new Dictionary<int, int>();
 
-        public Day21()
+        public Day21() : base(2021, 21, "Day21/input.txt", "802452", "270005289024391")
         {
-            _lines = File.ReadAllLines("Day21/input.txt").ToList();
+        }
 
+        public override void Initialise()
+        {
             var positionParser = new Regex("Player (?<player>[0-9]*) starting position: (?<position>[0-9]*)");
-            foreach (var line in _lines)
+            foreach (var line in InputLines)
             {
                 var matches = positionParser.Match(line);
                 var player = int.Parse(matches.Groups["player"].Value);
@@ -31,11 +27,7 @@ namespace AdventOfCode._2021.Day21
             }
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             DiracDiceContext winningContext = null;
             var die = new DeterministicDie();
@@ -48,7 +40,7 @@ namespace AdventOfCode._2021.Day21
             return result.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var die = new QuantumDie();
             var context = GetInitialContext(21);

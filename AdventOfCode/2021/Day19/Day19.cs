@@ -6,23 +6,21 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day19
 {
-    public class Day19 : IDay
+    public class Day19 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 19;
-        public string ValidatedPart1 => "332";
-        public string ValidatedPart2 => "";
-
         private List<Scanner> _scanners;
         private Map _map;
 
-        public Day19()
+        public Day19() : base(2021, 19, "Day19/input.txt", "332", "")
+        {
+        }
+
+        public override void Initialise()
         {
             _scanners = new List<Scanner>();
-            var lines = File.ReadAllLines("Day19/input.txt").ToList();
 
             Scanner scanner = null;
-            foreach (var line in lines.Append(""))
+            foreach (var line in InputLines.Append(""))
             {
                 if (line.StartsWith("---"))
                 {
@@ -46,10 +44,6 @@ namespace AdventOfCode._2021.Day19
             CreateMap();
         }
 
-        public void Initialise()
-        {
-        }
-
         public void CreateMap()
         {
             _map = new Map();
@@ -71,12 +65,12 @@ namespace AdventOfCode._2021.Day19
             }
         }
 
-        public string Part1()
+        public override string Part1()
         {
             return _map.BeaconCount.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             return _map.GetLargestManhattenDistance().ToString();
         }

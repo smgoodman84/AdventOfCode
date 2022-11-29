@@ -6,35 +6,30 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day07
 {
-    public class Day07 : IDay
+    public class Day07 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 7;
-        public string ValidatedPart1 => "353800";
-        public string ValidatedPart2 => "98119739";
-
         private List<int> _crabPositions;
 
-        public Day07()
+        public Day07() : base(2021, 7, "Day07/input.txt", "353800", "98119739")
         {
-            _crabPositions = File.ReadAllLines("Day07/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _crabPositions = InputLines
                 .Single()
                 .Split(',')
                 .Select(int.Parse)
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             return GetResult(x => x);
         }
 
 
-        public string Part2()
+        public override string Part2()
         {
             return GetResult(GetFuelForDistance);
         }

@@ -6,39 +6,32 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day04
 {
-    public class Day04 : IDay
+    public class Day04 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 4;
-        public string ValidatedPart1 => "72770";
-        public string ValidatedPart2 => "13912";
-
         private List<int> _numbers;
         private List<BingoBoard> _boards = new List<BingoBoard>();
 
-        public Day04()
+        public Day04() : base(2021, 4, "Day04/input.txt", "72770", "13912")
         {
-            var input = File.ReadAllLines("Day04/input.txt").ToArray();
+        }
 
-            _numbers = input
+        public override void Initialise()
+        {
+            _numbers = InputLines
                 .First()
                 .Split(',')
                 .Select(int.Parse)
                 .ToList();
 
             var index = 2;
-            while (index < input.Length)
+            while (index < InputLines.Count)
             {
-                _boards.Add(new BingoBoard(input.Skip(index).Take(5)));
+                _boards.Add(new BingoBoard(InputLines.Skip(index).Take(5)));
                 index += 6;
             }
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             foreach(var number in _numbers)
             {
@@ -55,7 +48,7 @@ namespace AdventOfCode._2021.Day04
             return string.Empty;
         }
 
-        public string Part2()
+        public override string Part2()
         {
             foreach (var board in _boards)
             {

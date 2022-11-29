@@ -6,28 +6,23 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day12
 {
-    public class Day12 : IDay
+    public class Day12 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 12;
-        public string ValidatedPart1 => "4659";
-        public string ValidatedPart2 => "148962";
-
         private List<Edge> _edges;
 
-        public Day12()
+        public Day12() : base(2021, 12, "Day12/input.txt", "4659", "148962")
         {
-            _edges = File.ReadAllLines("Day12/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _edges = InputLines
                 .Select(l => new Edge(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1() => GetPathCount(false);
-        public string Part2() => GetPathCount(true);
+        public override string Part1() => GetPathCount(false);
+        public override string Part2() => GetPathCount(true);
 
         private string GetPathCount(bool canVisitOneSmallTwice)
         {

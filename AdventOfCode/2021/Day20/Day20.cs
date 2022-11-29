@@ -6,34 +6,27 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day20
 {
-    public class Day20 : IDay
+    public class Day20 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 20;
-        public string ValidatedPart1 => "5663";
-        public string ValidatedPart2 => "19638";
-
-        private List<string> _lines;
         private int[] _algorithm;
         private int[][] _initialImage;
 
-        public Day20()
+        public Day20() : base(2021, 20, "Day20/input.txt", "5663", "19638")
         {
-            _lines = File.ReadAllLines("Day20/input.txt").ToList();
-            _algorithm = _lines.First().Select(ToBit).ToArray();
+        }
 
-            _initialImage = _lines
+        public override void Initialise()
+        {
+            _algorithm = InputLines.First().Select(ToBit).ToArray();
+
+            _initialImage = InputLines
                 .Skip(2)
                 .Select(l => l.Select(ToBit).ToArray())
                 .ToArray();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1() => GetLitPixelsForEnhancements(2).ToString();
-        public string Part2() => GetLitPixelsForEnhancements(50).ToString();
+        public override string Part1() => GetLitPixelsForEnhancements(2).ToString();
+        public override string Part2() => GetLitPixelsForEnhancements(50).ToString();
 
         private int GetLitPixelsForEnhancements(int enhanceCount)
         {

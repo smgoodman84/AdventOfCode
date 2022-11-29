@@ -6,27 +6,22 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day01
 {
-    public class Day01 : IDay
+    public class Day01 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 1;
-        public string ValidatedPart1 => "1215";
-        public string ValidatedPart2 => "1150";
-
         private List<int> _depths;
 
-        public Day01()
+        public Day01() : base(2021, 1, "Day01/input.txt", "1215", "1150")
         {
-            _depths = File.ReadAllLines("Day01/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _depths = InputLines
                 .Select(int.Parse)
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             int increaseCount = 0;
             int? previousValue = null;
@@ -42,7 +37,7 @@ namespace AdventOfCode._2021.Day01
             return increaseCount.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var increaseCount = 0;
             var depthArray = _depths.ToArray();

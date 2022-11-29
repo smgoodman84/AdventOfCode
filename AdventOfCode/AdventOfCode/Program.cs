@@ -44,7 +44,7 @@ namespace AdventOfCode.AdventOfCode
                 // new _2021.Day24.Day24(),
             };
 
-            var runPredicate = RunAll();
+            var runPredicate = RunYear(2021);
 
             var invalidCount = 0;
             foreach (var day in days.Where(x => runPredicate(x)))

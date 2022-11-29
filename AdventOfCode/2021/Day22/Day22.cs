@@ -7,27 +7,18 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day22
 {
-    public class Day22 : IDay
+    public class Day22 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 22;
-        public string ValidatedPart1 => "576028";
-        public string ValidatedPart2 => "1387966280636636";
-
-        private List<string> _lines;
         private List<RebootStep> _rebootSteps;
         private Regex _rebootStepParser = new Regex("(?<rebootcommand>[onf]*) x=(?<xfrom>[-0-9]*)\\.\\.(?<xto>[-0-9]*),y=(?<yfrom>[-0-9]*)\\.\\.(?<yto>[-0-9]*),z=(?<zfrom>[-0-9]*)\\.\\.(?<zto>[-0-9]*)");
 
-
-        public Day22()
+        public Day22() : base(2021, 22, "Day22/input.txt", "576028", "1387966280636636")
         {
-            _lines = File.ReadAllLines("Day22/input.txt").ToList();
-
-            _rebootSteps = _lines.Select(ParseLine).ToList();
         }
 
-        public void Initialise()
+        public override void Initialise()
         {
+            _rebootSteps = InputLines.Select(ParseLine).ToList();
         }
 
         private RebootStep ParseLine(string line)
@@ -49,7 +40,7 @@ namespace AdventOfCode._2021.Day22
             };
         }
 
-        public string Part1()
+        public override string Part1()
         {
             var reactor = new Dictionary<string,bool>();
 
@@ -80,7 +71,7 @@ namespace AdventOfCode._2021.Day22
             return onCount.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var cubes = new List<Cube>();
         

@@ -6,30 +6,25 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day06
 {
-    public class Day06 : IDay
+    public class Day06 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 6;
-        public string ValidatedPart1 => "345387";
-        public string ValidatedPart2 => "1574445493136";
-
         private List<int> _lanternfishDaysToReproduction;
 
-        public Day06()
+        public Day06() : base(2021, 6, "Day06/input.txt", "345387", "1574445493136")
         {
-            _lanternfishDaysToReproduction = File.ReadAllLines("Day06/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _lanternfishDaysToReproduction = InputLines
                 .Single()
                 .Split(',')
                 .Select(int.Parse)
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1() => RunForDays(80);
-        public string Part2() => RunForDays(256);
+        public override string Part1() => RunForDays(80);
+        public override string Part2() => RunForDays(256);
 
         private string RunForDays(int days)
         {

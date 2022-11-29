@@ -6,27 +6,22 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day08
 {
-    public class Day08 : IDay
+    public class Day08 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 8;
-        public string ValidatedPart1 => "525";
-        public string ValidatedPart2 => "1083859";
-
         private List<Display> _displays;
 
-        public Day08()
+        public Day08() : base(2021, 8, "Day08/input.txt", "525", "1083859")
         {
-            _displays = File.ReadAllLines("Day08/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _displays = InputLines
                 .Select(l => new Display(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             var valuesToCount = new[] { 1, 4, 7, 8 };
 
@@ -38,7 +33,7 @@ namespace AdventOfCode._2021.Day08
             return result.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             return _displays.Sum(d => d.GetOutput()).ToString();
         }

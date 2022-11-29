@@ -5,27 +5,23 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day11
 {
-    public class Day11 : IDay
+    public class Day11 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 11;
-        public string ValidatedPart1 => "1723";
-        public string ValidatedPart2 => "327";
-
         private Octopus[][] _octopuses;
+
+        public Day11() : base(2021, 11, "Day11/input.txt", "1723", "327")
+        {
+
+        }
 
         private void LoadData()
         {
-            _octopuses = File.ReadAllLines("Day11/input.txt")
+            _octopuses = InputLines
                 .Select(l => l.Select(o => new Octopus(int.Parse(o.ToString()))).ToArray())
                 .ToArray();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             LoadData();
 
@@ -70,7 +66,7 @@ namespace AdventOfCode._2021.Day11
             return flashes;
         }
 
-        public string Part2()
+        public override string Part2()
         {
             LoadData();
 

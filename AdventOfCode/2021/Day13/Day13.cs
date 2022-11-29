@@ -6,12 +6,9 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day13
 {
-    public class Day13 : IDay
+    public class Day13 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 13;
-        public string ValidatedPart1 => "737";
-        public string ValidatedPart2 => @"
+        private const string _validatedPart2 = @"
 #### #  #   ## #  #  ##  #### #  # ### 
    # #  #    # #  # #  # #    #  # #  #
   #  #  #    # #  # #  # ###  #### #  #
@@ -22,6 +19,11 @@ namespace AdventOfCode._2021.Day13
 
         private List<Coordinate> _coordinates;
         private List<Fold> _folds;
+
+        public Day13() : base(2021, 13, "Day13/input.txt", "737", _validatedPart2)
+        {
+
+        }
 
         private void LoadData()
         {
@@ -37,11 +39,7 @@ namespace AdventOfCode._2021.Day13
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             LoadData();
 
@@ -57,7 +55,7 @@ namespace AdventOfCode._2021.Day13
             return uniqueCoordinates.Count().ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             LoadData();
 

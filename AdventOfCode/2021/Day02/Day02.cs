@@ -6,33 +6,28 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day02
 {
-    public class Day02 : IDay
+    public class Day02 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 2;
-        public string ValidatedPart1 => "1990000";
-        public string ValidatedPart2 => "1975421260";
-
         private List<Movement> _movements;
-        public Day02()
+        public Day02() : base(2021, 2, "Day02/input.txt", "1990000", "1975421260")
         {
-            _movements = File.ReadAllLines("Day02/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _movements = InputLines
                 .Select(l => new Movement(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             var depth = _movements.Sum(m => m.DepthEffect);
             var distance = _movements.Sum(m => m.ForwardEffect);
             return (depth * distance).ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var aim = 0.0;
             var distance = 0.0;

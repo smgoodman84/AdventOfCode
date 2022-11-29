@@ -6,34 +6,29 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day10
 {
-    public class Day10 : IDay
+    public class Day10 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 10;
-        public string ValidatedPart1 => "268845";
-        public string ValidatedPart2 => "4038824534";
-
         private List<NavigationParser> _lines;
 
-        public Day10()
+        public Day10() : base(2021, 10, "Day10/input.txt", "268845", "4038824534")
         {
-            _lines = File.ReadAllLines("Day10/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            _lines = InputLines
                 .Select(l => new NavigationParser(l))
                 .ToList();
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             var result = _lines.Sum(l => l.GetSyntaxErrorScore());
 
             return result.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var incompleteLines = _lines
                 .Where(l => l.GetSyntaxErrorScore() == 0)

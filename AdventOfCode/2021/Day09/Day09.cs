@@ -5,36 +5,31 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2021.Day09
 {
-    public class Day09 : IDay
+    public class Day09 : Day
     {
-        public int Year => 2021;
-        public int DayNumber => 9;
-        public string ValidatedPart1 => "448";
-        public string ValidatedPart2 => "1417248";
-
         private Cave _cave;
 
-        public Day09()
+        public Day09() : base(2021, 9, "Day09/input.txt", "448", "1417248")
         {
-            var heights = File.ReadAllLines("Day09/input.txt")
+        }
+
+        public override void Initialise()
+        {
+            var heights = InputLines
                 .Select(line => line.ToArray().Select(c => int.Parse(c.ToString())).ToArray())
                 .ToArray();
 
             _cave = new Cave(heights);
         }
 
-        public void Initialise()
-        {
-        }
-
-        public string Part1()
+        public override string Part1()
         {
             var lowPoints = _cave.FindLowPoints().ToList();
             var totalRiskLevel = lowPoints.Sum(lp => lp.Height + 1);
             return totalRiskLevel.ToString();
         }
 
-        public string Part2()
+        public override string Part2()
         {
             var basins = _cave.FindBasins().ToList();
             var largestBasins = basins.OrderByDescending(b => b.Size).Take(3);
