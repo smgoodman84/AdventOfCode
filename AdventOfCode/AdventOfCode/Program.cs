@@ -10,41 +10,23 @@ namespace AdventOfCode.AdventOfCode
     {
         static void Main(string[] args)
         {
-            var days = new List<IDay>
+            var assemblies = new[]
             {
-                new _2015.Day01.Day01(),
-                new _2015.Day02.Day02(),
-                new _2015.Day03.Day03(),
-                new _2015.Day04.Day04(),
-                new _2015.Day05.Day05(),
-
-
-                new _2021.Day01.Day01(),
-                new _2021.Day02.Day02(),
-                new _2021.Day03.Day03(),
-                new _2021.Day04.Day04(),
-                new _2021.Day05.Day05(),
-                new _2021.Day06.Day06(),
-                new _2021.Day07.Day07(),
-                new _2021.Day08.Day08(),
-                new _2021.Day09.Day09(),
-                new _2021.Day10.Day10(),
-                new _2021.Day11.Day11(),
-                new _2021.Day12.Day12(),
-                new _2021.Day13.Day13(),
-                new _2021.Day14.Day14(),
-                new _2021.Day15.Day15(),
-                new _2021.Day16.Day16(),
-                new _2021.Day17.Day17(),
-                new _2021.Day18.Day18(),
-                new _2021.Day19.Day19(),
-                new _2021.Day20.Day20(),
-                new _2021.Day21.Day21(),
-                // new _2021.Day22.Day22(),
-                // new _2021.Day24.Day24(),
+                typeof(_2015.Day01.Day01).Assembly,
+                typeof(_2020.Day01.Day01).Assembly,
+                typeof(_2021.Day01.Day01).Assembly
             };
 
-            var runPredicate = RunYear(2021);
+            var days = assemblies
+                .SelectMany(a => a.GetTypes())
+                .Where(t => t.IsAssignableTo(typeof(IDay)))
+                .Select(t => (IDay)Activator.CreateInstance(t))
+                .OrderBy(day => day.Year)
+                .ThenBy(day => day.DayNumber)
+                .ToList();
+
+            // var runPredicate = RunLatestDayInYear(2020, days);
+            var runPredicate = RunYear(2020);
 
             var invalidCount = 0;
             foreach (var day in days.Where(x => runPredicate(x)))
@@ -65,6 +47,17 @@ namespace AdventOfCode.AdventOfCode
         private static Func<IDay, bool> RunYear(int year)
         {
             return day => day.Year == year;
+        }
+
+
+        private static Func<IDay, bool> RunLatestDayInYear(int year, IEnumerable<IDay> allDays)
+        {
+            var maxDayInYear = allDays
+                .Where(d => d.Year == year)
+                .Select(d => d.DayNumber)
+                .Max();
+
+            return RunDay(year, maxDayInYear);
         }
 
         private static Func<IDay, bool> RunDay(int year, int dayNumber)

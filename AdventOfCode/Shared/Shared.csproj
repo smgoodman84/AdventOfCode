@@ -9,10 +9,12 @@
     <None Remove="Cryptography\" />
     <None Remove="Geometry\" />
     <None Remove="PrimitiveExtensions\" />
+    <None Remove="FileProcessing\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Cryptography\" />
     <Folder Include="Geometry\" />
     <Folder Include="PrimitiveExtensions\" />
+    <Folder Include="FileProcessing\" />
   </ItemGroup>
 </Project>

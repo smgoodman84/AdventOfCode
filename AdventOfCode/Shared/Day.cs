@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -6,6 +7,8 @@ namespace AdventOfCode.Shared
 {
     public abstract class Day : IDay
     {
+        private readonly bool _outputTrace;
+
         public virtual void Initialise()
         {
 
@@ -18,7 +21,8 @@ namespace AdventOfCode.Shared
             int dayNumber,
             string filename,
             string validatedPart1,
-            string validatedPart2)
+            string validatedPart2,
+            bool outputTrace = false)
         {
             Year = year;
             DayNumber = dayNumber;
@@ -29,6 +33,12 @@ namespace AdventOfCode.Shared
 
             ValidatedPart1 = validatedPart1;
             ValidatedPart2 = validatedPart2;
+            _outputTrace = outputTrace;
+
+            if (File.Exists(TraceFilename))
+            {
+                File.Delete(TraceFilename);
+            }
         }
 
         public int Year { get; private set; }
@@ -37,5 +47,16 @@ namespace AdventOfCode.Shared
         public string ValidatedPart2 { get; private set; }
 
         protected List<string> InputLines { get; private set; }
+
+        private string TraceFilename => $"trace_{Year}_{DayNumber}";
+        protected void Trace(string message)
+        {
+            if (_outputTrace)
+            {
+                Console.WriteLine(message);
+            }
+
+            File.AppendAllLines(TraceFilename, new[] { message });
+        }
     }
 }
