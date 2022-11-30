@@ -87,9 +87,9 @@ namespace AdventOfCode._2020.Day16
                 }
             }
 
-            // Console.WriteLine("*****************");
-            // Console.WriteLine("Allocated Indexes");
-            // Console.WriteLine("*****************");
+            // Trace("*****************");
+            // Trace("Allocated Indexes");
+            // Trace("*****************");
             long result = 1;
             foreach (var kvp in allocatedIndexes)
             {
@@ -97,7 +97,7 @@ namespace AdventOfCode._2020.Day16
                 {
                     result *= _yourTicket.Values[kvp.Value];
                 }
-                // Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+                // Trace($"{kvp.Key}: {kvp.Value}");
             }
 
             return result.ToString();
@@ -146,7 +146,7 @@ namespace AdventOfCode._2020.Day16
                     .ToList();
 
                 // var possibleIndexString = string.Join(",", PossibleIndexes);
-                // Console.WriteLine($"Possible - {FieldName}: {possibleIndexString}");
+                // Trace($"Possible - {FieldName}: {possibleIndexString}");
             }
 
             public bool InRange(int value) => ValidRanges.Any(r => r.InRange(value));

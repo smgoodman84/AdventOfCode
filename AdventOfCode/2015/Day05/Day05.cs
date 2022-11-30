@@ -118,7 +118,7 @@ namespace AdventOfCode._2015.Day05
 
             var result = containsDuplicatePair && containsSandwich;
 
-            System.Console.WriteLine($"{input} {containsDuplicatePair} {containsSandwich} {result}");
+            Trace($"{input} {containsDuplicatePair} {containsSandwich} {result}");
 
             return result;
         }

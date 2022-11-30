@@ -54,7 +54,7 @@ namespace AdventOfCode._2020.Day15
 
             public void Spoken(int number)
             {
-                // Console.WriteLine($"{_timeStamp}: {number}");
+                // Trace($"{_timeStamp}: {number}");
                 if (!_history.ContainsKey(number))
                 {
                     _history[number] = new NumberHistory(_timeStamp);

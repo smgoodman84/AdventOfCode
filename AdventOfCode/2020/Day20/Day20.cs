@@ -42,7 +42,7 @@ namespace AdventOfCode2020.Day20
         {
             foreach (var tile in _tiles)
             {
-                // Console.WriteLine($"Tile {tile.TileId}: {tile.Neighbours.Count} neighbours");
+                // Trace($"Tile {tile.TileId}: {tile.Neighbours.Count} neighbours");
             }
 
             var corners = _tiles.Where(t => t.Neighbours.Count == 4);

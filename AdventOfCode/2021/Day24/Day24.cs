@@ -15,6 +15,7 @@ namespace AdventOfCode._2021.Day24
 
         public override string Part1()
         {
+            return "Runs too slowly";
             var alu = new ArithmeticLogicUnit(InputLines);
 
             var inputs = GetPart1Inputs();
@@ -26,7 +27,7 @@ namespace AdventOfCode._2021.Day24
                 var (result, ip) = alu.ExecuteAndReturnZ(i);
 
                 var valid = result == 0;
-                Console.WriteLine($"{stringInput} ({ip}): {result}");
+                Trace($"{stringInput} ({ip}): {result}");
                 if (valid)
                 {
                     return stringInput;

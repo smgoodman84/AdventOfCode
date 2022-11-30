@@ -26,7 +26,8 @@ namespace AdventOfCode.AdventOfCode
                 .ToList();
 
             // var runPredicate = RunLatestDayInYear(2020, days);
-            var runPredicate = RunYear(2020);
+            // var runPredicate = RunYear(2021);
+            var runPredicate = RunAll();
 
             var invalidCount = 0;
             foreach (var day in days.Where(x => runPredicate(x)))

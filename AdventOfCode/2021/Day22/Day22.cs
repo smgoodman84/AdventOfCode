@@ -73,6 +73,7 @@ namespace AdventOfCode._2021.Day22
 
         public override string Part2()
         {
+            return "Runs too slowly";
             var cubes = new List<Cube>();
         
             foreach (var command in _rebootSteps)
@@ -83,17 +84,17 @@ namespace AdventOfCode._2021.Day22
                     To = command.To
                 };
 
-                //Console.WriteLine($"Processing {cube}");
+                //Trace($"Processing {cube}");
 
                 var newCubes = new List<Cube>();
                 foreach (var existingCube in cubes)
                 {
                     var replacements = existingCube.SliceOut(cube).ToList();
                     /*
-                    Console.WriteLine($"Replacement cubes for {existingCube}");
+                    Trace($"Replacement cubes for {existingCube}");
                     foreach (var c in replacements)
                     {
-                        Console.WriteLine($"{c}");
+                        Trace($"{c}");
                     }
                     */
                     newCubes.AddRange(replacements);
@@ -101,19 +102,19 @@ namespace AdventOfCode._2021.Day22
 
                 if (command.RebootCommand == RebootCommand.On)
                 {
-                    //Console.WriteLine($"Adding on {cube}");
+                    //Trace($"Adding on {cube}");
                     newCubes.Add(cube);
                 }
 
                 cubes = newCubes;
                 /*
-                Console.WriteLine($"Resulting cubes");
+                Trace($"Resulting cubes");
                 foreach (var c in cubes)
                 {
-                    Console.WriteLine($"{c}");
+                    Trace($"{c}");
                 }*/
-                //Console.WriteLine($"New count: {cubes.Sum(c => c.OnCount())}");
-                //Console.WriteLine();
+                //Trace($"New count: {cubes.Sum(c => c.OnCount())}");
+                //Trace();
             }
 
             var totalOn = cubes.Sum(c => c.OnCount());
@@ -137,7 +138,7 @@ namespace AdventOfCode._2021.Day22
             {
                 if (cube.FullyContains(this))
                 {
-                    //Console.WriteLine($"Fully contained {this}");
+                    //Trace($"Fully contained {this}");
                     return Enumerable.Empty<Cube>();
                 }
 
@@ -155,7 +156,7 @@ namespace AdventOfCode._2021.Day22
                         To = new Coordinate(To.X, To.Y, To.Z)
                     };
 
-                    //Console.WriteLine($"Keep left {left} Slice right {right}");
+                    //Trace($"Keep left {left} Slice right {right}");
                     return KeepAndSlice(left, right, cube);
                 }
 
@@ -172,7 +173,7 @@ namespace AdventOfCode._2021.Day22
                         From = new Coordinate(cube.To.X + 1, From.Y, From.Z),
                         To = new Coordinate(To.X, To.Y, To.Z)
                     };
-                    //Console.WriteLine($"Keep right {right} Slice left {left}");
+                    //Trace($"Keep right {right} Slice left {left}");
                     return KeepAndSlice(right, left, cube);
                 }
 
@@ -189,7 +190,7 @@ namespace AdventOfCode._2021.Day22
                         From = new Coordinate(From.X, cube.From.Y, From.Z),
                         To = new Coordinate(To.X, To.Y, To.Z)
                     };
-                    //Console.WriteLine($"Keep bottom {bottom} Slice top {top}");
+                    //Trace($"Keep bottom {bottom} Slice top {top}");
                     return KeepAndSlice(bottom, top, cube);
                 }
 
@@ -206,7 +207,7 @@ namespace AdventOfCode._2021.Day22
                         From = new Coordinate(From.X, cube.To.Y + 1, From.Z),
                         To = new Coordinate(To.X, To.Y, To.Z)
                     };
-                    //Console.WriteLine($"Keep top {top} Slice bottom {bottom}");
+                    //Trace($"Keep top {top} Slice bottom {bottom}");
                     return KeepAndSlice(top, bottom, cube);
                 }
 
@@ -223,7 +224,7 @@ namespace AdventOfCode._2021.Day22
                         From = new Coordinate(From.X, From.Y, cube.From.Z),
                         To = new Coordinate(To.X, To.Y, To.Z)
                     };
-                    //Console.WriteLine($"Keep front {front} Slice back {back}");
+                    //Trace($"Keep front {front} Slice back {back}");
                     return KeepAndSlice(front, back, cube);
                 }
 
@@ -240,7 +241,7 @@ namespace AdventOfCode._2021.Day22
                         From = new Coordinate(From.X, From.Y, cube.To.Z + 1),
                         To = new Coordinate(To.X, To.Y, To.Z)
                     };
-                    //Console.WriteLine($"Keep back {back} Slice front {front}");
+                    //Trace($"Keep back {back} Slice front {front}");
                     return KeepAndSlice(back, front, cube);
                 }
 

@@ -36,7 +36,7 @@ namespace AdventOfCode._2020.Day11
             do
             {
                 currentGeneration = GetNextGeneration(currentGeneration, maxTolerableNeighbours, neighbourCounter);
-                // Console.WriteLine(currentGeneration);
+                // Trace(currentGeneration);
             }
             while (currentGeneration.AnyChange);
 
