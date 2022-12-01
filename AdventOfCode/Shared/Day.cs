@@ -48,7 +48,7 @@ namespace AdventOfCode.Shared
 
         protected List<string> InputLines { get; private set; }
 
-        private string TraceFilename => $"trace_{Year}_{DayNumber}";
+        private string TraceFilename => $"trace_{Year}_{DayNumber:00}.txt";
         protected void Trace(string message)
         {
             if (_outputTrace)

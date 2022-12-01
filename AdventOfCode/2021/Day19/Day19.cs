@@ -11,7 +11,7 @@ namespace AdventOfCode._2021.Day19
         private List<Scanner> _scanners;
         private Map _map;
 
-        public Day19() : base(2021, 19, "Day19/input.txt", "332", "")
+        public Day19() : base(2021, 19, "Day19/input_2021_19.txt", "332", "")
         {
         }
 

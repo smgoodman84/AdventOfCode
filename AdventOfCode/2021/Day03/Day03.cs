@@ -9,7 +9,7 @@ namespace AdventOfCode._2021.Day03
     public class Day03 : Day
     {
         private List<BinaryString> _numbers;
-        public Day03() : base(2021, 3, "Day03/input.txt", "2035764", "2817661")
+        public Day03() : base(2021, 3, "Day03/input_2021_03.txt", "2035764", "2817661")
         {
         }
 

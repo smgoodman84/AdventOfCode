@@ -9,7 +9,7 @@ namespace AdventOfCode._2021.Day11
     {
         private Octopus[][] _octopuses;
 
-        public Day11() : base(2021, 11, "Day11/input.txt", "1723", "327")
+        public Day11() : base(2021, 11, "Day11/input_2021_11.txt", "1723", "327")
         {
 
         }

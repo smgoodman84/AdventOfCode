@@ -9,7 +9,7 @@ namespace AdventOfCode._2021.Day09
     {
         private Cave _cave;
 
-        public Day09() : base(2021, 9, "Day09/input.txt", "448", "1417248")
+        public Day09() : base(2021, 9, "Day09/input_2021_09.txt", "448", "1417248")
         {
         }
 

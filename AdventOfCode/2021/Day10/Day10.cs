@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day10
     {
         private List<NavigationParser> _lines;
 
-        public Day10() : base(2021, 10, "Day10/input.txt", "268845", "4038824534")
+        public Day10() : base(2021, 10, "Day10/input_2021_10.txt", "268845", "4038824534")
         {
         }
 

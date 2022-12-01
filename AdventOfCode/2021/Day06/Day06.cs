@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day06
     {
         private List<int> _lanternfishDaysToReproduction;
 
-        public Day06() : base(2021, 6, "Day06/input.txt", "345387", "1574445493136")
+        public Day06() : base(2021, 6, "Day06/input_2021_06.txt", "345387", "1574445493136")
         {
         }
 

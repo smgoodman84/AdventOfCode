@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day07
     {
         private List<int> _crabPositions;
 
-        public Day07() : base(2021, 7, "Day07/input.txt", "353800", "98119739")
+        public Day07() : base(2021, 7, "Day07/input_2021_07.txt", "353800", "98119739")
         {
         }
 

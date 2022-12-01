@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day14
         private string _template;
         private List<InsertionRule> _insertionRules;
 
-        public Day14() : base(2021, 14, "Day14/input.txt", "3342", "3776553567525")
+        public Day14() : base(2021, 14, "Day14/input_2021_14.txt", "3342", "3776553567525")
         {
         }
 

@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day01
     {
         private List<int> _depths;
 
-        public Day01() : base(2021, 1, "Day01/input.txt", "1215", "1150")
+        public Day01() : base(2021, 1, "Day01/input_2021_01.txt", "1215", "1150")
         {
         }
 

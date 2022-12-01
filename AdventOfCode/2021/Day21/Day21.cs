@@ -11,7 +11,7 @@ namespace AdventOfCode._2021.Day21
     {
         private Dictionary<int, int> _startingPositions = new Dictionary<int, int>();
 
-        public Day21() : base(2021, 21, "Day21/input.txt", "802452", "270005289024391")
+        public Day21() : base(2021, 21, "Day21/input_2021_21.txt", "802452", "270005289024391")
         {
         }
 

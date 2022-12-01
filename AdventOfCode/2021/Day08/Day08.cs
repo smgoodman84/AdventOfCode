@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day08
     {
         private List<Display> _displays;
 
-        public Day08() : base(2021, 8, "Day08/input.txt", "525", "1083859")
+        public Day08() : base(2021, 8, "Day08/input_2021_08.txt", "525", "1083859")
         {
         }
 

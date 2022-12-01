@@ -43,73 +43,73 @@
     <None Remove="Day24\" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Day01\input.txt">
+    <None Update="Day01\input_2021_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day02\input.txt">
+    <None Update="Day02\input_2021_02.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day03\input.txt">
+    <None Update="Day03\input_2021_03.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day04\input.txt">
+    <None Update="Day04\input_2021_04.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day05\input.txt">
+    <None Update="Day05\input_2021_05.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day06\input.txt">
+    <None Update="Day06\input_2021_06.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day08\input.txt">
+    <None Update="Day07\input_2021_07.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day07\input.txt">
+    <None Update="Day08\input_2021_08.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day09\input.txt">
+    <None Update="Day09\input_2021_09.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day10\input.txt">
+    <None Update="Day10\input_2021_10.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day11\input.txt">
+    <None Update="Day11\input_2021_11.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day12\input.txt">
+    <None Update="Day12\input_2021_12.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day13\input.txt">
+    <None Update="Day13\input_2021_13.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day14\input.txt">
+    <None Update="Day14\input_2021_14.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day15\input.txt">
+    <None Update="Day15\input_2021_15.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day16\input.txt">
+    <None Update="Day16\input_2021_16.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day17\input.txt">
+    <None Update="Day17\input_2021_17.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day18\input.txt">
+    <None Update="Day18\input_2021_18.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day19\input.txt">
+    <None Update="Day19\input_2021_19.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day20\input.txt">
+    <None Update="Day20\input_2021_20.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day21\input.txt">
+    <None Update="Day21\input_2021_21.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day22\input.txt">
+    <None Update="Day22\input_2021_22.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day24\input.txt">
+    <None Update="Day24\input_2021_24.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -8,7 +8,7 @@ namespace AdventOfCode._2021.Day24
 {
     public class Day24 : Day
     {
-        public Day24() : base(2021, 24, "Day24/input.txt", "", "")
+        public Day24() : base(2021, 24, "Day24/input_2021_24.txt", "", "")
         {
 
         }

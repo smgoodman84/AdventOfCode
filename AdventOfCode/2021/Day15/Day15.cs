@@ -7,7 +7,7 @@ namespace AdventOfCode._2021.Day15
 {
     public class Day15 : Day
     {
-        public Day15() : base(2021, 15, "Day15/input.txt", "361", "2838")
+        public Day15() : base(2021, 15, "Day15/input_2021_15.txt", "361", "2838")
         {
 
         }
@@ -17,7 +17,7 @@ namespace AdventOfCode._2021.Day15
 
         public string FindShortestPath(int tileWidth, int tileHeight)
         {
-            var fileNodes = File.ReadAllLines("Day15/input.txt")
+            var fileNodes = InputLines
                 .SelectMany((l, y) => l.Select((d, x) => new Node(x, y, int.Parse(d.ToString()))).ToArray())
                 .ToDictionary(n => n.Identifier, n => n);
 

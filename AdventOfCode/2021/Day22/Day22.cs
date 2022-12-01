@@ -12,7 +12,7 @@ namespace AdventOfCode._2021.Day22
         private List<RebootStep> _rebootSteps;
         private Regex _rebootStepParser = new Regex("(?<rebootcommand>[onf]*) x=(?<xfrom>[-0-9]*)\\.\\.(?<xto>[-0-9]*),y=(?<yfrom>[-0-9]*)\\.\\.(?<yto>[-0-9]*),z=(?<zfrom>[-0-9]*)\\.\\.(?<zto>[-0-9]*)");
 
-        public Day22() : base(2021, 22, "Day22/input.txt", "576028", "1387966280636636")
+        public Day22() : base(2021, 22, "Day22/input_2021_22.txt", "576028", "1387966280636636")
         {
         }
 

@@ -20,21 +20,20 @@ namespace AdventOfCode._2021.Day13
         private List<Coordinate> _coordinates;
         private List<Fold> _folds;
 
-        public Day13() : base(2021, 13, "Day13/input.txt", "737", _validatedPart2)
+        public Day13() : base(2021, 13, "Day13/input_2021_13.txt", "737", _validatedPart2)
         {
 
         }
 
         private void LoadData()
         {
-            var lines = File.ReadAllLines("Day13/input.txt")
-                .ToList();
-
-            _coordinates = lines.Where(l => l.Contains(','))
+            _coordinates = InputLines
+                .Where(l => l.Contains(','))
                 .Select(l => new Coordinate(l))
                 .ToList();
 
-            _folds = lines.Where(l => l.StartsWith("fold"))
+            _folds = InputLines
+                .Where(l => l.StartsWith("fold"))
                 .Select(l => new Fold(l))
                 .ToList();
         }

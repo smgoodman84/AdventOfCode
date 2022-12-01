@@ -11,7 +11,7 @@ namespace AdventOfCode._2021.Day16
     {
         private string _hexTransmission;
 
-        public Day16() : base(2021, 16, "Day16/input.txt", "945", "10637009915279")
+        public Day16() : base(2021, 16, "Day16/input_2021_16.txt", "945", "10637009915279")
         {
         }
 

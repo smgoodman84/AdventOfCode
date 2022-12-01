@@ -11,7 +11,7 @@ namespace AdventOfCode._2021.Day20
         private int[] _algorithm;
         private int[][] _initialImage;
 
-        public Day20() : base(2021, 20, "Day20/input.txt", "5663", "19638")
+        public Day20() : base(2021, 20, "Day20/input_2021_20.txt", "5663", "19638")
         {
         }
 

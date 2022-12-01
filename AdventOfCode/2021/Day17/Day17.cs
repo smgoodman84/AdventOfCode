@@ -13,7 +13,7 @@ namespace AdventOfCode._2021.Day17
         private int _bottom;
         private int _xMiddle;
 
-        public Day17() : base(2021, 17, "Day17/input.txt", "15931", "2555")
+        public Day17() : base(2021, 17, "Day17/input_2021_17.txt", "15931", "2555")
         {
         }
 

@@ -11,7 +11,7 @@ namespace AdventOfCode._2021.Day04
         private List<int> _numbers;
         private List<BingoBoard> _boards = new List<BingoBoard>();
 
-        public Day04() : base(2021, 4, "Day04/input.txt", "72770", "13912")
+        public Day04() : base(2021, 4, "Day04/input_2021_04.txt", "72770", "13912")
         {
         }
 

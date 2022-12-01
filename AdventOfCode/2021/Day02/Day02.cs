@@ -9,7 +9,7 @@ namespace AdventOfCode._2021.Day02
     public class Day02 : Day
     {
         private List<Movement> _movements;
-        public Day02() : base(2021, 2, "Day02/input.txt", "1990000", "1975421260")
+        public Day02() : base(2021, 2, "Day02/input_2021_02.txt", "1990000", "1975421260")
         {
         }
 

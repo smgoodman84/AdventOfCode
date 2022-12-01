@@ -9,7 +9,7 @@ namespace AdventOfCode._2021.Day05
     public class Day05 : Day
     {
         private List<Line> _lines;
-        public Day05() : base(2021, 5, "Day05/input.txt", "6267", "20196")
+        public Day05() : base(2021, 5, "Day05/input_2021_05.txt", "6267", "20196")
         {
         }
 

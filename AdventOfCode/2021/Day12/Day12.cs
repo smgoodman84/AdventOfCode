@@ -10,7 +10,7 @@ namespace AdventOfCode._2021.Day12
     {
         private List<Edge> _edges;
 
-        public Day12() : base(2021, 12, "Day12/input.txt", "4659", "148962")
+        public Day12() : base(2021, 12, "Day12/input_2021_12.txt", "4659", "148962")
         {
         }
 
