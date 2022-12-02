@@ -23,163 +23,200 @@ namespace AdventOfCode._2022.Day02
 
         public override string Part1()
         {
-            return _rounds.Select(r => r.TotalScore()).Sum().ToString();
+            return _rounds
+                .Select(r => r.TotalScore())
+                .Sum()
+                .ToString();
         }
 
         public override string Part2()
         {
-            return _rounds.Select(r => r.TotalScore2()).Sum().ToString();
+            return _rounds
+                .Select(r => r.TotalScore2())
+                .Sum()
+                .ToString();
         }
 
-        private enum RPS
+        private class RockPaperScissors
         {
-            Rock,
-            Paper,
-            Scissors
-        }
+            public enum Move
+            {
+                Rock,
+                Paper,
+                Scissors
+            }
+
+            public enum Outcome
+            {
+                Win,
+                Lose,
+                Draw
+            }
+
+            public static Outcome GetOutcome(Move yourMove, Move oppononentMove)
+            {
+                switch (yourMove)
+                {
+                    case Move.Rock:
+                        switch (oppononentMove)
+                        {
+                            case Move.Rock:
+                                return Outcome.Draw;
+                            case Move.Paper:
+                                return Outcome.Lose;
+                            case Move.Scissors:
+                                return Outcome.Win;
+                        }
+                        break;
+                    case Move.Paper:
+                        switch (oppononentMove)
+                        {
+                            case Move.Rock:
+                                return Outcome.Win;
+                            case Move.Paper:
+                                return Outcome.Draw;
+                            case Move.Scissors:
+                                return Outcome.Lose;
+                        }
+                        break;
+                    case Move.Scissors:
+                        switch (oppononentMove)
+                        {
+                            case Move.Rock:
+                                return Outcome.Lose;
+                            case Move.Paper:
+                                return Outcome.Win;
+                            case Move.Scissors:
+                                return Outcome.Draw;
+                        }
+                        break;
+                }
+
+                throw new Exception("Unexpected outcome");
+            }
 
 
-        private enum Outcome
-        {
-            Win,
-            Lose,
-            Draw
+            public static Move GetMoveForOutcome(Move oppononentMove, Outcome desiredOutcome)
+            {
+                switch (oppononentMove)
+                {
+                    case Move.Rock:
+                        switch (desiredOutcome)
+                        {
+                            case Outcome.Win:
+                                return Move.Paper;
+                            case Outcome.Draw:
+                                return Move.Rock;
+                            case Outcome.Lose:
+                                return Move.Scissors;
+                        }
+                        break;
+                    case Move.Paper:
+                        switch (desiredOutcome)
+                        {
+                            case Outcome.Win:
+                                return Move.Scissors;
+                            case Outcome.Draw:
+                                return Move.Paper;
+                            case Outcome.Lose:
+                                return Move.Rock;
+                        }
+                        break;
+                    case Move.Scissors:
+                        switch (desiredOutcome)
+                        {
+                            case Outcome.Win:
+                                return Move.Rock;
+                            case Outcome.Draw:
+                                return Move.Scissors;
+                            case Outcome.Lose:
+                                return Move.Paper;
+                        }
+                        break;
+                }
+
+                throw new Exception("Unexpected outcome");
+            }
         }
 
         private class Round
         {
-            private RPS _opponentMove { get; set; }
-            private RPS _myMove { get; set; }
-            private RPS _myMove2 { get; set; }
-            private Outcome _outcome2 { get; set; }
+            private RockPaperScissors.Move _opponentMove { get; set; }
+
+            private RockPaperScissors.Move _myMove { get; set; }
+            private RockPaperScissors.Outcome _outcome { get; set; }
+
+            private RockPaperScissors.Move _myMove2 { get; set; }
+            private RockPaperScissors.Outcome _outcome2 { get; set; }
+
             public Round(string round)
             {
                 var moves = round.Split(" ");
+
                 _opponentMove = ParseMove(moves[0]);
+
                 _myMove = ParseMove(moves[1]);
+                _outcome = RockPaperScissors.GetOutcome(_myMove, _opponentMove);
+
                 _outcome2 = ParseOutcome(moves[1]);
-
-
-                switch(_outcome2)
-                {
-                    case Outcome.Win:
-                        switch (_opponentMove)
-                        {
-                            case RPS.Rock:
-                                _myMove2 = RPS.Paper;
-                                break;
-                            case RPS.Paper:
-                                _myMove2 = RPS.Scissors;
-                                break;
-                            case RPS.Scissors:
-                                _myMove2 = RPS.Rock;
-                                break;
-                        }
-                        break;
-                    case Outcome.Draw:
-                        _myMove2 = _opponentMove;
-                        break;
-                    case Outcome.Lose:
-                        switch (_opponentMove)
-                        {
-                            case RPS.Rock:
-                                _myMove2 = RPS.Scissors;
-                                break;
-                            case RPS.Paper:
-                                _myMove2 = RPS.Rock;
-                                break;
-                            case RPS.Scissors:
-                                _myMove2 = RPS.Paper;
-                                break;
-                        }
-                        break;
-                }
+                _myMove2 = RockPaperScissors.GetMoveForOutcome(_opponentMove, _outcome2);
             }
 
-            private RPS ParseMove(string input)
+            private RockPaperScissors.Move ParseMove(string input)
             {
                 switch (input)
                 {
-                    case "A": return RPS.Rock;
-                    case "B": return RPS.Paper;
-                    case "C": return RPS.Scissors;
-                    case "X": return RPS.Rock;
-                    case "Y": return RPS.Paper;
-                    case "Z": return RPS.Scissors;
+                    case "A": return RockPaperScissors.Move.Rock;
+                    case "B": return RockPaperScissors.Move.Paper;
+                    case "C": return RockPaperScissors.Move.Scissors;
+                    case "X": return RockPaperScissors.Move.Rock;
+                    case "Y": return RockPaperScissors.Move.Paper;
+                    case "Z": return RockPaperScissors.Move.Scissors;
                 }
 
-                throw new Exception("Unknown shape");
+                throw new Exception("Unknown move");
             }
 
-            private Outcome ParseOutcome(string input)
+            private RockPaperScissors.Outcome ParseOutcome(string input)
             {
                 switch (input)
                 {
-                    case "X": return Outcome.Lose;
-                    case "Y": return Outcome.Draw;
-                    case "Z": return Outcome.Win;
+                    case "X": return RockPaperScissors.Outcome.Lose;
+                    case "Y": return RockPaperScissors.Outcome.Draw;
+                    case "Z": return RockPaperScissors.Outcome.Win;
                 }
 
                 throw new Exception("Unknown outcome");
             }
 
 
-            public int ShapeScore()
+            public int ShapeScore(RockPaperScissors.Move move)
             {
-                switch (_myMove)
+                switch (move)
                 {
-                    case RPS.Rock: return 1;
-                    case RPS.Paper: return 2;
-                    case RPS.Scissors: return 3;
+                    case RockPaperScissors.Move.Rock: return 1;
+                    case RockPaperScissors.Move.Paper: return 2;
+                    case RockPaperScissors.Move.Scissors: return 3;
+                }
+
+                throw new Exception("Unknown move");
+            }
+
+
+            public int OutcomeScore(RockPaperScissors.Outcome outcome)
+            {
+                switch (outcome)
+                {
+                    case RockPaperScissors.Outcome.Win: return 6;
+                    case RockPaperScissors.Outcome.Draw: return 3;
+                    case RockPaperScissors.Outcome.Lose: return 0;
                 }
 
                 throw new Exception("Unknown shape");
             }
 
-
-            public int OutcomeScore()
-            {
-
-                switch (_myMove)
-                {
-                    case RPS.Rock: return _opponentMove == RPS.Scissors ? 6 : _opponentMove == RPS.Rock ? 3 : 0;
-                    case RPS.Paper: return _opponentMove == RPS.Rock ? 6 : _opponentMove == RPS.Paper ? 3 : 0;
-                    case RPS.Scissors: return _opponentMove == RPS.Paper ? 6 : _opponentMove == RPS.Scissors ? 3 : 0;
-                }
-
-                throw new Exception("Unknown shape");
-            }
-
-
-
-            public int ShapeScore2()
-            {
-                switch (_myMove2)
-                {
-                    case RPS.Rock: return 1;
-                    case RPS.Paper: return 2;
-                    case RPS.Scissors: return 3;
-                }
-
-                throw new Exception("Unknown shape");
-            }
-
-
-
-            public int OutcomeScore2()
-            {
-                switch (_outcome2)
-                {
-                    case Outcome.Lose: return 0;
-                    case Outcome.Draw: return 3;
-                    case Outcome.Win: return 6;
-                }
-
-                throw new Exception("Unknown outcome");
-            }
-
-            public int TotalScore() => ShapeScore() + OutcomeScore();
-            public int TotalScore2() => ShapeScore2() + OutcomeScore2();
+            public int TotalScore() => ShapeScore(_myMove) + OutcomeScore(_outcome);
+            public int TotalScore2() => ShapeScore(_myMove2) + OutcomeScore(_outcome2);
         }
     }
 }
