@@ -53,89 +53,42 @@ namespace AdventOfCode._2022.Day02
                 Draw
             }
 
+            private static Dictionary<Move, Move> Beats = new Dictionary<Move, Move>
+            {
+                { Move.Rock, Move.Scissors },
+                { Move.Paper, Move.Rock },
+                { Move.Scissors, Move.Paper }
+            };
+
             public static Outcome GetOutcome(Move yourMove, Move oppononentMove)
             {
-                switch (yourMove)
+                if (Beats[yourMove] == oppononentMove)
                 {
-                    case Move.Rock:
-                        switch (oppononentMove)
-                        {
-                            case Move.Rock:
-                                return Outcome.Draw;
-                            case Move.Paper:
-                                return Outcome.Lose;
-                            case Move.Scissors:
-                                return Outcome.Win;
-                        }
-                        break;
-                    case Move.Paper:
-                        switch (oppononentMove)
-                        {
-                            case Move.Rock:
-                                return Outcome.Win;
-                            case Move.Paper:
-                                return Outcome.Draw;
-                            case Move.Scissors:
-                                return Outcome.Lose;
-                        }
-                        break;
-                    case Move.Scissors:
-                        switch (oppononentMove)
-                        {
-                            case Move.Rock:
-                                return Outcome.Lose;
-                            case Move.Paper:
-                                return Outcome.Win;
-                            case Move.Scissors:
-                                return Outcome.Draw;
-                        }
-                        break;
+                    return Outcome.Win;
                 }
 
-                throw new Exception("Unexpected outcome");
+                if (Beats[oppononentMove] == yourMove)
+                {
+                    return Outcome.Lose;
+                }
+
+                return Outcome.Draw;
             }
 
 
             public static Move GetMoveForOutcome(Move oppononentMove, Outcome desiredOutcome)
             {
-                switch (oppononentMove)
+                if (desiredOutcome == Outcome.Win)
                 {
-                    case Move.Rock:
-                        switch (desiredOutcome)
-                        {
-                            case Outcome.Win:
-                                return Move.Paper;
-                            case Outcome.Draw:
-                                return Move.Rock;
-                            case Outcome.Lose:
-                                return Move.Scissors;
-                        }
-                        break;
-                    case Move.Paper:
-                        switch (desiredOutcome)
-                        {
-                            case Outcome.Win:
-                                return Move.Scissors;
-                            case Outcome.Draw:
-                                return Move.Paper;
-                            case Outcome.Lose:
-                                return Move.Rock;
-                        }
-                        break;
-                    case Move.Scissors:
-                        switch (desiredOutcome)
-                        {
-                            case Outcome.Win:
-                                return Move.Rock;
-                            case Outcome.Draw:
-                                return Move.Scissors;
-                            case Outcome.Lose:
-                                return Move.Paper;
-                        }
-                        break;
+                    return Beats.Single(kvp => kvp.Value == oppononentMove).Key;
                 }
 
-                throw new Exception("Unexpected outcome");
+                if (desiredOutcome == Outcome.Lose)
+                {
+                    return Beats[oppononentMove];
+                }
+
+                return oppononentMove;
             }
         }
 
