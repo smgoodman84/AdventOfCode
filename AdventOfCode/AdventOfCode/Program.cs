@@ -19,6 +19,7 @@ namespace AdventOfCode.AdventOfCode
             var assemblies = new[]
             {
                 typeof(_2015.Day01.Day01).Assembly,
+                typeof(_2019.Day01.Day01).Assembly,
                 typeof(_2020.Day01.Day01).Assembly,
                 typeof(_2021.Day01.Day01).Assembly,
                 typeof(_2022.Day01.Day01).Assembly
@@ -32,7 +33,7 @@ namespace AdventOfCode.AdventOfCode
                 .ThenBy(day => day.DayNumber)
                 .ToList();
 
-            var runPredicate = RunLatestDayInYear(2022, days);
+            var runPredicate = RunLatestDayInYear(2019, days);
             //var runPredicate = RunYear(2021);
             //var runPredicate = RunAll();
 

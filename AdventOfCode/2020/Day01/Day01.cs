@@ -10,7 +10,7 @@ namespace AdventOfCode._2020.Day01
     {
         private IEnumerable<int> _expenses;
 
-        public Day01(): base(2020, 1, "Day01/input_2020_01.txt", "972576", "199300880")
+        public Day01() : base(2020, 1, "Day01/input_2020_01.txt", "972576", "199300880")
         {
 
         }
