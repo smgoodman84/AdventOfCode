@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode.AdventOfCode
@@ -9,6 +10,11 @@ namespace AdventOfCode.AdventOfCode
     class Program
     {
         static void Main(string[] args)
+        {
+            MainAsync().Wait();
+        }
+
+        private static async Task MainAsync()
         {
             var assemblies = new[]
             {
@@ -26,19 +32,37 @@ namespace AdventOfCode.AdventOfCode
                 .ThenBy(day => day.DayNumber)
                 .ToList();
 
-            var runPredicate = RunLatestDayInYear(2022, days);
+            //var runPredicate = RunLatestDayInYear(2022, days);
             //var runPredicate = RunYear(2021);
-            //var runPredicate = RunAll();
+            var runPredicate = RunAll();
 
-            var invalidCount = 0;
+            var resultDetails = new List<Result>();
             foreach (var day in days.Where(x => runPredicate(x)))
             {
                 day.Initialise();
-                invalidCount += ResultForDay(day.Year, day.DayNumber, 1, () => day.Part1(), day.ValidatedPart1);
-                invalidCount += ResultForDay(day.Year, day.DayNumber, 2, () => day.Part2(), day.ValidatedPart2);
+                resultDetails.Add(ResultForDay(day.Year, day.DayNumber, 1, () => day.Part1(), day.ValidatedPart1));
+                resultDetails.Add(ResultForDay(day.Year, day.DayNumber, 2, () => day.Part2(), day.ValidatedPart2));
             }
 
-            Console.WriteLine($"{invalidCount} INVALID Results");
+            var yearGroups = resultDetails
+                .GroupBy(r => r.Year)
+                .OrderBy(group => group.Key);
+
+            foreach(var yearGroup in yearGroups)
+            {
+                var resultTypeGroups = yearGroup
+                    .GroupBy(r => r.ResultType);
+
+                Console.WriteLine();
+                Console.WriteLine(yearGroup.Key);
+
+                foreach (var resultType in resultTypeGroups)
+                {
+                    var count = resultType.Count();
+                    var resultSuffix = count > 1 ? "s" : string.Empty;
+                    Console.WriteLine($"{count} {resultType.Key} Result{resultSuffix}");
+                }
+            }
         }
 
         private static Func<IDay, bool> RunAll()
@@ -67,28 +91,101 @@ namespace AdventOfCode.AdventOfCode
             return day => day.Year == year && day.DayNumber == dayNumber;
         }
 
-        private static int ResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
+        private enum ResultType
         {
+            None,
+            Exception,
+            Timeout,
+            Unvalidated,
+            Valid,
+            Invalid,
+            Incomplete
+        }
+
+        private class Result
+        {
+            public int Year { get; set; }
+            public int Day { get; set; }
+            public int Part { get; set; }
+
+            public ResultType ResultType { get; set; }
+            public string Value { get; set; }
+            public long RuntimeMilliseconds { get; set; }
+            public Exception Exception { get; set; }
+        }
+
+        private static Result ResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
+        {
+            var resultDetails = GetResultForDay(year, day, part, resultFunc, validatedResult);
+
+            var message = resultDetails.Value;
+            if (resultDetails.ResultType == ResultType.Exception)
+            {
+                message = resultDetails.Exception.Message;
+            }
+
+            Console.WriteLine($"{year} Day {day} Part {part} ({resultDetails.RuntimeMilliseconds}ms): {message} - {resultDetails.ResultType}");
+
+            return resultDetails;
+        }
+
+
+        private static Result GetResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
+        {
+            var resultDetails = new Result()
+            {
+                Year = year,
+                Day = day,
+                Part = part
+            };
+
             var stopwatch = Stopwatch.StartNew();
-            string result;
+            string result = null;
             try
             {
                 result = resultFunc();
+                resultDetails.Value = result;
             }
             catch (Exception ex)
             {
-                result = $"EXCEPTION: {ex.Message}";
+                resultDetails.Exception = ex;
+                resultDetails.ResultType = ResultType.Exception;
             }
-            stopwatch.Stop();
+            finally
+            {
+                stopwatch.Stop();
+                resultDetails.RuntimeMilliseconds = stopwatch.ElapsedMilliseconds;
+            }
 
-            var invalid = !string.IsNullOrWhiteSpace(validatedResult)
-                && result != validatedResult;
+            if (resultDetails.ResultType != ResultType.None)
+            {
+                return resultDetails;
+            }
 
-            var invalidString = invalid ? " INVALID" : "";
+            if (validatedResult == string.Empty)
+            {
+                if (result == string.Empty)
+                {
+                    resultDetails.ResultType = ResultType.Incomplete;
+                }
+                else
+                {
+                    resultDetails.ResultType = ResultType.Unvalidated;
+                }
+            }
+            else
+            {
+                if (result == validatedResult)
+                {
+                    resultDetails.ResultType = ResultType.Valid;
+                }
+                else
+                {
+                    resultDetails.ResultType = ResultType.Invalid;
+                }
+            }
 
-            Console.WriteLine($"{year} Day {day} Part {part} ({stopwatch.ElapsedMilliseconds}ms): {result}{invalidString}");
-
-            return invalid ? 1 : 0;
+            return resultDetails;
         }
     }
 }
