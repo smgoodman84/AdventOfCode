@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AdventOfCode.Shared;
 
@@ -12,6 +13,7 @@ namespace AdventOfCode.AdventOfCode
         static void Main(string[] args)
         {
             MainAsync().Wait();
+            System.Environment.Exit(0);
         }
 
         private static async Task MainAsync()
@@ -33,16 +35,17 @@ namespace AdventOfCode.AdventOfCode
                 .ThenBy(day => day.DayNumber)
                 .ToList();
 
+            // var runPredicate = RunDay(2021, 22);
             var runPredicate = RunLatestDayInYear(2019, days);
-            //var runPredicate = RunYear(2021);
-            //var runPredicate = RunAll();
+            // var runPredicate = RunYear(2021);
+            // var runPredicate = RunAll();
 
             var resultDetails = new List<Result>();
             foreach (var day in days.Where(x => runPredicate(x)))
             {
                 day.Initialise();
-                resultDetails.Add(ResultForDay(day.Year, day.DayNumber, 1, () => day.Part1(), day.ValidatedPart1));
-                resultDetails.Add(ResultForDay(day.Year, day.DayNumber, 2, () => day.Part2(), day.ValidatedPart2));
+                resultDetails.Add(await ResultForDay(day.Year, day.DayNumber, 1, () => day.Part1(), day.ValidatedPart1));
+                resultDetails.Add(await ResultForDay(day.Year, day.DayNumber, 2, () => day.Part2(), day.ValidatedPart2));
             }
 
             var yearGroups = resultDetails
@@ -113,11 +116,24 @@ namespace AdventOfCode.AdventOfCode
             public string Value { get; set; }
             public long RuntimeMilliseconds { get; set; }
             public Exception Exception { get; set; }
+            public Func<string> ResultFunction { get; set; }
+
+            public void Execute() {
+                try
+                {
+                    Value = ResultFunction();
+                }
+                catch (Exception ex)
+                {
+                    Exception = ex;
+                    ResultType = ResultType.Exception;
+                }
+            }
         }
 
-        private static Result ResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
+        private static async Task<Result> ResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
         {
-            var resultDetails = GetResultForDay(year, day, part, resultFunc, validatedResult);
+            var resultDetails = await GetResultForDay(year, day, part, resultFunc, validatedResult);
 
             var message = resultDetails.Value;
             if (resultDetails.ResultType == ResultType.Exception)
@@ -131,21 +147,62 @@ namespace AdventOfCode.AdventOfCode
         }
 
 
-        private static Result GetResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
+        private static async Task<Result> GetResultForDay(int year, int day, int part, Func<string> resultFunc, string validatedResult)
         {
             var resultDetails = new Result()
             {
                 Year = year,
                 Day = day,
-                Part = part
+                Part = part,
+                ResultFunction = resultFunc
             };
 
             var stopwatch = Stopwatch.StartNew();
-            string result = null;
+            // string result = null;
             try
             {
-                result = resultFunc();
-                resultDetails.Value = result;
+                var cancellationTokenSource = new CancellationTokenSource();
+
+                Thread thread = new Thread(new ThreadStart(resultDetails.Execute), 16*1024*1024);
+                thread.Start();
+
+                var timeout = 60_000;
+                var delay = 1;
+                while (thread.IsAlive && timeout > 0)
+                {
+                    await Task.Delay(delay);
+                    timeout -= delay;
+
+                    delay *= 2;
+                    if (delay > 50)
+                    {
+                        delay = 50;
+                    }
+
+                    if (timeout <= 0)
+                    {
+                        resultDetails.ResultType = ResultType.Timeout;
+                        // thread.Abort();
+                    }
+                }
+                /*
+                var resultTask = new Task<string>(() => resultFunc(), cancellationTokenSource.Token);
+                var timeoutTask = Task.Delay(60_000, cancellationTokenSource.Token);
+
+                resultTask.Start();
+                await Task.WhenAny(resultTask, timeoutTask);
+
+                if (resultTask.IsCompletedSuccessfully)
+                {
+                    result = await resultTask;
+                    resultDetails.Value = result;
+                }
+                else
+                {
+                    resultDetails.ResultType = ResultType.Timeout;
+                }
+
+                cancellationTokenSource.Cancel();*/
             }
             catch (Exception ex)
             {
@@ -165,7 +222,7 @@ namespace AdventOfCode.AdventOfCode
 
             if (validatedResult == string.Empty)
             {
-                if (result == string.Empty)
+                if (resultDetails.Value == string.Empty)
                 {
                     resultDetails.ResultType = ResultType.Incomplete;
                 }
@@ -176,7 +233,7 @@ namespace AdventOfCode.AdventOfCode
             }
             else
             {
-                if (result == validatedResult)
+                if (resultDetails.Value == validatedResult)
                 {
                     resultDetails.ResultType = ResultType.Valid;
                 }

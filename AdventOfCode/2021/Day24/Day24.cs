@@ -15,7 +15,7 @@ namespace AdventOfCode._2021.Day24
 
         public override string Part1()
         {
-            return "Runs too slowly";
+            //return "Runs too slowly";
             var alu = new ArithmeticLogicUnit(InputLines);
 
             var inputs = GetPart1Inputs();

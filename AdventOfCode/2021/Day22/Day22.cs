@@ -73,7 +73,7 @@ namespace AdventOfCode._2021.Day22
 
         public override string Part2()
         {
-            return "Runs too slowly";
+            //return "Runs too slowly";
             var cubes = new List<Cube>();
         
             foreach (var command in _rebootSteps)
