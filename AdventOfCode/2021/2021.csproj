@@ -1,47 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>AdventOfCode._2021</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Day01\" />
-    <Folder Include="Day02\" />
-    <Folder Include="Day03\" />
-    <Folder Include="Day04\" />
-    <Folder Include="Day05\" />
-    <Folder Include="Day06\" />
-    <Folder Include="Day07\" />
-    <Folder Include="Day08\" />
-    <Folder Include="Day09\" />
-    <Folder Include="Day10\" />
-    <Folder Include="Day11\" />
-    <Folder Include="Day12\" />
-    <Folder Include="Day13\" />
-    <Folder Include="Day14\" />
-    <Folder Include="Day15\" />
-    <Folder Include="Day16\" />
-    <Folder Include="Day17\" />
-    <Folder Include="Day18\" />
-    <Folder Include="Day19\" />
-    <Folder Include="Day20\" />
-    <Folder Include="Day21\" />
-    <Folder Include="Day22\" />
-    <Folder Include="Day24\" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Day14\" />
-    <None Remove="Day15\" />
-    <None Remove="Day16\" />
-    <None Remove="Day17\" />
-    <None Remove="Day18\" />
-    <None Remove="Day19\" />
-    <None Remove="Day20\" />
-    <None Remove="Day21\" />
-    <None Remove="Day22\" />
-    <None Remove="Day24\" />
-  </ItemGroup>
+
   <ItemGroup>
     <None Update="Day01\input_2021_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -112,8 +79,5 @@
     <None Update="Day24\input_2021_24.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 </Project>

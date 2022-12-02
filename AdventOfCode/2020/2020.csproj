@@ -1,32 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>AdventOfCode._2020</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Day01\" />
-    <Folder Include="Day02\" />
-    <Folder Include="Day03\" />
-    <Folder Include="Day04\" />
-    <Folder Include="Day05\" />
-    <Folder Include="Day06\" />
-    <Folder Include="Day07\" />
-    <Folder Include="Day08\" />
-    <Folder Include="Day09\" />
-    <Folder Include="Day10\" />
-    <Folder Include="Day11\" />
-    <Folder Include="Day12\" />
-    <Folder Include="Day13\" />
-    <Folder Include="Day14\" />
-    <Folder Include="Day15\" />
-    <Folder Include="Day16\" />
-    <Folder Include="Day17\" />
-    <Folder Include="Day18\" />
-    <Folder Include="Day20\" />
-    <Folder Include="Day22\" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <None Update="Day01\input_2020_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -88,8 +70,5 @@
     <None Update="Day22\input_2020_22.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 </Project>
