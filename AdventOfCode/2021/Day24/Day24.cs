@@ -27,7 +27,7 @@ namespace AdventOfCode._2021.Day24
                 var (result, ip) = alu.ExecuteAndReturnZ(i);
 
                 var valid = result == 0;
-                Trace($"{stringInput} ({ip}): {result}");
+                TraceLine($"{stringInput} ({ip}): {result}");
                 if (valid)
                 {
                     return stringInput;

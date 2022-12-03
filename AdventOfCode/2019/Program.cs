@@ -1,5 +1,4 @@
 ﻿using System;
-using AdventOfCode2019.Day10;
 using AdventOfCode2019.Day12;
 using AdventOfCode2019.Day13;
 using AdventOfCode2019.Day14;
@@ -14,18 +13,6 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            Console.WriteLine($"Day 9 Part 1:");
-            IntcodeMachine.LoadFromFile("Day09/Boost.txt").SetInput(new PreparedInput(1)).Execute().Wait();
-
-            Console.WriteLine($"Day 9 Part 2:");
-            IntcodeMachine.LoadFromFile("Day09/Boost.txt").SetInput(new PreparedInput(2)).Execute().Wait();
-
-            var day10Part1Result = AsteroidMap.LoadFromFile("Day10/AsteroidMap.txt").GetMaximumVisibility();
-            Console.WriteLine($"Day 10 Part 1: {day10Part1Result}");
-
-            var day10Part2Result = AsteroidMap.LoadFromFile("Day10/AsteroidMap.txt").GetNthDestroyedAsteroidLocation(200);
-            Console.WriteLine($"Day 10 Part 2: {day10Part2Result}");
-
             var day11Part1Result = new Day11.Robot().Execute().GetAwaiter().GetResult().GetEverWhiteCount();
             Console.WriteLine($"Day 11 Part 1: {day11Part1Result}");
             

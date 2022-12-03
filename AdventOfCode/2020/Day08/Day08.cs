@@ -53,7 +53,7 @@ namespace AdventOfCode2020.Day08
                     _instructionPointer += instruction.Argument;
                     break;
             }
-            Trace($"Executed [{ip}]\t{instruction.Operation}\t{instruction.Argument}\t\t{_accumulator}\t{_instructionPointer}");
+            TraceLine($"Executed [{ip}]\t{instruction.Operation}\t{instruction.Argument}\t\t{_accumulator}\t{_instructionPointer}");
         }
 
         public override string Part1()

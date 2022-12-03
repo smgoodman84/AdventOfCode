@@ -3,18 +3,23 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day10
+namespace AdventOfCode._2019.Day10
 {
-    public class AsteroidMap
+    public class Day10 : Day
     {
-        public static AsteroidMap LoadFromFile(string filename)
+        public Day10() : base(2019, 10, "Day10/input_2019_10.txt", "326", "")
         {
-            var asteroids = File.ReadAllLines(filename)
+
+        }
+
+        private List<Asteroid> _asteroids;
+        public override void Initialise()
+        {
+            _asteroids = InputLines
                 .SelectMany(ReadLine)
                 .ToList();
-
-            return new AsteroidMap(asteroids);
         }
 
         private static IEnumerable<Asteroid> ReadLine(string line, int y)
@@ -31,11 +36,14 @@ namespace AdventOfCode2019.Day10
             }
         }
 
-        private readonly List<Asteroid> _asteroids;
-
-        private AsteroidMap(List<Asteroid> asteroids)
+        public override string Part1()
         {
-            _asteroids = asteroids;
+            return GetMaximumVisibility().ToString();
+        }
+
+        public override string Part2()
+        {
+            return GetNthDestroyedAsteroidLocation(200).ToString();
         }
 
         public int GetMaximumVisibility()
@@ -85,24 +93,24 @@ namespace AdventOfCode2019.Day10
                 var index = 0;
                 foreach (var y in Enumerable.Range(0, orderedAsteroids.Max(a => a.Y) + 1))
                 {
-                    Console.WriteLine();
-                    Console.Write($"{(y + 1).ToString().PadLeft(2, ' ')}: ");
+                    TraceLine();
+                    Trace($"{(y + 1).ToString().PadLeft(2, ' ')}: ");
                     foreach (var x in Enumerable.Range(0, orderedAsteroids.Max(a => a.X) + 1))
                     {
                         if (index < renderList.Length
                             && x == renderList[index].Item1.X
                             && y == renderList[index].Item1.Y)
                         {
-                            Console.Write($"[{renderList[index].Item2.ToString().PadLeft(3, ' ')}]");
+                            Trace($"[{renderList[index].Item2.ToString().PadLeft(3, ' ')}]");
                             index += 1;
                         }
                         else
                         {
-                            Console.Write("-   -");
+                            Trace("-   -");
                         }
                     }
 
-                    Console.WriteLine();
+                    TraceLine();
                 }
             }
 

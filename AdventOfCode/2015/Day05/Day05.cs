@@ -118,7 +118,7 @@ namespace AdventOfCode._2015.Day05
 
             var result = containsDuplicatePair && containsSandwich;
 
-            Trace($"{input} {containsDuplicatePair} {containsSandwich} {result}");
+            TraceLine($"{input} {containsDuplicatePair} {containsSandwich} {result}");
 
             return result;
         }

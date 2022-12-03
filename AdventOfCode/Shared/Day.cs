@@ -53,6 +53,16 @@ namespace AdventOfCode.Shared
         {
             if (_outputTrace)
             {
+                Console.Write(message);
+            }
+
+            File.AppendAllText(TraceFilename, message);
+        }
+
+        protected void TraceLine(string message = "")
+        {
+            if (_outputTrace)
+            {
                 Console.WriteLine(message);
             }
 
