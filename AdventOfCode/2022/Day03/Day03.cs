@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
+using AdventOfCode.Shared.PrimitiveExtensions;
 
 namespace AdventOfCode._2022.Day02
 {
     public class Day03 : Day
     {
-        public Day03() : base(2022, 3, "Day03/input_2022_03.txt", "", "")
+        public Day03() : base(2022, 3, "Day03/input_2022_03.txt", "8240", "2587")
         {
 
         }
@@ -31,70 +32,82 @@ namespace AdventOfCode._2022.Day02
 
         public override string Part2()
         {
-            //var allItems = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-
-            var groups = new List<List<string>>();
-
-            var currentGroup = new List<string>();
-            foreach (var line in InputLines)
-            {
-                currentGroup.Add(line);
-                if (currentGroup.Count == 3)
-                {
-                    groups.Add(currentGroup);
-                    currentGroup = new List<string>();
-                }
-            }
-
-            if (currentGroup.Count == 3)
-            {
-                groups.Add(currentGroup);
-                currentGroup = new List<string>();
-            }
-
-            var sum = 0;
-            foreach (var group in groups)
-            {
-                var allItems = group.SelectMany(g => g.ToCharArray()).Distinct().ToList();
-
-                var commonItem = allItems
-                    .Where(item => group.All(x => x.Contains(item)))
-                    .Single();
-
-                var commonPriority = Rucksack.GetPriority(commonItem);
-                sum += commonPriority;
-            }
+            var sum = _rucksacks
+                .GroupsOfSize(3)
+                .Select(g => new RucksackGroup(g))
+                .Select(g => g.GetCommonItemPriority())
+                .Sum();
 
             return sum.ToString();
         }
 
+        private class RucksackGroup
+        {
+            private readonly List<Rucksack> _rucksacks;
+
+            public RucksackGroup(IEnumerable<Rucksack> rucksacks)
+            {
+                _rucksacks = rucksacks.ToList();
+            }
+
+            public int GetCommonItemPriority()
+            {
+                var allCommonPriorities = _rucksacks
+                    .SelectMany(g => g.GetItemPriorities())
+                    .Distinct()
+                    .ToList();
+
+                var commonItemPriority = allCommonPriorities
+                    .Where(item => _rucksacks.All(x => x.ContainsItemWithPriority(item)))
+                    .Single();
+
+                return commonItemPriority;
+            }
+        }
+
         private class Rucksack
         {
-            private string _contents;
-            private string _pocketOne;
-            private string _pocketTwo;
+            private List<int> _contentPriorities;
+            private List<int> _pocketOnePriorities;
+            private List<int> _pocketTwoPriorities;
+
             public Rucksack(string contents)
             {
-                _contents = contents;
-                var length = contents.Length;
+                _contentPriorities = contents
+                    .Select(GetPriority)
+                    .ToList();
 
-                var halfLength = length / 2;
+                var halfLength = contents.Length / 2;
 
-                _pocketOne = contents.Substring(0, halfLength);
-                _pocketTwo = contents.Substring(halfLength);
+                _pocketOnePriorities = contents
+                    .Substring(0, halfLength)
+                    .Select(GetPriority)
+                    .ToList();
+
+                _pocketTwoPriorities = contents
+                    .Substring(halfLength)
+                    .Select(GetPriority)
+                    .ToList();
             }
 
             public int GetPriorityOfCommonItem()
             {
-                var itemsOne = _pocketOne.ToCharArray();
-                var itemsTwo = _pocketTwo.ToCharArray();
+                var commonItem = _pocketOnePriorities.First(_pocketTwoPriorities.Contains);
 
-                var commonItem = itemsOne.First(itemsTwo.Contains);
-
-                return GetPriority(commonItem);
+                return commonItem;
             }
 
-            public static int GetPriority(char c)
+            public IEnumerable<int> GetItemPriorities()
+            {
+                return _contentPriorities;
+            }
+
+            public bool ContainsItemWithPriority(int priority)
+            {
+                return _contentPriorities.Contains(priority);
+            }
+
+            private static int GetPriority(char c)
             {
                 return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".IndexOf(c) + 1;
             }

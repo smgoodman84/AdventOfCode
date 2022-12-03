@@ -6,8 +6,13 @@ namespace AdventOfCode.Shared.FileProcessing
 {
 	public static class LineGrouper
     {
-        public static List<List<string>> GroupLines(IEnumerable<string> lines)
+        public static List<List<string>> GroupLinesBySeperator(
+            IEnumerable<string> lines,
+            Func<string, bool> isSeparator = null
+            )
         {
+            isSeparator ??= x => string.IsNullOrWhiteSpace(x);
+
             var groups = new List<List<string>>();
             var currentLines = new List<string>();
             foreach (var line in lines)

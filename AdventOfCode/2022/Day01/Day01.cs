@@ -16,7 +16,7 @@ namespace AdventOfCode._2022.Day01
         private List<List<int>> _elfCalories;
         public override void Initialise()
         {
-            _elfCalories = LineGrouper.GroupLines(InputLines)
+            _elfCalories = LineGrouper.GroupLinesBySeperator(InputLines)
                 .Select(group => group.Select(int.Parse).ToList())
                 .ToList();
         }

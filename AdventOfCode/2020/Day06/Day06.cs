@@ -18,7 +18,7 @@ namespace AdventOfCode2020.Day06
 
         public override void Initialise()
         {
-            _groupDeclerations = LineGrouper.GroupLines(InputLines)
+            _groupDeclerations = LineGrouper.GroupLinesBySeperator(InputLines)
                 .Select(CreateGroupDecleration)
                 .ToList();
         }

@@ -16,7 +16,7 @@ namespace AdventOfCode._2020.Day04
         private List<Passport> _passports;
         public override void Initialise()
         {
-            _passports = LineGrouper.GroupLines(InputLines)
+            _passports = LineGrouper.GroupLinesBySeperator(InputLines)
                 .Select(CreatePassport)
                 .ToList();
         }
