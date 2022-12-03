@@ -1,5 +1,4 @@
 ﻿using System;
-using AdventOfCode2019.Day08;
 using AdventOfCode2019.Day10;
 using AdventOfCode2019.Day12;
 using AdventOfCode2019.Day13;
@@ -15,12 +14,6 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            var day8Part1Result = SpaceImage.LoadFromFile("Day08/SpaceImage.txt", 25, 6).FindLayerWithFewestZerosAndGetNumberOfOnesTimeNumberOfTwos();
-            Console.WriteLine($"Day 8 Part 1: {day8Part1Result}");
-
-            Console.WriteLine($"Day 8 Part 2:");
-            SpaceImage.LoadFromFile("Day08/SpaceImage.txt", 25, 6).RenderImage();
-
             Console.WriteLine($"Day 9 Part 1:");
             IntcodeMachine.LoadFromFile("Day09/Boost.txt").SetInput(new PreparedInput(1)).Execute().Wait();
 

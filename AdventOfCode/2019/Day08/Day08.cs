@@ -2,50 +2,82 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day08
+namespace AdventOfCode._2019.Day08
 {
-    public class SpaceImage
+    public class Day08 : Day
     {
+        const string part2Result = "\n#  # ###  #  # #### ###  \n#  # #  # #  # #    #  # \n#  # ###  #  # ###  #  # \n#  # #  # #  # #    ###  \n#  # #  # #  # #    #    \n ##  ###   ##  #    #    \n";
+
+        public Day08() : base(2019, 8, "Day08/input_2019_08.txt", "1677", part2Result)
+        {
+
+        }
+
         private const int Transparent = 2;
 
-        private readonly int[] _pixels;
-        private readonly int _width;
-        private readonly int _height;
-        private readonly List<SpaceImageLayer> _layers;
+        private int[] _pixels;
+        private int _width;
+        private int _height;
+        private List<SpaceImageLayer> _layers;
 
-        public static SpaceImage LoadFromFile(string filename, int width, int height)
+        public override void Initialise()
         {
-            var pixels = File.ReadAllText(filename)
+            var pixels = string.Join("", InputLines)
                 .ToCharArray()
                 .Select(c => int.Parse(c.ToString()))
                 .ToArray();
 
-            return new SpaceImage(pixels, width, height);
-        }
-
-        public SpaceImage(int[] pixels, int width, int height)
-        {
             _pixels = pixels;
-            _width = width;
-            _height = height;
+            _width = 25;
+            _height = 6;
 
-            var layerLength = width * height;
+            var layerLength = _width * _height;
             var layers = pixels.Length / layerLength;
 
             var layer = 0;
             _layers = new List<SpaceImageLayer>(layers);
-            while (layer <= layers)
+            while (layer < layers)
             {
                 var layerPixels = _pixels
                     .Skip(layer * layerLength)
                     .Take(layerLength)
                     .ToArray();
 
-                _layers.Add(new SpaceImageLayer(layerPixels, width, height, layer));
+                _layers.Add(new SpaceImageLayer(layerPixels, _width, _height, layer));
 
                 layer += 1;
             }
+        }
+
+        public override string Part1()
+        {
+            return FindLayerWithFewestZerosAndGetNumberOfOnesTimeNumberOfTwos().ToString();
+        }
+
+        public override string Part2()
+        {
+            var image = RenderImage();
+            var result = new StringBuilder();
+
+            result.Append('\n');
+            var y = 0;
+            while(y < image.GetLength(1))
+            {
+                var x = 0;
+                while (x < image.GetLength(0))
+                {
+                    var pixel = image[x, y];
+                    result.Append(pixel == 0 ? ' ' : '#');
+                    x += 1;
+                }
+                result.Append('\n');
+                y += 1;
+            }
+
+            return result.ToString();
         }
 
         public int[,] RenderImage()
@@ -61,13 +93,13 @@ namespace AdventOfCode2019.Day08
                         if (pixel != Transparent)
                         {
                             result[x, y] = pixel;
-                            Console.Write(pixel == 0 ? ' ' : '#');
+                            // Console.Write(pixel == 0 ? ' ' : '#');
                             break;
                         }
                     }
                 }
 
-                Console.WriteLine();
+                // Console.WriteLine();
             }
 
             return result;
