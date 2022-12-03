@@ -16,6 +16,6 @@
             return $"{X},{Y}";
         }
 
-        public static Coordinate2D Origin = new Coordinate2D(0, 0);
+        public static readonly Coordinate2D Origin = new Coordinate2D(0, 0);
     }
 }

@@ -2,27 +2,37 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AdventOfCode.Shared;
+using AdventOfCode.Shared.Geometry;
 
-namespace AdventOfCode2019.Day12
+namespace AdventOfCode._2019.Day12
 {
-    class GravitationalEnergy
+    class Day12 : Day
     {
-        public static GravitationalEnergy LoadFromFile(string filename)
+        public Day12() : base(2019, 12, "Day12/input_2019_12.txt", "7013", "324618307124784")
         {
-            var moons = File.ReadAllLines(filename)
-                .Select((line, lineNumber) => new Moon(line, lineNumber));
 
-            return new GravitationalEnergy(moons);
         }
 
-        private readonly IEnumerable<Moon> _moons;
-
-        public GravitationalEnergy(IEnumerable<Moon> moons)
+        public override string Part1()
         {
-            _moons = moons.ToList();
+            return Simulate(1000).GetTotalEnergy().ToString();
         }
 
-        private string GetPositions(Func<Point3D, int> pointAccessor)
+        public override string Part2()
+        {
+            return FindCycle().ToString();
+        }
+
+        private IEnumerable<Moon> _moons;
+        public override void Initialise()
+        {
+            _moons = InputLines
+                .Select((line, lineNumber) => new Moon(line, lineNumber))
+                .ToList();
+        }
+
+        private string GetPositions(Func<Coordinate3D, long> pointAccessor)
         {
             var allPositions = _moons
                 .Select(m => pointAccessor(m.Position))
@@ -191,7 +201,7 @@ namespace AdventOfCode2019.Day12
             }*/
         }
 
-        public GravitationalEnergy Simulate(int iterations)
+        public Day12 Simulate(int iterations)
         {
             foreach(var iteration in Enumerable.Range(1, iterations))
             {
@@ -206,7 +216,7 @@ namespace AdventOfCode2019.Day12
             ApplyVelocity();
         }
 
-        public int GetTotalEnergy() => _moons.Sum(m => m.TotalEnergy);
+        public long GetTotalEnergy() => _moons.Sum(m => m.TotalEnergy);
 
         private void ApplyVelocity()
         {
@@ -224,37 +234,85 @@ namespace AdventOfCode2019.Day12
                 {
                     if (moon1.Position.X > moon2.Position.X)
                     {
-                        moon1.Velocity.X -= 1;
-                        moon2.Velocity.X += 1;
+                        moon1.Velocity = moon1.Velocity.AddX(-1);
+                        moon2.Velocity = moon2.Velocity.AddX(1);
                     }
                     if (moon1.Position.X < moon2.Position.X)
                     {
-                        moon1.Velocity.X += 1;
-                        moon2.Velocity.X -= 1;
+                        moon1.Velocity = moon1.Velocity.AddX(1);
+                        moon2.Velocity = moon2.Velocity.AddX(-1);
                     }
 
                     if (moon1.Position.Y > moon2.Position.Y)
                     {
-                        moon1.Velocity.Y -= 1;
-                        moon2.Velocity.Y += 1;
+                        moon1.Velocity = moon1.Velocity.AddY(-1);
+                        moon2.Velocity = moon2.Velocity.AddY(1);
                     }
                     if (moon1.Position.Y < moon2.Position.Y)
                     {
-                        moon1.Velocity.Y += 1;
-                        moon2.Velocity.Y -= 1;
+                        moon1.Velocity = moon1.Velocity.AddY(1);
+                        moon2.Velocity = moon2.Velocity.AddY(-1);
                     }
 
                     if (moon1.Position.Z > moon2.Position.Z)
                     {
-                        moon1.Velocity.Z -= 1;
-                        moon2.Velocity.Z += 1;
+                        moon1.Velocity = moon1.Velocity.AddZ(-1);
+                        moon2.Velocity = moon2.Velocity.AddZ(1);
                     }
                     if (moon1.Position.Z < moon2.Position.Z)
                     {
-                        moon1.Velocity.Z += 1;
-                        moon2.Velocity.Z -= 1;
+                        moon1.Velocity = moon1.Velocity.AddZ(1);
+                        moon2.Velocity = moon2.Velocity.AddZ(-1);
                     }
                 }
+            }
+        }
+
+        private class Moon
+        {
+            public Coordinate3D Position { get; set; } = Coordinate3D.Origin;
+
+            public Coordinate3D Velocity { get; set; } = Coordinate3D.Origin;
+
+            public int Id { get; set; }
+
+            public Moon(string input, int id)
+            {
+                Id = id;
+
+                var trimmed = input.Replace("<", "").Replace(">", "");
+
+                long x = 0;
+                long y = 0;
+                long z = 0;
+                foreach (var coordinate in trimmed.Split(","))
+                {
+                    var assignment = coordinate.Trim().Split("=").ToArray();
+                    var value = long.Parse(assignment[1]);
+                    switch (assignment[0].ToLower())
+                    {
+                        case "x": x = value; break;
+                        case "y": y = value; break;
+                        case "z": z = value; break;
+                    }
+                }
+
+                Position = new Coordinate3D(x, y, z);
+            }
+
+            public void ApplyVelocity()
+            {
+                Position = Position.Add(Velocity);
+            }
+
+            public long PotentialEnergy() => Energy(Position);
+            public long KineticEnergy() => Energy(Velocity);
+            public long TotalEnergy => PotentialEnergy() * KineticEnergy();
+
+
+            public long Energy(Coordinate3D coordinate)
+            {
+                return Math.Abs(coordinate.X) + Math.Abs(coordinate.Y) + Math.Abs(coordinate.Z);
             }
         }
     }
