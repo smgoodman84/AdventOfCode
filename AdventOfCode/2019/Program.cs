@@ -13,12 +13,6 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            var day11Part1Result = new Day11.Robot().Execute().GetAwaiter().GetResult().GetEverWhiteCount();
-            Console.WriteLine($"Day 11 Part 1: {day11Part1Result}");
-            
-            Console.WriteLine($"Day 11 Part 2:");
-            new Day11.Robot().StartOnWhite().Execute().GetAwaiter().GetResult().RenderHull();
-            
             var day12Part1Result  = GravitationalEnergy.LoadFromFile("Day12/MoonLocations.txt").Simulate(1000).GetTotalEnergy();
             Console.WriteLine($"Day 12 Part 1: {day12Part1Result}");
 
