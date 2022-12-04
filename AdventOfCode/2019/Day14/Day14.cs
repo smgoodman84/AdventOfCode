@@ -1,11 +1,35 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day14
+namespace AdventOfCode._2019.Day14
 {
-    public class OreForFuelCalculator
+    public class Day14 : Day
     {
+        public Day14() : base(2019, 14, "Day14/input_2019_14.txt", "397771", "")
+        {
+
+        }
+
+        private IEnumerable<Reaction> _reactions;
+        public override void Initialise()
+        {
+            _reactions = InputLines
+                .Select(l => new Reaction(l))
+                .ToList();
+        }
+
+        public override string Part1()
+        {
+            return OreRequiredForChemical("FUEL", 1).ToString();
+        }
+
+        public override string Part2()
+        {
+            return MaximumChemicalWithOre("FUEL", 1000000000000).ToString();
+        }
+
         private class Chemical
         {
             public long Quantity { get; set; }
@@ -64,20 +88,6 @@ namespace AdventOfCode2019.Day14
             {
                 return _description;
             }
-        }
-
-        public static OreForFuelCalculator LoadFromFile(string filename)
-        {
-            var moduleMasses = File.ReadAllLines(filename)
-                .Select(l => new Reaction(l));
-
-            return new OreForFuelCalculator(moduleMasses);
-        }
-
-        private readonly IEnumerable<Reaction> _reactions;
-        private OreForFuelCalculator(IEnumerable<Reaction> reactions)
-        {
-            _reactions = reactions.ToList();
         }
 
         private long _oreUsed = 0;

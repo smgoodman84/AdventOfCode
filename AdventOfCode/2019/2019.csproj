@@ -51,6 +51,9 @@
     <None Update="Day13\GameInput.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Day14\input_2019_14.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Day15\RepairDroid.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -77,9 +80,6 @@
     </None>
     <None Update="Day9\Boost.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Day14\Reactions.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Day17\ASCII.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

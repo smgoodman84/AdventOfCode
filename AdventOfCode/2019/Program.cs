@@ -1,5 +1,4 @@
 ﻿using System;
-using AdventOfCode2019.Day14;
 using AdventOfCode2019.Day15;
 using AdventOfCode2019.Day16;
 using AdventOfCode2019.Day17;
@@ -11,12 +10,6 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            var day14Part1Result = OreForFuelCalculator.LoadFromFile("Day14/Reactions.txt").OreRequiredForChemical("FUEL", 1);
-            Console.WriteLine($"Day 14 Part 1: {day14Part1Result}");
-
-            //var day14Part2Result = OreForFuelCalculator.LoadFromFile("Day14/Reactions.txt").MaximumChemicalWithOre("FUEL", 1000000000000);
-            //Console.WriteLine($"Day 14 Part 2: {day14Part2Result}");
-            
             var day15Part1Result = new OxygenSystemLocater().GetShortestRouteToOxygen();
             Console.WriteLine($"Day 15 Part 1: {day15Part1Result}");
 
