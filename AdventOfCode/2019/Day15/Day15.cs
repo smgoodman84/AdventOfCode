@@ -4,11 +4,17 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Drawing;
 using AdventOfCode._2019.Intcode;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day15
+namespace AdventOfCode._2019.Day15
 {
-    class OxygenSystemLocater
+    public class Day15 : Day
     {
+        public Day15() : base(2019, 15, "Day15/input_2019_15.txt", "366", "384")
+        {
+
+        }
+
         private IntcodeMachine _repairDroid { get; set; }
         private IOPipe _repairDroidInput { get; set; }
         private IOPipe _repairDroidOutput { get; set; }
@@ -35,14 +41,24 @@ namespace AdventOfCode2019.Day15
             FoundOxygenSystem = 2
         }
 
-        public OxygenSystemLocater()
+        public override void Initialise()
         {
-            _repairDroid = IntcodeMachine.LoadFromFile("Day15/RepairDroid.txt");
+            _repairDroid = IntcodeMachine.Load(InputLines);
             _repairDroidInput = new IOPipe();
             _repairDroidOutput = new IOPipe();
             _repairDroid.SetInput(_repairDroidInput);
             _repairDroid.SetOutput(_repairDroidOutput);
             _map = new Map();
+        }
+
+        public override string Part1()
+        {
+            return GetShortestRouteToOxygen().ToString();
+        }
+
+        public override string Part2()
+        {
+            return GetTimeToFillWithOxygen().ToString();
         }
 
         public int GetShortestRouteToOxygen()

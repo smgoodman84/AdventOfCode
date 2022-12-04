@@ -1,5 +1,4 @@
 ﻿using System;
-using AdventOfCode2019.Day15;
 using AdventOfCode2019.Day16;
 using AdventOfCode2019.Day17;
 using AdventOfCode._2019.Intcode;
@@ -10,12 +9,6 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            var day15Part1Result = new OxygenSystemLocater().GetShortestRouteToOxygen();
-            Console.WriteLine($"Day 15 Part 1: {day15Part1Result}");
-
-            var day15Part2Result = new OxygenSystemLocater().GetTimeToFillWithOxygen();
-            Console.WriteLine($"Day 15 Part 2: {day15Part2Result}");
-            
             var day16Part1Result = FlawedFrequencyTransmission.LoadFromFile("Day16/Signal.txt").ProcessSignal(100);
             Console.WriteLine($"Day 16 Part 1: {day16Part1Result}");
             

@@ -54,7 +54,7 @@
     <None Update="Day14\input_2019_14.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Day15\RepairDroid.txt">
+    <None Update="Day15\input_2019_15.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Day16\Signal.txt">
