@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2015.Day05
@@ -66,67 +68,88 @@ namespace AdventOfCode._2015.Day05
 
         private bool IsNice2(string input)
         {
-            char? previous = null;
-            char? previousPrevious = null;
-            var containsSandwich = false;
+            TraceLine();
+            var containsLetterSandwich = ContainsLetterSandwich(input);
+            var containsNonOverlappingLetterPair = ContainsNonOverlappingLetterPair(input);
+
+            TraceLine($"{input}: Sandwich {containsLetterSandwich}, Pair: {containsNonOverlappingLetterPair}");
+
+            return containsNonOverlappingLetterPair
+                && containsLetterSandwich;
+        }
+
+        private bool ContainsNonOverlappingLetterPair(string input)
+        {
             var letterPairs = new List<LetterPair>();
-
-            var index = 0;
-            foreach (var c in input)
+            for (var index = 0; index < input.Length - 1; index++)
             {
-                if (previousPrevious != null)
+                letterPairs.Add(new LetterPair
                 {
-                    if (previousPrevious == c && previous != c)
-                    {
-                        containsSandwich = true;
-                    }
-                }
-
-                if (previous != null)
-                {
-                    letterPairs.Add(new LetterPair
-                    {
-                        Index = index,
-                        Letters = $"{previous}{c}"
-                    });
-                }
-
-                previousPrevious = previous;
-                previous = c;
-                index += 1;
+                    Letters = input.Substring(index, 2),
+                    StartIndex = index,
+                    EndIndex = index + 1
+                });
             }
 
-            var containsDuplicatePair = false;
-            var pairGroups = letterPairs
-                .GroupBy(lr => lr.Letters)
-                .Where(g => g.Count() >= 2);
+            var groupedLetterPairs = letterPairs
+                .GroupBy(lp => lp.Letters)
+                .Where(g => g.Count() > 1);
 
-            foreach (var group in pairGroups)
+            foreach (var groupedLetterPair in groupedLetterPairs)
             {
-                if (pairGroups.Count() > 2)
+                var cleanedList = new List<LetterPair>();
+
+                foreach (var letterPair in groupedLetterPair)
                 {
-                    containsDuplicatePair = true;
-                }
-                else
-                {
-                    if (group.Skip(1).First().Index - group.First().Index >= 2)
+                    if (!cleanedList.Any(x => Overlaps(x, letterPair)))
                     {
-                        containsDuplicatePair = true;
+                        if (cleanedList.Any())
+                        {
+                            var otherLetterPair = cleanedList.Single();
+                            var highlighted1 = $"{new string('_', otherLetterPair.StartIndex)}{otherLetterPair.Letters}{new string('_', input.Length - otherLetterPair.EndIndex - 1)}";
+                            var highlighted2 = $"{new string('_', letterPair.StartIndex)}{letterPair.Letters}{new string('_', input.Length - letterPair.EndIndex - 1)}";
+
+                            TraceLine($"{highlighted1} LetterPair {letterPair.Letters}");
+                            TraceLine($"{highlighted2} LetterPair {letterPair.Letters}");
+                            return true;
+                        }
+
+                        cleanedList.Add(letterPair);
                     }
                 }
             }
 
-            var result = containsDuplicatePair && containsSandwich;
+            return false;
+        }
 
-            TraceLine($"{input} {containsDuplicatePair} {containsSandwich} {result}");
+        private static bool Overlaps(LetterPair letterPairOne, LetterPair letterPairTwo)
+        {
+            return letterPairOne.StartIndex == letterPairTwo.StartIndex
+                || letterPairOne.StartIndex == letterPairTwo.EndIndex
+                || letterPairOne.EndIndex == letterPairTwo.StartIndex
+                || letterPairOne.EndIndex == letterPairTwo.EndIndex;
+        }
 
-            return result;
+        private bool ContainsLetterSandwich(string input)
+        {
+            for (var index = 1; index < input.Length - 1; index++)
+            {
+                if (input[index -1 ] == input[index + 1])
+                {
+                    var highlighted = $"{new string('_', index)}{input[index]}{new string('_', input.Length - index - 1)}";
+                    TraceLine($"{highlighted} Sandwich");
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private class LetterPair
         {
             public string Letters { get; set; }
-            public int Index { get; set; }
+            public int StartIndex { get; set; }
+            public int EndIndex { get; set; }
         }
     }
 }
