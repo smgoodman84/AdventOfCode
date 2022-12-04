@@ -4,15 +4,31 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AdventOfCode._2019.Intcode;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day13
+namespace AdventOfCode._2019.Day13
 {
-    public class Game
+    public class Day13 : Day
     {
-        private readonly IntcodeMachine _game;
-        private readonly IOPipe _gameOutput = new IOPipe();
-        private readonly IOPipe _gameInput = new IOPipe();
-        private readonly Dictionary<int, Dictionary<int, char>> _canvas = new Dictionary<int, Dictionary<int, char>>();
+        public Day13() : base(2019, 13, "Day13/input_2019_13.txt", "200", "9803")
+        {
+
+        }
+
+        private void Reset()
+        {
+            _gameOutput = new IOPipe();
+            _gameInput = new IOPipe();
+            _canvas = new Dictionary<int, Dictionary<int, char>>();
+            _game = IntcodeMachine.Load(InputLines);
+            _game.SetOutput(_gameOutput);
+        }
+
+        private IntcodeMachine _game;
+        private IOPipe _gameOutput;
+        private IOPipe _gameInput;
+        private Dictionary<int, Dictionary<int, char>> _canvas;
+        private bool _render = false;
 
         private readonly Dictionary<int, char> _characters = new Dictionary<int, char>
         {
@@ -22,19 +38,20 @@ namespace AdventOfCode2019.Day13
             {3, '*'},
             {4, 'o'},
         };
-        
-        public static Game LoadFromFile(string filename)
+
+        public override string Part1()
         {
-            return new Game(IntcodeMachine.LoadFromFile(filename));
+            Reset();
+            return Execute().CountCharacters(2).ToString();
         }
 
-        private Game(IntcodeMachine game)
+        public override string Part2()
         {
-            _game = game;
-            _game.SetOutput(_gameOutput);
+            Reset();
+            return ExecuteWithInput().GetAwaiter().GetResult().GetScore().ToString();
         }
 
-        public Game Execute()
+        private Day13 Execute()
         {
             ExecuteAsync().Wait();
             return this;
@@ -43,8 +60,12 @@ namespace AdventOfCode2019.Day13
         private async Task ExecuteAsync()
         {
             await _game.Execute();
-            
-            Console.Clear();
+
+            if (_render)
+            {
+                Console.Clear();
+            }
+
             while (_gameOutput.HasInputToRead())
             {
                 var x = (int)await _gameOutput.ReadInput();
@@ -53,7 +74,11 @@ namespace AdventOfCode2019.Day13
 
                 Render(x, y, _characters[character]);
             }
-            Console.WriteLine();
+
+            if (_render)
+            {
+                Console.WriteLine();
+            }
         }
 
         private int _score = 0;
@@ -76,15 +101,18 @@ namespace AdventOfCode2019.Day13
         private int _paddleX;
         private int _ballX;
         private Task _gameTask;
-        public async Task<Game> ExecuteWithInput()
+        public async Task<Day13> ExecuteWithInput()
         {
             _game.Repair(0, 2);
             _game.SetInput(_gameInput);
             _gameTask = _game.Execute();
 
             var inputTask = HandleInput();
-            
-            Console.Clear();
+
+            if (_render)
+            {
+                Console.Clear();
+            }
             SetScore(0);
             while (!_gameTask.IsCompleted || _gameOutput.HasInputToRead())
             {
@@ -111,7 +139,11 @@ namespace AdventOfCode2019.Day13
                     Render(x, y + 2, _characters[character]);
                 }
             }
-            Console.WriteLine();
+
+            if (_render)
+            {
+                Console.WriteLine();
+            }
 
             return this;
         }
@@ -207,8 +239,10 @@ namespace AdventOfCode2019.Day13
             });
         }
 
-        public int CountCharacters(int character)
+        public int CountCharacters(int characterCode)
         {
+            var character = _characters[characterCode];
+
             var result = _canvas.SelectMany(x => x.Value.Values)
                 .Count(c => c == character);
 
@@ -230,10 +264,13 @@ namespace AdventOfCode2019.Day13
             {
                 _canvas[x][y] = character;
             }
-            
-            Console.SetCursorPosition(x, y + 1);
-            Console.Write(character);
-            Console.SetCursorPosition(0, 0);
+
+            if (_render)
+            {
+                Console.SetCursorPosition(x, y + 1);
+                Console.Write(character);
+                Console.SetCursorPosition(0, 0);
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using AdventOfCode2019.Day13;
 using AdventOfCode2019.Day14;
 using AdventOfCode2019.Day15;
 using AdventOfCode2019.Day16;
@@ -12,12 +11,6 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            var day13Part1Result = Game.LoadFromFile("Day13/Game.txt").Execute().CountCharacters(2);
-            Console.WriteLine($"Day 13 Part 1: {day13Part1Result}");
-            
-            var day13Part2Result = Game.LoadFromFile("Day13/Game.txt").ExecuteWithInput().GetAwaiter().GetResult().GetScore();
-            Console.WriteLine($"Day 13 Part 2: {day13Part2Result}");
-            
             var day14Part1Result = OreForFuelCalculator.LoadFromFile("Day14/Reactions.txt").OreRequiredForChemical("FUEL", 1);
             Console.WriteLine($"Day 14 Part 1: {day14Part1Result}");
 
