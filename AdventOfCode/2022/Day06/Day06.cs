@@ -23,46 +23,83 @@ namespace AdventOfCode._2022.Day02
 
         public override string Part1()
         {
-            for (var index = 4; index <= _signal.Length; index++)
-            {
-                var lastFour = _signal.Substring(index - 4, 4);
-
-                if (lastFour.ToCharArray().Distinct().Count() == 4)
-                {
-                    return index.ToString();
-                }
-            }
-
-            return "";
+            return FindIndexOfDistinctCharacters(4).ToString();
         }
 
         public override string Part2()
         {
-            for (var index = 14; index <= _signal.Length; index++)
-            {
-                var lastFour = _signal.Substring(index - 14, 14);
+            return FindIndexOfDistinctCharacters(14).ToString();
+        }
 
-                if (lastFour.ToCharArray().Distinct().Count() == 14)
+        private int FindIndexOfDistinctCharacters(int distinctCount)
+        {
+            return new DistinctCheck(distinctCount).FindFirstDistinctIndex(_signal);
+        }
+
+        private int FindIndexOfDistinctCharactersNaive(int distinctCount)
+        {
+            for (var index = distinctCount; index <= _signal.Length; index++)
+            {
+                var lastCharacters = _signal.Substring(index - distinctCount, distinctCount);
+
+                if (lastCharacters.ToArray().Distinct().Count() == distinctCount)
                 {
-                    return index.ToString();
+                    return index;
                 }
             }
 
-            return "";
+            return -1;
         }
 
-        private class Move
+        private class DistinctCheck
         {
-            public int Count { get; set; }
-            public int Source { get; set; }
-            public int Destination { get; set; }
+            private int _index;
+            private readonly int _length;
+            private readonly Dictionary<char, int> _mostRecentlySeen;
+            private int _mostRecentDuplicate;
 
-            public Move(string move)
+            public DistinctCheck(int length)
             {
-                var split = move.Split(" ");
-                Count = int.Parse(split[1]);
-                Source = int.Parse(split[3]);
-                Destination = int.Parse(split[5]);
+                _index = 0;
+                _length = length;
+                _mostRecentlySeen = new Dictionary<char, int>();
+            }
+
+            public void Push(char c)
+            {
+                _index += 1;
+
+                if (_mostRecentlySeen.TryGetValue(c, out var mostRecentIndex))
+                {
+                    if (_index - mostRecentIndex < _length)
+                    {
+                        if (mostRecentIndex > _mostRecentDuplicate)
+                        {
+                            _mostRecentDuplicate = mostRecentIndex;
+                        }
+                    }
+                }
+
+                _mostRecentlySeen[c] = _index;
+            }
+
+            public bool IsDistinct()
+            {
+                return _index - _mostRecentDuplicate >= _length;
+            }
+
+            public int FindFirstDistinctIndex(string input)
+            {
+                foreach (var c in input)
+                {
+                    Push(c);
+                    if (IsDistinct())
+                    {
+                        return _index;
+                    }
+                }
+
+                return -1;
             }
         }
     }
