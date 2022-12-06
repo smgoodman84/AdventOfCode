@@ -2,29 +2,41 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day16
+namespace AdventOfCode._2019.Day16
 {
-    class FlawedFrequencyTransmission
+    class Day16 : Day
     {
-        public static FlawedFrequencyTransmission LoadFromFile(string filename)
+        public Day16() : base(2019, 16, "Day16/input_2019_16.txt", "52611030", "")
         {
-            var signal = File.ReadAllText(filename)
-                .ToCharArray()
-                .Select(c => int.Parse(c.ToString()));
 
-            return new FlawedFrequencyTransmission(signal);
         }
 
-        private readonly List<int[]> _signal = new List<int[]>();
+        private List<int[]> _signal = new List<int[]>();
         private int _signalLength;
         private int[] _originalSignal;
 
-        public FlawedFrequencyTransmission(IEnumerable<int> signal)
+        public override void Initialise()
         {
-            _originalSignal = signal.ToArray();
+            _originalSignal = InputLines
+                .Single()
+                .ToCharArray()
+                .Select(c => int.Parse(c.ToString()))
+                .ToArray();
+
             _signalLength = _originalSignal.Length;
             _signal.Add(_originalSignal);
+        }
+
+        public override string Part1()
+        {
+            return ProcessSignal(100).ToString();
+        }
+
+        public override string Part2()
+        {
+            return ProcessRepeatedSignal(100, 10000).ToString();
         }
 
         public string ProcessSignal(int phases)
@@ -41,7 +53,7 @@ namespace AdventOfCode2019.Day16
                     var total = 0;
                     foreach(var patternElement in pattern)
                     {
-                        //Console.Write($"{input[index]}*{patternElement} + ");
+                        //TraceLine($"{input[index]}*{patternElement} + ");
                         total += input[index] * patternElement;
                         index += 1;
 
@@ -51,8 +63,8 @@ namespace AdventOfCode2019.Day16
                         }
                     }
                     phaseOutput[row] = Math.Abs(total) % 10;
-                    //Console.WriteLine($" = {total} = {phaseOutput[row]}");
-                    //Console.WriteLine(string.Join(",", pattern));
+                    //TraceLine($" = {total} = {phaseOutput[row]}");
+                    //TraceLine(string.Join(",", pattern));
                 }
                 _signal.Add(phaseOutput);
             }
@@ -71,7 +83,7 @@ namespace AdventOfCode2019.Day16
 
         public IEnumerable<int> GetInputForPhase(int phase, int repetition)
         {
-            Console.WriteLine($"Starting input for Phase {phase}");
+            TraceLine($"Starting input for Phase {phase}");
             if (phase == 0)
             {
                 for (var i = 0; i < _originalSignal.Length * repetition; i++)
@@ -102,7 +114,7 @@ namespace AdventOfCode2019.Day16
                     yield return Math.Abs(total) % 10;
                 }
             }
-            Console.WriteLine($"Completed input for Phase {phase}");
+            TraceLine($"Completed input for Phase {phase}");
         }
 
         private IEnumerable<int> PatternForOutputElement(int elementNumber)
