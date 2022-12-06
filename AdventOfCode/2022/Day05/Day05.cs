@@ -10,7 +10,7 @@ namespace AdventOfCode._2022.Day02
 {
     public class Day05 : Day
     {
-        public Day05() : base(2022, 5, "Day05/input_2022_05.txt", "", "")
+        public Day05() : base(2022, 5, "Day05/input_2022_05.txt", "WCZTHTMPS", "BLSGJSDTS")
         {
 
         }
