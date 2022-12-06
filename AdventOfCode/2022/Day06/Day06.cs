@@ -55,21 +55,22 @@ namespace AdventOfCode._2022.Day02
         {
             private int _index;
             private readonly int _length;
-            private readonly Dictionary<char, int> _mostRecentlySeen;
+            private readonly int[] _mostRecentlySeen;
             private int _mostRecentDuplicate;
 
             public DistinctCheck(int length)
             {
                 _index = 0;
                 _length = length;
-                _mostRecentlySeen = new Dictionary<char, int>();
+                _mostRecentlySeen = new int[256];
             }
 
             public void Push(char c)
             {
                 _index += 1;
 
-                if (_mostRecentlySeen.TryGetValue(c, out var mostRecentIndex))
+                var mostRecentIndex = _mostRecentlySeen[c];
+                if (mostRecentIndex != 0)
                 {
                     if (_index - mostRecentIndex < _length)
                     {
