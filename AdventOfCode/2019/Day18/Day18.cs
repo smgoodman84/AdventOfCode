@@ -3,25 +3,34 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Drawing;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day18
+namespace AdventOfCode._2019.Day18
 {
-    public class PathFinder
+    public class Day18 : Day
     {
-        public static PathFinder LoadFromFile(string filename)
+        public Day18() : base(2019, 18, "Day18/input_2019_18.txt", "", "")
         {
-            var vault = File.ReadAllLines(filename)
-                .Select(l => l.ToCharArray())
-                .ToArray();
 
-            return new PathFinder(vault);
         }
 
-        private readonly char[][] _vault;
+        private char[][] _vault;
 
-        public PathFinder(char[][] vault)
+        public override void Initialise()
         {
-            _vault = vault;
+            _vault = InputLines
+                .Select(l => l.ToCharArray())
+                .ToArray();
+        }
+
+        public override string Part1()
+        {
+            return "";
+        }
+
+        public override string Part2()
+        {
+            return "";
         }
 
         public int GetShortestPath()
