@@ -49,6 +49,8 @@ namespace AdventOfCode.Shared
         protected List<string> InputLines { get; private set; }
 
         private string TraceFilename => $"trace_{Year}_{DayNumber:00}.txt";
+
+        protected void Trace(char c) => Trace(c.ToString());
         protected void Trace(string message)
         {
             if (_outputTrace)
@@ -59,6 +61,8 @@ namespace AdventOfCode.Shared
             File.AppendAllText(TraceFilename, message);
         }
 
+
+        protected void TraceLine(char c) => Trace(c.ToString());
         protected void TraceLine(string message = "")
         {
             if (_outputTrace)

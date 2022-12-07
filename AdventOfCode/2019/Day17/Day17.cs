@@ -4,26 +4,39 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AdventOfCode._2019.Intcode;
+using AdventOfCode.Shared;
 
-namespace AdventOfCode2019.Day17
+namespace AdventOfCode._2019.Day17
 {
-    public class Scaffold
+    public class Day17 : Day
     {
+        public Day17() : base(2019, 17, "Day17/input_2019_17.txt", "6244", "1143523")
+        {
+
+        }
+
         private IntcodeMachine _ascii;
         private IOPipe _asciiOutput;
         private IOPipe _asciiInput;
-        public Scaffold()
-        {
-            Initialise();
-        }
 
-        private void Initialise()
+        public override void Initialise()
         {
-            _ascii = IntcodeMachine.LoadFromFile("Day17/ASCII.txt");
+            _ascii = IntcodeMachine.Load(InputLines);
             _asciiInput = new IOPipe();
             _asciiOutput = new IOPipe();
             _ascii.SetOutput(_asciiOutput);
             _ascii.SetInput(_asciiInput);
+        }
+
+        public override string Part1()
+        {
+            return GetSumOfAlignmentParameters().ToString();
+        }
+
+        public override string Part2()
+        {
+            Initialise();
+            return CollectSpaceDust().GetAwaiter().GetResult().ToString();
         }
 
         public int GetSumOfAlignmentParameters()
@@ -41,10 +54,10 @@ namespace AdventOfCode2019.Day17
             {
                 var character = (char)await _asciiOutput.ReadInput();
                 mapInput.Add(character);
-                Console.Write(character);
+                Trace(character);
             }
 
-            var map = new Map(mapInput);
+            var map = new Map(mapInput, TraceLine);
 
             var intersections = map.FindIntersections();
 
@@ -61,10 +74,10 @@ namespace AdventOfCode2019.Day17
             {
                 var character = (char)await _asciiOutput.ReadInput();
                 mapInput.Add(character);
-                Console.Write(character);
+                Trace(character);
             }
 
-            var map = new Map(mapInput);
+            var map = new Map(mapInput, TraceLine);
 
             var directions = map.GetPathManual();
 
@@ -103,9 +116,11 @@ namespace AdventOfCode2019.Day17
             private Point _robotPosition;
 
             private char[] _directions = new[] { '^', '<', 'v', '>' };
+            private readonly Action<string> _traceLine;
 
-            public Map(List<char> input)
+            public Map(List<char> input, Action<string> traceLine)
             {
+                _traceLine = traceLine;
                 _width = input.IndexOf('\n');
                 _height = input.Count / _width;
 
@@ -225,7 +240,7 @@ namespace AdventOfCode2019.Day17
                     }
                 }
 
-                Console.WriteLine(string.Join(",", directions));
+                _traceLine(string.Join(",", directions));
 
                 var newDirections = ConsolidateAdvancement(directions);
 
