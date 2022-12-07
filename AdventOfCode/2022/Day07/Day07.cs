@@ -11,21 +11,15 @@ namespace AdventOfCode._2022.Day07
 {
     public class Day07 : Day
     {
-        public Day07() : base(2022, 7, "Day07/input_2022_07.txt", "", "")
+        public Day07() : base(2022, 7, "Day07/input_2022_07.txt", "1743217", "8319096")
         {
 
         }
 
-        private string _signal;
+        private Directory _rootDirectory;
         public override void Initialise()
         {
-            _signal = InputLines.FirstOrDefault();
-        }
-
-        public override string Part1()
-        {
             var directories = new Dictionary<string, Directory>();
-            Directory rootDirectory = null;
             Directory currentDirectory = null;
             var listing = false;
 
@@ -43,7 +37,7 @@ namespace AdventOfCode._2022.Day07
 
                     if (newDirectory == "/")
                     {
-                        rootDirectory = currentDirectory;
+                        _rootDirectory = currentDirectory;
                     }
                 }
                 else if (line.StartsWith("$ cd .."))
@@ -92,8 +86,11 @@ namespace AdventOfCode._2022.Day07
                     currentDirectory.AddChild(file);
                 }
             }
+        }
 
-            return rootDirectory
+        public override string Part1()
+        {
+            return _rootDirectory
                 .GetDirectoriesAtMost(100000)
                 .Select(d => d.GetSize())
                 .Sum()
@@ -102,7 +99,22 @@ namespace AdventOfCode._2022.Day07
 
         public override string Part2()
         {
-            return "";
+            long requiredSpace = 30000000l;
+            long totalDiskSpace = 70000000l;
+
+            long currentUsedSpace = _rootDirectory.GetSize();
+            long currentFreeSpace = totalDiskSpace - currentUsedSpace;
+
+            long needToDeleteSpace = requiredSpace - currentFreeSpace;
+
+            var allDirectories = _rootDirectory.GetAllDirectories();
+
+            var allDirectoriesWithSize = allDirectories
+                .Select(d => (Directory: d, Size: d.GetSize()))
+                .OrderBy(di => di.Size)
+                .First(di => di.Size > needToDeleteSpace);
+
+            return allDirectoriesWithSize.Size.ToString();
         }
 
         private interface IFilesystemElement
@@ -151,6 +163,19 @@ namespace AdventOfCode._2022.Day07
                 var recurse = Children
                     .OfType<Directory>()
                     .SelectMany(sd => sd.GetDirectoriesAtMost(maxSize));
+
+                return subDirectories
+                    .Concat(recurse);
+            }
+
+            public IEnumerable<Directory> GetAllDirectories()
+            {
+                var subDirectories = Children
+                    .OfType<Directory>();
+
+                var recurse = Children
+                    .OfType<Directory>()
+                    .SelectMany(sd => sd.GetAllDirectories());
 
                 return subDirectories
                     .Concat(recurse);
