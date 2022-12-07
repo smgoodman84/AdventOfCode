@@ -21,7 +21,6 @@ namespace AdventOfCode._2022.Day07
         {
             var directories = new Dictionary<string, Directory>();
             Directory currentDirectory = null;
-            var listing = false;
 
             foreach (var line in InputLines)
             {
@@ -135,6 +134,7 @@ namespace AdventOfCode._2022.Day07
                 Parent = parent;
                 Name = name;
                 Children = new List<IFilesystemElement>();
+                _size = 0;
             }
 
             public string Name { get; set; }
@@ -146,7 +146,13 @@ namespace AdventOfCode._2022.Day07
                 Children.Add(child);
             }
 
-            public long GetSize() => Children.Sum(c => c.GetSize());
+            private long _size;
+            public void IncreaseSize(long size)
+            {
+                _size += size;
+                Parent?.IncreaseSize(size);
+            }
+            public long GetSize() => _size;
 
             public IFilesystemElement GetChild(string name)
                 => Children.FirstOrDefault(c => c.Name == name);
@@ -189,6 +195,7 @@ namespace AdventOfCode._2022.Day07
                 Parent = parent;
                 Name = name;
                 Size = size;
+                Parent.IncreaseSize(size);
             }
 
             public Directory Parent { get; set; }
