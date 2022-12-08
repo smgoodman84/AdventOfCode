@@ -44,7 +44,7 @@ namespace AdventOfCode._2022.Day08
                     var height = _treeHeights[y][x];
                     if (height > maxHeight)
                     {
-                        Console.WriteLine($"Left {x}{y}");
+                        //Console.WriteLine($"Left {x}{y}");
                         visibleCount += 1;
                         maxHeight = height;
                         _visible[y][x] = true;
@@ -64,7 +64,7 @@ namespace AdventOfCode._2022.Day08
                     var height = _treeHeights[y][x];
                     if (height > maxHeight)
                     {
-                        Console.WriteLine($"Right {x}{y}");
+                        //Console.WriteLine($"Right {x}{y}");
                         visibleCount += 1;
                         maxHeight = height;
                         _visible[y][x] = true;
@@ -84,7 +84,7 @@ namespace AdventOfCode._2022.Day08
                     var height = _treeHeights[y][x];
                     if (height > maxHeight)
                     {
-                        Console.WriteLine($"Top {x}{y}");
+                        //Console.WriteLine($"Top {x}{y}");
                         visibleCount += 1;
                         maxHeight = height;
                         _visible[y][x] = true;
@@ -104,7 +104,7 @@ namespace AdventOfCode._2022.Day08
                     var height = _treeHeights[y][x];
                     if (height > maxHeight)
                     {
-                        Console.WriteLine($"Bottom {x}{y}");
+                        //Console.WriteLine($"Bottom {x}{y}");
                         visibleCount += 1;
                         maxHeight = height;
                         _visible[y][x] = true;
@@ -122,7 +122,94 @@ namespace AdventOfCode._2022.Day08
 
         public override string Part2()
         {
-            return "";
+            // from left
+            var maxScore = 0;
+            foreach (var y in Enumerable.Range(0, _treeHeights.Length))
+            {
+                foreach (var x in Enumerable.Range(0, _treeHeights[0].Length))
+                {
+                    var score = CalculateScenicScore(x, y);
+                    if (score > maxScore)
+                    {
+                        maxScore = score;
+                    }
+                }
+            }
+
+            return maxScore.ToString();
+        }
+
+        private int CalculateScenicScore(int x, int y)
+        {
+            var thisTreeHeight = _treeHeights[y][x];
+
+            // out left
+            var totalLeft = 0;
+            for (var currentX = x-1; currentX >= 0; currentX -= 1)
+            {
+                var thatTreeHeight = _treeHeights[y][currentX];
+                if (thatTreeHeight < thisTreeHeight)
+                {
+                    totalLeft += 1;
+                }
+                if (thatTreeHeight >= thisTreeHeight)
+                {
+                    totalLeft += 1;
+                    break;
+                }
+            }
+
+            // out right
+            var totalRight = 0;
+            for (var currentX = x + 1; currentX < _treeHeights[0].Length; currentX += 1)
+            {
+                var thatTreeHeight = _treeHeights[y][currentX];
+                if (thatTreeHeight < thisTreeHeight)
+                {
+                    totalRight += 1;
+                }
+                if (thatTreeHeight >= thisTreeHeight)
+                {
+                    totalRight += 1;
+                    break;
+                }
+            }
+
+
+            // out up
+            var totalUp = 0;
+            for (var currentY = y - 1; currentY >= 0; currentY -= 1)
+            {
+                var thatTreeHeight = _treeHeights[currentY][x];
+                if (thatTreeHeight < thisTreeHeight)
+                {
+                    totalUp += 1;
+                }
+                if (thatTreeHeight >= thisTreeHeight)
+                {
+                    totalUp += 1;
+                    break;
+                }
+            }
+
+
+            // out down
+            var totalDown = 0;
+            for (var currentY = y + 1; currentY < _treeHeights.Length; currentY += 1)
+            {
+                var thatTreeHeight = _treeHeights[currentY][x];
+                if (thatTreeHeight < thisTreeHeight)
+                {
+                    totalDown += 1;
+                }
+                if (thatTreeHeight >= thisTreeHeight)
+                {
+                    totalDown += 1;
+                    break;
+                }
+            }
+
+            return totalLeft * totalRight * totalUp * totalDown;
         }
     }
 }
