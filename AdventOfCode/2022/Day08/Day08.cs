@@ -5,128 +5,129 @@ using System.Linq;
 using System.Text;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
+using AdventOfCode.Shared.Geometry;
 using AdventOfCode.Shared.PrimitiveExtensions;
 
 namespace AdventOfCode._2022.Day08
 {
     public class Day08 : Day
     {
-        public Day08() : base(2022, 8, "Day08/input_2022_08.txt", "", "")
+        public Day08() : base(2022, 8, "Day08/input_2022_08.txt", "1801", "209880")
         {
 
         }
 
-
-        private int[][] _treeHeights;
-        private bool[][] _visible;
-
+        private TreeGrid _treeGrid;
         public override void Initialise()
         {
-            _treeHeights = InputLines
+            var treeHeights = InputLines
                 .Select(r => r.ToCharArray().Select(c => int.Parse(c.ToString())).ToArray())
                 .ToArray();
 
-            _visible = InputLines
-                .Select(r => r.ToCharArray().Select(c => false).ToArray())
-                .ToArray();
+            _treeGrid = new TreeGrid(treeHeights);
+        }
+
+        private class TreeGrid
+        {
+            private int[][] _treeHeights;
+            public TreeGrid(int[][] treeHeights)
+            {
+                _treeHeights = treeHeights;
+            }
+
+            public int TreeHeight(Coordinate2D coordinate) => TreeHeight((int)coordinate.X, (int)coordinate.Y);
+            public int TreeHeight(int x, int y) => _treeHeights[y][x];
+            public int Width => _treeHeights[0].Length;
+            public int Height => _treeHeights.Length;
+        }
+
+        private class TreeVisibility
+        {
+            public int TotalVisible { get; }
+
+            private readonly TreeGrid _treeGrid;
+            private bool[][] _visible;
+
+            public TreeVisibility(TreeGrid treeGrid)
+            {
+                _treeGrid = treeGrid;
+
+                _visible = Enumerable.Range(0, _treeGrid.Height)
+                    .Select(r => Enumerable.Range(0, _treeGrid.Width).Select(c => false).ToArray())
+                    .ToArray();
+
+                var viewLines = GetViewLines();
+                foreach (var viewLine in viewLines)
+                {
+                    MarkVisible(viewLine);
+                }
+
+                TotalVisible = _visible
+                    .SelectMany(r => r)
+                    .Sum(visible => visible ? 1 : 0);
+            }
+
+            private void MarkVisible(Coordinate2D coordinate)
+            {
+                _visible[coordinate.Y][coordinate.X] = true;
+            }
+
+            private void MarkVisible(IEnumerable<Coordinate2D> viewLine)
+            {
+                var maxHeight = -1;
+                foreach (var coordinate in viewLine)
+                {
+                    var height = _treeGrid.TreeHeight(coordinate);
+                    if (height > maxHeight)
+                    {
+                        maxHeight = height;
+                        MarkVisible(coordinate);
+                    }
+                }
+            }
+
+            private IEnumerable<IEnumerable<Coordinate2D>> GetViewLines()
+            {
+                foreach (var y in Enumerable.Range(0, _treeGrid.Height))
+                {
+                    // From the left
+                    yield return Enumerable.Range(0, _treeGrid.Width)
+                        .Select(x => new Coordinate2D(x, y));
+
+                    // From the right
+                    yield return Enumerable.Range(0, _treeGrid.Width)
+                        .Reverse()
+                        .Select(x => new Coordinate2D(x, y));
+                }
+
+                foreach (var x in Enumerable.Range(0, _treeGrid.Width))
+                {
+                    // From the top
+                    yield return Enumerable.Range(0, _treeGrid.Width)
+                        .Select(y => new Coordinate2D(x, y));
+
+                    // From the bottom
+                    yield return Enumerable.Range(0, _treeGrid.Width)
+                        .Reverse()
+                        .Select(y => new Coordinate2D(x, y));
+                }
+            }
         }
 
         public override string Part1()
         {
-            // from left
-            var leftVisible = 0;
-            foreach (var y in Enumerable.Range(0, _treeHeights.Length))
-            {
-                var maxHeight = -1;
-                var visibleCount = 0;
-                foreach (var x in Enumerable.Range(0, _treeHeights[0].Length))
-                {
-                    var height = _treeHeights[y][x];
-                    if (height > maxHeight)
-                    {
-                        //Console.WriteLine($"Left {x}{y}");
-                        visibleCount += 1;
-                        maxHeight = height;
-                        _visible[y][x] = true;
-                    }
-                }
-                leftVisible += visibleCount;
-            }
+            var visibility = new TreeVisibility(_treeGrid);
 
-            // from right
-            var rightVisible = 0;
-            foreach (var y in Enumerable.Range(0, _treeHeights.Length))
-            {
-                var maxHeight = -1;
-                var visibleCount = 0;
-                foreach (var x in Enumerable.Range(0, _treeHeights[0].Length).Reverse())
-                {
-                    var height = _treeHeights[y][x];
-                    if (height > maxHeight)
-                    {
-                        //Console.WriteLine($"Right {x}{y}");
-                        visibleCount += 1;
-                        maxHeight = height;
-                        _visible[y][x] = true;
-                    }
-                }
-                rightVisible += visibleCount;
-            }
-
-            // from top
-            var topVisible = 0;
-            foreach (var x in Enumerable.Range(0, _treeHeights[0].Length))
-            {
-                var maxHeight = -1;
-                var visibleCount = 0;
-                foreach (var y in Enumerable.Range(0, _treeHeights.Length))
-                {
-                    var height = _treeHeights[y][x];
-                    if (height > maxHeight)
-                    {
-                        //Console.WriteLine($"Top {x}{y}");
-                        visibleCount += 1;
-                        maxHeight = height;
-                        _visible[y][x] = true;
-                    }
-                }
-                topVisible += visibleCount;
-            }
-
-            // from bottom
-            var bottomVisible = 0;
-            foreach (var x in Enumerable.Range(0, _treeHeights[0].Length))
-            {
-                var maxHeight = -1;
-                var visibleCount = 0;
-                foreach (var y in Enumerable.Range(0, _treeHeights.Length).Reverse())
-                {
-                    var height = _treeHeights[y][x];
-                    if (height > maxHeight)
-                    {
-                        //Console.WriteLine($"Bottom {x}{y}");
-                        visibleCount += 1;
-                        maxHeight = height;
-                        _visible[y][x] = true;
-                    }
-                }
-                bottomVisible += visibleCount;
-            }
-
-            var totalVisible = _visible
-                .SelectMany(r => r)
-                .Sum(visible => visible ? 1 : 0);
-
-            return totalVisible.ToString();
+            return visibility.TotalVisible.ToString();
         }
 
         public override string Part2()
         {
             // from left
             var maxScore = 0;
-            foreach (var y in Enumerable.Range(0, _treeHeights.Length))
+            foreach (var y in Enumerable.Range(0, _treeGrid.Height))
             {
-                foreach (var x in Enumerable.Range(0, _treeHeights[0].Length))
+                foreach (var x in Enumerable.Range(0, _treeGrid.Width))
                 {
                     var score = CalculateScenicScore(x, y);
                     if (score > maxScore)
@@ -141,13 +142,13 @@ namespace AdventOfCode._2022.Day08
 
         private int CalculateScenicScore(int x, int y)
         {
-            var thisTreeHeight = _treeHeights[y][x];
+            var thisTreeHeight = _treeGrid.TreeHeight(x, y);
 
             // out left
             var totalLeft = 0;
             for (var currentX = x-1; currentX >= 0; currentX -= 1)
             {
-                var thatTreeHeight = _treeHeights[y][currentX];
+                var thatTreeHeight = _treeGrid.TreeHeight(currentX, y);
                 if (thatTreeHeight < thisTreeHeight)
                 {
                     totalLeft += 1;
@@ -161,9 +162,9 @@ namespace AdventOfCode._2022.Day08
 
             // out right
             var totalRight = 0;
-            for (var currentX = x + 1; currentX < _treeHeights[0].Length; currentX += 1)
+            for (var currentX = x + 1; currentX < _treeGrid.Width; currentX += 1)
             {
-                var thatTreeHeight = _treeHeights[y][currentX];
+                var thatTreeHeight = _treeGrid.TreeHeight(currentX, y);
                 if (thatTreeHeight < thisTreeHeight)
                 {
                     totalRight += 1;
@@ -180,7 +181,7 @@ namespace AdventOfCode._2022.Day08
             var totalUp = 0;
             for (var currentY = y - 1; currentY >= 0; currentY -= 1)
             {
-                var thatTreeHeight = _treeHeights[currentY][x];
+                var thatTreeHeight = _treeGrid.TreeHeight(x, currentY);
                 if (thatTreeHeight < thisTreeHeight)
                 {
                     totalUp += 1;
@@ -195,9 +196,9 @@ namespace AdventOfCode._2022.Day08
 
             // out down
             var totalDown = 0;
-            for (var currentY = y + 1; currentY < _treeHeights.Length; currentY += 1)
+            for (var currentY = y + 1; currentY < _treeGrid.Height; currentY += 1)
             {
-                var thatTreeHeight = _treeHeights[currentY][x];
+                var thatTreeHeight = _treeGrid.TreeHeight(x, currentY);
                 if (thatTreeHeight < thisTreeHeight)
                 {
                     totalDown += 1;
