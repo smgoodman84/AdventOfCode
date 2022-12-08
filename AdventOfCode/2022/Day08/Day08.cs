@@ -129,7 +129,9 @@ namespace AdventOfCode._2022.Day08
             {
                 foreach (var x in Enumerable.Range(0, _treeGrid.Width))
                 {
-                    var score = CalculateScenicScore(x, y);
+                    var score = new ScenicScore(_treeGrid, new Coordinate2D(x, y))
+                        .CalculateScenicScore();
+
                     if (score > maxScore)
                     {
                         maxScore = score;
@@ -140,77 +142,62 @@ namespace AdventOfCode._2022.Day08
             return maxScore.ToString();
         }
 
-        private int CalculateScenicScore(int x, int y)
+        private class ScenicScore
         {
-            var thisTreeHeight = _treeGrid.TreeHeight(x, y);
+            private readonly TreeGrid _treeGrid;
+            private readonly Coordinate2D _coordinate;
+            private readonly int _thisTreeHeight;
 
-            // out left
-            var totalLeft = 0;
-            for (var currentX = x-1; currentX >= 0; currentX -= 1)
+            public ScenicScore(TreeGrid treeGrid, Coordinate2D coordinate)
             {
-                var thatTreeHeight = _treeGrid.TreeHeight(currentX, y);
-                if (thatTreeHeight < thisTreeHeight)
-                {
-                    totalLeft += 1;
-                }
-                if (thatTreeHeight >= thisTreeHeight)
-                {
-                    totalLeft += 1;
-                    break;
-                }
+                _treeGrid = treeGrid;
+                _coordinate = coordinate;
+                _thisTreeHeight = _treeGrid.TreeHeight(coordinate);
             }
 
-            // out right
-            var totalRight = 0;
-            for (var currentX = x + 1; currentX < _treeGrid.Width; currentX += 1)
+            private int GetScoreForViewLine(IEnumerable<Coordinate2D> viewLine)
             {
-                var thatTreeHeight = _treeGrid.TreeHeight(currentX, y);
-                if (thatTreeHeight < thisTreeHeight)
+                var totalVisible = 0;
+                foreach(var coordinate in viewLine)
                 {
-                    totalRight += 1;
+                    totalVisible += 1;
+
+                    if (_treeGrid.TreeHeight(coordinate) >= _thisTreeHeight)
+                    {
+                        return totalVisible;
+                    }
                 }
-                if (thatTreeHeight >= thisTreeHeight)
-                {
-                    totalRight += 1;
-                    break;
-                }
+                return totalVisible;
             }
 
-
-            // out up
-            var totalUp = 0;
-            for (var currentY = y - 1; currentY >= 0; currentY -= 1)
+            public int CalculateScenicScore()
             {
-                var thatTreeHeight = _treeGrid.TreeHeight(x, currentY);
-                if (thatTreeHeight < thisTreeHeight)
-                {
-                    totalUp += 1;
-                }
-                if (thatTreeHeight >= thisTreeHeight)
-                {
-                    totalUp += 1;
-                    break;
-                }
+                var treeX = (int)_coordinate.X;
+                var treeY = (int)_coordinate.Y;
+
+                var leftViewLine = treeX <= 0 ? Enumerable.Empty<Coordinate2D>() :
+                    Enumerable.Range(0, treeX)
+                    .Reverse()
+                    .Select(x => new Coordinate2D(x, treeY));
+
+                var rightViewLine = treeX >= _treeGrid.Width - 1 ? Enumerable.Empty<Coordinate2D>() :
+                    Enumerable.Range(treeX + 1, _treeGrid.Width - treeX - 1)
+                    .Select(x => new Coordinate2D(x, treeY));
+
+                var upViewLine = treeY <= 0 ? Enumerable.Empty<Coordinate2D>() :
+                    Enumerable.Range(0, treeY)
+                    .Reverse()
+                    .Select(y => new Coordinate2D(treeX, y));
+
+                var downViewLine = treeY >= _treeGrid.Height - 1 ? Enumerable.Empty<Coordinate2D>() :
+                    Enumerable.Range(treeY + 1, _treeGrid.Height - treeY - 1)
+                    .Select(y => new Coordinate2D(treeX, y));
+
+                return GetScoreForViewLine(leftViewLine)
+                    * GetScoreForViewLine(rightViewLine)
+                    * GetScoreForViewLine(upViewLine)
+                    * GetScoreForViewLine(downViewLine);
             }
-
-
-            // out down
-            var totalDown = 0;
-            for (var currentY = y + 1; currentY < _treeGrid.Height; currentY += 1)
-            {
-                var thatTreeHeight = _treeGrid.TreeHeight(x, currentY);
-                if (thatTreeHeight < thisTreeHeight)
-                {
-                    totalDown += 1;
-                }
-                if (thatTreeHeight >= thisTreeHeight)
-                {
-                    totalDown += 1;
-                    break;
-                }
-            }
-
-            return totalLeft * totalRight * totalUp * totalDown;
         }
     }
 }
