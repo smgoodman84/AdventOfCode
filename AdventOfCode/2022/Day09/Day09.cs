@@ -12,7 +12,7 @@ namespace AdventOfCode._2022.Day09
 {
     public class Day09 : Day
     {
-        public Day09() : base(2022, 9, "Day09/input_2022_09.txt", "5619", "")
+        public Day09() : base(2022, 9, "Day09/input_2022_09.txt", "5619", "2376")
         {
 
         }
@@ -27,22 +27,23 @@ namespace AdventOfCode._2022.Day09
 
         public override string Part1()
         {
-            var tailTracker = new TailTracker(_instructions);
+            var tailTracker = new TailTracker(_instructions, 2);
             var result = tailTracker.CountTailVisits();
             return result.ToString();
         }
 
         public override string Part2()
         {
-            return "";
+            var tailTracker = new TailTracker(_instructions, 10);
+            var result = tailTracker.CountTailVisits();
+            return result.ToString();
         }
 
         private class TailTracker
         {
             private readonly List<Instruction> _instructions;
 
-            private Coordinate2D _headPosition;
-            private Coordinate2D _tailPosition;
+            private Coordinate2D[] _rope;
             private List<Coordinate2D> _tailVisits;
 
             private Dictionary<Direction, Coordinate2D> _directionMoves
@@ -54,18 +55,21 @@ namespace AdventOfCode._2022.Day09
                     { Direction.Right, new Coordinate2D(1, 0) },
                 };
 
-            public TailTracker(IEnumerable<Instruction> instructions)
+            public TailTracker(IEnumerable<Instruction> instructions, int ropeLength)
             {
                 _instructions = instructions.ToList();
 
-                _headPosition = Coordinate2D.Origin;
-                _tailPosition = Coordinate2D.Origin;
+                _rope = Enumerable.Range(0, ropeLength)
+                    .Select(x => Coordinate2D.Origin)
+                    .ToArray();
 
                 _tailVisits = new List<Coordinate2D>()
                 {
-                    _tailPosition
+                    TailPosition
                 };
             }
+
+            private Coordinate2D TailPosition => _rope.Last();
 
             public int CountTailVisits()
             {
@@ -74,11 +78,14 @@ namespace AdventOfCode._2022.Day09
                     var count = instruction.Distance;
                     while (count > 0)
                     {
-                        _headPosition = _headPosition.Add(_directionMoves[instruction.Direction]);
+                        _rope[0] = _rope[0].Add(_directionMoves[instruction.Direction]);
 
-                        UpdateTailPosition();
+                        for (var tailIndex = 1; tailIndex < _rope.Length; tailIndex += 1)
+                        {
+                            UpdateTailPosition(tailIndex);
+                        }
 
-                        _tailVisits.Add(_tailPosition);
+                        _tailVisits.Add(TailPosition);
                         count -= 1;
                     }
                 }
@@ -89,91 +96,95 @@ namespace AdventOfCode._2022.Day09
                     .Count();
             }
 
-            private void UpdateTailPosition()
+            private void UpdateTailPosition(int tailIndex)
             {
-                if (_headPosition.X > _tailPosition.X + 1)
+                var headIndex = tailIndex - 1;
+                
+
+
+                if (_rope[headIndex].X > _rope[tailIndex].X + 1)
                 {
-                    if (_headPosition.Y == _tailPosition.Y)
+                    if (_rope[headIndex].Y == _rope[tailIndex].Y)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(1, 0));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, 0));
                         return;
                     }
 
-                    if (_headPosition.Y > _tailPosition.Y)
+                    if (_rope[headIndex].Y > _rope[tailIndex].Y)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(1, 1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, 1));
                         return;
                     }
 
-                    if (_headPosition.Y < _tailPosition.Y)
+                    if (_rope[headIndex].Y < _rope[tailIndex].Y)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(1, -1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, -1));
                         return;
                     }
                 }
 
 
-                if (_headPosition.X < _tailPosition.X - 1)
+                if (_rope[headIndex].X < _rope[tailIndex].X - 1)
                 {
-                    if (_headPosition.Y == _tailPosition.Y)
+                    if (_rope[headIndex].Y == _rope[tailIndex].Y)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(-1, 0));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, 0));
                         return;
                     }
 
-                    if (_headPosition.Y > _tailPosition.Y)
+                    if (_rope[headIndex].Y > _rope[tailIndex].Y)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(-1, 1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, 1));
                         return;
                     }
 
-                    if (_headPosition.Y < _tailPosition.Y)
+                    if (_rope[headIndex].Y < _rope[tailIndex].Y)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(-1, -1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, -1));
                         return;
                     }
                 }
 
 
-                if (_headPosition.Y > _tailPosition.Y + 1)
+                if (_rope[headIndex].Y > _rope[tailIndex].Y + 1)
                 {
-                    if (_headPosition.X == _tailPosition.X)
+                    if (_rope[headIndex].X == _rope[tailIndex].X)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(0, 1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(0, 1));
                         return;
                     }
 
-                    if (_headPosition.X > _tailPosition.X)
+                    if (_rope[headIndex].X > _rope[tailIndex].X)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(1, 1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, 1));
                         return;
                     }
 
-                    if (_headPosition.X < _tailPosition.X)
+                    if (_rope[headIndex].X < _rope[tailIndex].X)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(-1, 1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, 1));
                         return;
                     }
                 }
 
 
-                if (_headPosition.Y < _tailPosition.Y - 1)
+                if (_rope[headIndex].Y < _rope[tailIndex].Y - 1)
                 {
-                    if (_headPosition.X == _tailPosition.X)
+                    if (_rope[headIndex].X == _rope[tailIndex].X)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(0, -1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(0, -1));
                         return;
                     }
 
-                    if (_headPosition.X > _tailPosition.X)
+                    if (_rope[headIndex].X > _rope[tailIndex].X)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(1, -1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, -1));
                         return;
                     }
 
-                    if (_headPosition.X < _tailPosition.X)
+                    if (_rope[headIndex].X < _rope[tailIndex].X)
                     {
-                        _tailPosition = _tailPosition.Add(new Coordinate2D(-1, -1));
+                        _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, -1));
                         return;
                     }
                 }
