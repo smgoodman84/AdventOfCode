@@ -10,7 +10,7 @@ namespace AdventOfCode._2015.Day07
 {
     public class Day07 : Day
     {
-        public Day07() : base(2015, 7, "Day07/input_2015_07.txt", "16076", "")
+        public Day07() : base(2015, 7, "Day07/input_2015_07.txt", "16076", "2797")
         {
         }
 
@@ -34,7 +34,21 @@ namespace AdventOfCode._2015.Day07
 
         public override string Part2()
         {
-            return "";
+            var inputB = new Constant(_signals["a"].Output());
+
+            _signals.Clear();
+            foreach (var inputLine in InputLines)
+            {
+                var split = inputLine.Split(" -> ");
+                var output = split[1];
+                var input = CreateGate(split[0], output);
+                _signals[output] = new SignalCache(input);
+            }
+
+            _signals["b"] = inputB;
+
+            var result = _signals["a"].Output().ToString();
+            return result;
         }
 
         private ISignal CreateGate(string gate, string output)
@@ -95,11 +109,6 @@ namespace AdventOfCode._2015.Day07
             if (ushort.TryParse(input, out var constant))
             {
                 return new Constant(constant);
-            }
-
-            if (_signals.TryGetValue(input, out var signal))
-            {
-                return signal;
             }
 
             return new DeferredSignal(_signals, input);
@@ -179,10 +188,10 @@ namespace AdventOfCode._2015.Day07
 
         private class Constant : ISignal
         {
-            private readonly UInt16 _value;
+            private readonly ushort _value;
             public string OutputName => _value.ToString();
 
-            public Constant(UInt16 value)
+            public Constant(ushort value)
             {
                 _value = value;
             }
@@ -235,7 +244,7 @@ namespace AdventOfCode._2015.Day07
                 Input2 = input2;
             }
 
-            public UInt16 Output()
+            public ushort Output()
             {
                 // Console.WriteLine($"{OutputName} = {ToString()}");
                 var result = (ushort)(Input1.Output() | Input2.Output());
@@ -262,7 +271,7 @@ namespace AdventOfCode._2015.Day07
                 Input2 = input2;
             }
 
-            public UInt16 Output()
+            public ushort Output()
             {
                 // Console.WriteLine($"{OutputName} = {ToString()}");
                 var result = (ushort)(Input1.Output() << Input2.Output());
@@ -289,7 +298,7 @@ namespace AdventOfCode._2015.Day07
                 Input2 = input2;
             }
 
-            public UInt16 Output()
+            public ushort Output()
             {
                 // Console.WriteLine($"{OutputName} = {ToString()}");
                 var result = (ushort)(Input1.Output() >> Input2.Output());
@@ -314,7 +323,7 @@ namespace AdventOfCode._2015.Day07
                 Input = input;
             }
 
-            public UInt16 Output()
+            public ushort Output()
             {
                 // Console.WriteLine($"{OutputName} = {ToString()}");
                 var result = (ushort)(~Input.Output());
@@ -339,7 +348,7 @@ namespace AdventOfCode._2015.Day07
                 Input = input;
             }
 
-            public UInt16 Output()
+            public ushort Output()
             {
                 // Console.WriteLine($"{OutputName} = {ToString()}");
                 var result = Input.Output();
@@ -362,7 +371,7 @@ namespace AdventOfCode._2015.Day07
                 OutputName = outputName;
             }
 
-            public UInt16 Output()
+            public ushort Output()
             {
                 // Console.WriteLine($"{OutputName} = {ToString()}");
                 throw new Exception($"No input for {OutputName}");
