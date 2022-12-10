@@ -12,7 +12,9 @@ namespace AdventOfCode._2022.Day09
 {
     public class Day10 : Day
     {
-        public Day10() : base(2022, 10, "Day10/input_2022_10.txt", "", "")
+        private const string Part2Result = "\n#### ###   ##  ###  #  # ####  ##  #  # \n#    #  # #  # #  # #  # #    #  # #  # \n###  #  # #    #  # #### ###  #    #### \n#    ###  # ## ###  #  # #    # ## #  # \n#    #    #  # #    #  # #    #  # #  # \n#    #     ### #    #  # #     ### #  # \n";
+
+        public Day10() : base(2022, 10, "Day10/input_2022_10.txt", "10760", Part2Result)
         {
 
         }
@@ -49,24 +51,17 @@ namespace AdventOfCode._2022.Day09
             };
 
             var result = 0;
-            var crt = new Crt();
-            var cycle = 1;
+            var cpu = new Cpu();
 
-            foreach (var instruction in _instructions)
-            {
-                while (!instruction.IsComplete())
+            cpu.Execute(
+                _instructions,
+                (cpu, cycle) =>
                 {
                     if (cyclesToCheck.Contains(cycle))
                     {
-                        Console.WriteLine($"Result += {cycle} * {crt.X} ({cycle * crt.X})");
-                        result += cycle * crt.X;
+                        result += cycle * cpu.X;
                     }
-
-                    instruction.Cycle(crt);
-                    cycle++;
-                    Console.WriteLine($"Cycle {cycle}");
-                }
-            }
+                });
 
             return result.ToString();
         }
@@ -76,106 +71,106 @@ namespace AdventOfCode._2022.Day09
             var output = new StringBuilder();
             output.Append('\n');
 
-            var crt = new Crt();
-            var cycle = 1;
 
-            _instructions = InputLines
-                .Select(Create)
-                .ToList();
+            var cpu = new Cpu();
+            var crt = new Crt(cpu);
 
-            foreach (var instruction in _instructions)
-            {
-                while (!instruction.IsComplete())
+            cpu.Execute(
+                _instructions,
+                (cpu, cycle) =>
                 {
-                    instruction.Cycle(crt);
-
-                    if (crt.Draw(cycle))
+                    if (crt.Draw(cycle - 1))
                     {
                         output.Append('#');
                     }
                     else
                     {
-                        output.Append('.');
+                        output.Append(' ');
                     }
-
 
                     if (cycle % 40 == 0)
                     {
                         output.Append('\n');
                     }
-                    cycle++;
-                    //Console.WriteLine($"Cycle {cycle}");
-                }
-            }
+                });
 
             return output.ToString();
         }
 
+        private class Crt
+        {
+            private readonly Cpu _cpu;
+
+            public Crt(Cpu cpu)
+            {
+                _cpu = cpu;
+            }
+
+            public bool Draw(int cycle)
+            {
+                var position = cycle % 40;
+
+                if (_cpu.X - 1 <= position && position <= _cpu.X + 1)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        private class Cpu
+        {
+            public int X { get; set; } = 1;
+
+            private int _clock = 0;
+
+            public void Execute(IEnumerable<IInstruction> instructions, Action<Cpu, int> tickAction)
+            {
+                foreach (var instruction in instructions)
+                {
+                    var tickCount = instruction.CyclesToExecute;
+                    while (tickCount > 0)
+                    {
+                        tickCount -= 1;
+                        _clock += 1;
+
+                        tickAction(this, _clock);
+                    }
+
+                    instruction.Execute(this);
+                }
+            }
+        }
+
         private interface IInstruction
         {
-            void Cycle(Crt crt);
-            bool IsComplete();
+            int CyclesToExecute { get; }
+            void Execute(Cpu cpu);
         }
 
         private class AddX : IInstruction
         {
+            public int CyclesToExecute => 2;
             private readonly int _operand;
-            private int cyclesRemaining = 2;
 
             public AddX(int operand)
             {
                 _operand = operand;
             }
 
-            public void Cycle(Crt crt)
+            public void Execute(Cpu cpu)
             {
-                cyclesRemaining -= 1;
-                if (cyclesRemaining == 0)
-                {
-                    crt.X += _operand;
-                    Console.WriteLine($"Add {_operand}");
-                }
-                // crt.Cycle += 1;
-            }
-
-            public bool IsComplete()
-            {
-                return cyclesRemaining <= 0;
+                cpu.X += _operand;
             }
         }
 
         private class Noop : IInstruction
         {
-            private int cyclesRemaining = 1;
+            public int CyclesToExecute => 1;
 
-            public void Cycle(Crt crt)
+            public void Execute(Cpu cpu)
             {
-                cyclesRemaining -= 1;
-
-                Console.WriteLine("Noop");
-                // crt.Cycle += 1;
-            }
-
-            public bool IsComplete()
-            {
-                return cyclesRemaining <= 0;
-            }
-        }
-
-        private class Crt
-        {
-            // public int Cycle { get; set; } = 1;
-            public int X { get; set; } = 1;
-            public bool Draw(int cycle)
-            {
-                var position = cycle % 40;
-
-                if (X - 1 <= position && position <= X + 1)
-                {
-                    return true;
-                }
-
-                return false;
             }
         }
     }
