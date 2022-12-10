@@ -36,7 +36,7 @@ namespace AdventOfCode.AdventOfCode
                 .ToList();
 
             // var runPredicate = RunDay(2021, 22);
-            var runPredicate = RunLatestDayInYear(2022, days);
+            var runPredicate = RunLatestDayInYear(2015, days);
             // var runPredicate = RunYear(2021);
             // var runPredicate = RunAll();
 
