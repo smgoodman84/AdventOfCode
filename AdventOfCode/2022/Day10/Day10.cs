@@ -73,7 +73,42 @@ namespace AdventOfCode._2022.Day09
 
         public override string Part2()
         {
-            return "";
+            var output = new StringBuilder();
+            output.Append('\n');
+
+            var crt = new Crt();
+            var cycle = 1;
+
+            _instructions = InputLines
+                .Select(Create)
+                .ToList();
+
+            foreach (var instruction in _instructions)
+            {
+                while (!instruction.IsComplete())
+                {
+                    instruction.Cycle(crt);
+
+                    if (crt.Draw(cycle))
+                    {
+                        output.Append('#');
+                    }
+                    else
+                    {
+                        output.Append('.');
+                    }
+
+
+                    if (cycle % 40 == 0)
+                    {
+                        output.Append('\n');
+                    }
+                    cycle++;
+                    //Console.WriteLine($"Cycle {cycle}");
+                }
+            }
+
+            return output.ToString();
         }
 
         private interface IInstruction
@@ -131,6 +166,17 @@ namespace AdventOfCode._2022.Day09
         {
             // public int Cycle { get; set; } = 1;
             public int X { get; set; } = 1;
+            public bool Draw(int cycle)
+            {
+                var position = cycle % 40;
+
+                if (X - 1 <= position && position <= X + 1)
+                {
+                    return true;
+                }
+
+                return false;
+            }
         }
     }
 }
