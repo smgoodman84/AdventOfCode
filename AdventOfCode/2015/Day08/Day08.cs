@@ -10,7 +10,7 @@ namespace AdventOfCode._2015.Day08
 {
     public class Day08 : Day
     {
-        public Day08() : base(2015, 8, "Day08/input_2015_08.txt", "1371", "")
+        public Day08() : base(2015, 8, "Day08/input_2015_08.txt", "1371", "2117")
         {
         }
 
@@ -33,7 +33,10 @@ namespace AdventOfCode._2015.Day08
 
         public override string Part2()
         {
-            return "";
+            var result = _strings
+                .Sum(s => s.EncodedDifference);
+
+            return result.ToString();
         }
 
         private class StringParser
@@ -42,14 +45,42 @@ namespace AdventOfCode._2015.Day08
 
             public int StringLength { get; }
             public int MemoryLength { get; }
+            public int EncodedLength { get; }
             public int LengthDifference => StringLength - MemoryLength;
+            public int EncodedDifference => EncodedLength - StringLength;
 
             public StringParser(string input)
             {
                 _input = input;
 
                 StringLength = input.Length;
+                MemoryLength = GetMemoryLength(input);
+                EncodedLength = GetEncodedLength(input);
+            }
 
+            private static int GetEncodedLength(string input)
+            {
+                var encodedLength = 2; // Surrounding quotes
+                foreach (var c in input)
+                {
+                    if (c == '\\')
+                    {
+                        encodedLength += 2;
+                    }
+                    else if (c == '"')
+                    {
+                        encodedLength += 2;
+                    }
+                    else
+                    {
+                        encodedLength += 1;
+                    }
+                }
+                return encodedLength;
+            }
+
+            private static int GetMemoryLength(string input)
+            {
                 var withoutQuotes = input.Substring(1, input.Length - 2);
                 var memoryLength = 0;
                 var inEscape = false;
@@ -82,7 +113,8 @@ namespace AdventOfCode._2015.Day08
                         }
                     }
                 }
-                MemoryLength = memoryLength;
+
+                return memoryLength;
             }
         }
     }
