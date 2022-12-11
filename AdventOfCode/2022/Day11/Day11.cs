@@ -18,10 +18,9 @@ namespace AdventOfCode._2022.Day11
 
         }
 
-        private Monkeys _monkeys;
-        public override void Initialise()
+        private Monkeys CreateMonkeys(Func<int, IEnumerable<int>, IItem> itemFactory)
         {
-            _monkeys = new Monkeys();
+            var result = new Monkeys();
 
             var monkeys = LineGrouper.GroupLinesBySeperator(InputLines)
                 .ToList();
@@ -47,7 +46,7 @@ namespace AdventOfCode._2022.Day11
                     .Trim()
                     .Replace("Starting items: ", "")
                     .Split(",")
-                    .Select(x => new Item(int.Parse(x.Trim()), divisors))
+                    .Select(x => itemFactory(int.Parse(x.Trim()), divisors))
                     .ToList();
 
                 var operation = new Operation(monkey[2]
@@ -67,7 +66,7 @@ namespace AdventOfCode._2022.Day11
                     .Trim()
                     .Replace("If false: throw to monkey ", ""));
 
-                _monkeys.AddMonkey(new Monkey(
+                result.AddMonkey(new Monkey(
                     id,
                     items,
                     operation,
@@ -76,13 +75,13 @@ namespace AdventOfCode._2022.Day11
                     falseDestination
                     ));
             }
+
+            return result;
         }
 
         public override string Part1()
         {
-            return "";
-
-            var topTwo = _monkeys
+            var topTwo = CreateMonkeys((x, divisors) => new LittleItem(x))
                 .RunRounds(20, true)
                 .GetTopTwoMonkeys()
                 .ToArray();
@@ -94,9 +93,7 @@ namespace AdventOfCode._2022.Day11
 
         public override string Part2()
         {
-            Initialise();
-
-            var topTwo = _monkeys
+            var topTwo = CreateMonkeys((x, divisors) => new BigItem(x, divisors))
                 .RunRounds(10000, false)
                 .GetTopTwoMonkeys()
                 .ToArray();
@@ -133,7 +130,7 @@ namespace AdventOfCode._2022.Day11
                     if (printAt.Contains(iteration))
                     {
                         var message = string.Join(", ", _monkeys.Select(m => m.MonkeyBusiness));
-                        Console.WriteLine($"{iteration}: {message}");
+                        // Console.WriteLine($"{iteration}: {message}");
                     }
                 }
 
@@ -149,31 +146,15 @@ namespace AdventOfCode._2022.Day11
                         monkey.Operation.ApplyOperation(item);
                         if (divideByThree)
                         {
-                            // item.WorryLevel /= 3L;
+                            item.Divide(3);
                         }
 
-                        //var longDivisibleTest = item.WorryLevel % monkey.DividibleTest == 0UL;
-                        //var bigDivisibleTest = new int(item.WorryLevel) % new int(monkey.DividibleTest) == new int(0);
-                        /*
-                        var bigDivisibleTest = item.WorryLevel % monkey.DividibleTest == 0UL;
-                        var longDivisibleTest = ((ulong)(item.WorryLevel & ulong.MaxValue)) % ((ulong)(monkey.DividibleTest & ulong.MaxValue)) == 0UL;
-
-                        if (longDivisibleTest != bigDivisibleTest)
-                        {
-                            Console.WriteLine("****** DISCREPANCY ******");
-                            Console.WriteLine($"longDivisibleTest {longDivisibleTest}");
-                            Console.WriteLine($"bigDivisibleTest {bigDivisibleTest}");
-                        }
-
-                        */
                         if (item.IsDivisbleBy(monkey.DividibleTest))
                         {
-                            //Console.WriteLine($"WorryLevel {item.WorryLevel} is divisible by {monkey.DividibleTest}");
                             _monkeyDictionary[monkey.TrueDestination].Items.Add(item);
                         }
                         else
                         {
-                            // Console.WriteLine($"WorryLevel {item.WorryLevel} is not divisible by {monkey.DividibleTest}");
                             _monkeyDictionary[monkey.FalseDestination].Items.Add(item);
                         }
 
@@ -188,7 +169,7 @@ namespace AdventOfCode._2022.Day11
         private class Monkey
         {
             public int Id { get; }
-            public List<Item> Items { get; }
+            public List<IItem> Items { get; }
             public Operation Operation { get; }
             public int DividibleTest { get; }
             public int TrueDestination { get; }
@@ -198,7 +179,7 @@ namespace AdventOfCode._2022.Day11
 
             public Monkey(
                 int id,
-                List<Item> items,
+                List<IItem> items,
                 Operation operation,
                 int dividibleTest,
                 int trueDestination,
@@ -227,7 +208,7 @@ namespace AdventOfCode._2022.Day11
                 _right = split[2].Trim();
             }
 
-            public void ApplyOperation(Item value)
+            public void ApplyOperation(IItem value)
             {
                 if (_operator == "+")
                 {
@@ -283,11 +264,61 @@ namespace AdventOfCode._2022.Day11
             }
         }
 
-        private class Item
+        private interface IItem
+        {
+            void Add(int value);
+            void Multiply(int value);
+            void Divide(int value);
+            void AddSelf();
+            void MultiplySelf();
+            bool IsDivisbleBy(int divisor);
+        }
+
+        private class LittleItem : IItem
+        {
+            private int _value;
+
+            public LittleItem(int value)
+            {
+                _value = value;
+            }
+
+            public void Add(int value)
+            {
+                _value += value;
+            }
+
+            public void AddSelf()
+            {
+                _value += _value;
+            }
+
+            public void Divide(int value)
+            {
+                _value /= value;
+            }
+
+            public bool IsDivisbleBy(int divisor)
+            {
+                return _value % divisor == 0;
+            }
+
+            public void Multiply(int value)
+            {
+                _value *= value;
+            }
+
+            public void MultiplySelf()
+            {
+                _value *= _value;
+            }
+        }
+
+        private class BigItem : IItem
         {
             private Dictionary<int, DivisibleBy> _divisibleBy = new Dictionary<int, DivisibleBy>();
 
-            public Item(int value, IEnumerable<int> divisors)
+            public BigItem(int value, IEnumerable<int> divisors)
             {
                 foreach(var divisor in divisors)
                 {
@@ -311,6 +342,14 @@ namespace AdventOfCode._2022.Day11
                 foreach (var divisibleBy in _divisibleBy.Values)
                 {
                     divisibleBy.Multiply(value);
+                }
+            }
+
+            public void Divide(int value)
+            {
+                foreach (var divisibleBy in _divisibleBy.Values)
+                {
+                    divisibleBy.Divide(value);
                 }
             }
 
@@ -354,6 +393,12 @@ namespace AdventOfCode._2022.Day11
             public void Multiply(int value)
             {
                 _value = (_value * value) % _divisor;
+            }
+
+
+            public void Divide(int value)
+            {
+                _value = (_value / value) % _divisor;
             }
 
             public void AddSelf()
