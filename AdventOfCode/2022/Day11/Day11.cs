@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
@@ -12,16 +13,28 @@ namespace AdventOfCode._2022.Day11
 {
     public class Day11 : Day
     {
-        public Day11() : base(2022, 11, "Day11/input_2022_11.txt", "54054", "")
+        public Day11() : base(2022, 11, "Day11/input_2022_11.txt", "54054", "14314925001")
         {
 
         }
 
-        private Monkeys _monkeys = new Monkeys();
+        private Monkeys _monkeys;
         public override void Initialise()
         {
+            _monkeys = new Monkeys();
+
             var monkeys = LineGrouper.GroupLinesBySeperator(InputLines)
                 .ToList();
+
+            var divisors = new List<int>();
+            foreach (var monkey in monkeys)
+            {
+                var divisibleTest = int.Parse(monkey[3]
+                    .Trim()
+                    .Replace("Test: divisible by ", ""));
+
+                divisors.Add(divisibleTest);
+            }
 
             foreach (var monkey in monkeys)
             {
@@ -34,7 +47,7 @@ namespace AdventOfCode._2022.Day11
                     .Trim()
                     .Replace("Starting items: ", "")
                     .Split(",")
-                    .Select(x => new Item(int.Parse(x.Trim())))
+                    .Select(x => new Item(int.Parse(x.Trim()), divisors))
                     .ToList();
 
                 var operation = new Operation(monkey[2]
@@ -67,8 +80,10 @@ namespace AdventOfCode._2022.Day11
 
         public override string Part1()
         {
+            return "";
+
             var topTwo = _monkeys
-                .RunRounds(20)
+                .RunRounds(20, true)
                 .GetTopTwoMonkeys()
                 .ToArray();
 
@@ -79,7 +94,16 @@ namespace AdventOfCode._2022.Day11
 
         public override string Part2()
         {
-            return "";
+            Initialise();
+
+            var topTwo = _monkeys
+                .RunRounds(10000, false)
+                .GetTopTwoMonkeys()
+                .ToArray();
+
+            var result = topTwo[0].MonkeyBusiness * topTwo[1].MonkeyBusiness;
+
+            return result.ToString();
         }
 
         private class Monkeys
@@ -97,32 +121,59 @@ namespace AdventOfCode._2022.Day11
                 _monkeyDictionary.Add(monkey.Id, monkey);
             }
 
-            public Monkeys RunRounds(int count)
+            public Monkeys RunRounds(int count, bool divideByThree)
             {
-                while (count > 0)
+                var printAt = new int[] { 1, 20, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000 };
+                var iteration = 0;
+                while (iteration < count)
                 {
-                    RunRound();
-                    count -= 1;
+                    RunRound(divideByThree);
+                    iteration += 1;
+
+                    if (printAt.Contains(iteration))
+                    {
+                        var message = string.Join(", ", _monkeys.Select(m => m.MonkeyBusiness));
+                        Console.WriteLine($"{iteration}: {message}");
+                    }
                 }
 
                 return this;
             }
 
-            private void RunRound()
+            private void RunRound(bool divideByThree)
             {
                 foreach (var monkey in _monkeys)
                 {
                     foreach (var item in monkey.Items)
                     {
-                        item.WorryLevel = monkey.Operation.ApplyOperation(item.WorryLevel);
-                        item.WorryLevel /= 3;
-
-                        if (item.WorryLevel % monkey.DividibleTest == 0)
+                        monkey.Operation.ApplyOperation(item);
+                        if (divideByThree)
                         {
+                            // item.WorryLevel /= 3L;
+                        }
+
+                        //var longDivisibleTest = item.WorryLevel % monkey.DividibleTest == 0UL;
+                        //var bigDivisibleTest = new int(item.WorryLevel) % new int(monkey.DividibleTest) == new int(0);
+                        /*
+                        var bigDivisibleTest = item.WorryLevel % monkey.DividibleTest == 0UL;
+                        var longDivisibleTest = ((ulong)(item.WorryLevel & ulong.MaxValue)) % ((ulong)(monkey.DividibleTest & ulong.MaxValue)) == 0UL;
+
+                        if (longDivisibleTest != bigDivisibleTest)
+                        {
+                            Console.WriteLine("****** DISCREPANCY ******");
+                            Console.WriteLine($"longDivisibleTest {longDivisibleTest}");
+                            Console.WriteLine($"bigDivisibleTest {bigDivisibleTest}");
+                        }
+
+                        */
+                        if (item.IsDivisbleBy(monkey.DividibleTest))
+                        {
+                            //Console.WriteLine($"WorryLevel {item.WorryLevel} is divisible by {monkey.DividibleTest}");
                             _monkeyDictionary[monkey.TrueDestination].Items.Add(item);
                         }
                         else
                         {
+                            // Console.WriteLine($"WorryLevel {item.WorryLevel} is not divisible by {monkey.DividibleTest}");
                             _monkeyDictionary[monkey.FalseDestination].Items.Add(item);
                         }
 
@@ -143,7 +194,7 @@ namespace AdventOfCode._2022.Day11
             public int TrueDestination { get; }
             public int FalseDestination { get; }
 
-            public int MonkeyBusiness { get; set; } = 0;
+            public long MonkeyBusiness { get; set; } = 0;
 
             public Monkey(
                 int id,
@@ -176,39 +227,146 @@ namespace AdventOfCode._2022.Day11
                 _right = split[2].Trim();
             }
 
-            public int ApplyOperation(int oldValue)
+            public void ApplyOperation(Item value)
             {
-                var left = Read(_left, oldValue);
-                var right = Read(_right, oldValue);
-
-                switch (_operator)
+                if (_operator == "+")
                 {
-                    case "+": return left + right;
-                    case "*": return left * right;
+                    if (_left == "old")
+                    {
+                        if (_right == "old")
+                        {
+                            value.AddSelf();
+                        }
+                        else
+                        {
+                            value.Add(int.Parse(_right));
+                        }
+                    }
+                    else
+                    {
+                        if (_right == "old")
+                        {
+                            value.Add(int.Parse(_left));
+                        }
+                        else
+                        {
+                            // shouldn't happen
+                        }
+                    }
                 }
 
-                throw new Exception($"Unkown Operator {_operator}");
-            }
-
-            private int Read(string value, int oldValue)
-            {
-                if (value == "old")
+                if (_operator == "*")
                 {
-                    return oldValue;
+                    if (_left == "old")
+                    {
+                        if (_right == "old")
+                        {
+                            value.MultiplySelf();
+                        }
+                        else
+                        {
+                            value.Multiply(int.Parse(_right));
+                        }
+                    }
+                    else
+                    {
+                        if (_right == "old")
+                        {
+                            value.Multiply(int.Parse(_left));
+                        }
+                        else
+                        {
+                            // shouldn't happen
+                        }
+                    }
                 }
-
-                return int.Parse(value);
             }
         }
 
         private class Item
         {
-            public int WorryLevel { get; set; }
+            private Dictionary<int, DivisibleBy> _divisibleBy = new Dictionary<int, DivisibleBy>();
 
-            public Item(int worryLevel)
+            public Item(int value, IEnumerable<int> divisors)
             {
-                WorryLevel = worryLevel;
+                foreach(var divisor in divisors)
+                {
+                    var thisDivisibleBy = new DivisibleBy(divisor);
+                    thisDivisibleBy.Add(value);
+
+                    _divisibleBy.Add(divisor, thisDivisibleBy);
+                }
             }
+
+            public void Add(int value)
+            {
+                foreach(var divisibleBy in _divisibleBy.Values)
+                {
+                    divisibleBy.Add(value);
+                }
+            }
+
+            public void Multiply(int value)
+            {
+                foreach (var divisibleBy in _divisibleBy.Values)
+                {
+                    divisibleBy.Multiply(value);
+                }
+            }
+
+            public void AddSelf()
+            {
+                foreach (var divisibleBy in _divisibleBy.Values)
+                {
+                    divisibleBy.AddSelf();
+                }
+            }
+
+            public void MultiplySelf()
+            {
+                foreach (var divisibleBy in _divisibleBy.Values)
+                {
+                    divisibleBy.MultiplySelf();
+                }
+            }
+
+            public bool IsDivisbleBy(int divisor)
+            {
+                return _divisibleBy[divisor].IsDivisible();
+            }
+        }
+
+        private class DivisibleBy
+        {
+            private readonly int _divisor;
+            private int _value;
+
+            public DivisibleBy(int divisor)
+            {
+                _divisor = divisor;
+            }
+
+            public void Add(int value)
+            {
+                _value = (_value + value) % _divisor;
+            }
+
+            public void Multiply(int value)
+            {
+                _value = (_value * value) % _divisor;
+            }
+
+            public void AddSelf()
+            {
+                _value = (_value + _value) % _divisor;
+            }
+
+            public void MultiplySelf()
+            {
+                _value = (_value * _value) % _divisor;
+            }
+
+            public bool IsDivisible() => _value == 0;
         }
     }
 }
