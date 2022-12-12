@@ -13,7 +13,7 @@ namespace AdventOfCode._2022.Day12
 {
     public class Day12 : Day
     {
-        public Day12() : base(2022, 12, "Day12/input_2022_12.txt", "534", "")
+        public Day12() : base(2022, 12, "Day12/input_2022_12.txt", "534", "525")
         {
 
         }
@@ -96,7 +96,37 @@ namespace AdventOfCode._2022.Day12
 
         public override string Part2()
         {
-            return "";
+            Initialise();
+
+            Explore2(_endLocation, new Path2D(Enumerable.Empty<Coordinate2D>()));
+
+            var pathsToLowest = _locations
+                .ReadAll()
+                .Where(x => x.Height == 0)
+                .ToList();
+
+            var result = pathsToLowest
+                .OrderBy(x => x.Path == null ? int.MaxValue : x.Path.Length)
+                .First();
+
+            return result.Path.Length.ToString();
+        }
+
+        private void Explore2(Coordinate2D location, Path2D pathToLocation)
+        {
+            if (_locations.Read(location).SaveShortestPath(pathToLocation))
+            {
+                foreach (var neighbour in location.Neighbours())
+                {
+                    if (_locations.IsInGrid(neighbour))
+                    {
+                        if (_locations.Read(neighbour).Height >= _locations.Read(location).Height - 1)
+                        {
+                            Explore2(neighbour, pathToLocation.Append(neighbour));
+                        }
+                    }
+                }
+            }
         }
 
         private class Location

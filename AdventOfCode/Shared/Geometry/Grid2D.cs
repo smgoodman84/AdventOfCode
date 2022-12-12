@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode.Shared.Geometry
+﻿using System.Collections.Generic;
+
+namespace AdventOfCode.Shared.Geometry
 {
     public class Grid2D<T>
     {
@@ -43,6 +45,17 @@
         public void Write(Coordinate2D coordinate, T value)
         {
             Write((int)coordinate.X, (int)coordinate.Y, value);
+        }
+
+        public IEnumerable<T> ReadAll()
+        {
+            for(var y = 0; y < Height; y++)
+            {
+                for (var x = 0; x < Width; x++)
+                {
+                    yield return Read(x, y);
+                }
+            }
         }
     }
 }
