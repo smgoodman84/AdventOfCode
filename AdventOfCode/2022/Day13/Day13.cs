@@ -48,6 +48,65 @@ namespace AdventOfCode._2022.Day13
             return result.ToString();
         }
 
+        public override string Part2()
+        {
+            var unorderedList = new List<IntTree>();
+            unorderedList.AddRange(_pairs.Select(p => p.Left));
+            unorderedList.AddRange(_pairs.Select(p => p.Right));
+
+            var orderedList = new List<IntTree>()
+            {
+                new IntTree("[[2]]"),
+                new IntTree("[[6]]"),
+            };
+
+            foreach (var item in unorderedList)
+            {
+                var inserted = false;
+                var insertIndex = 0;
+                while (!inserted)
+                {
+                    if (insertIndex == 0)
+                    {
+                        if (IsInCorrectOrder(item, orderedList[0]))
+                        {
+                            orderedList.Insert(0, item);
+                            inserted = true;
+                        }
+                    }
+                    else if (insertIndex == orderedList.Count)
+                    {
+                        orderedList.Add(item);
+                        inserted = true;
+                    }
+                    else if (IsInCorrectOrder(orderedList[insertIndex - 1], item)
+                        && IsInCorrectOrder(item, orderedList[insertIndex]))
+                    {
+                        orderedList.Insert(insertIndex, item);
+                        inserted = true;
+                    }
+
+                    insertIndex += 1;
+                }
+            }
+
+            var firstDivider = orderedList
+                .Select((x, i) => (i + 1, x.RawInput == "[[2]]"))
+                .Where(x => x.Item2)
+                .Select(x => x.Item1)
+                .Single();
+
+            var secondDivider = orderedList
+                .Select((x, i) => (i + 1, x.RawInput == "[[6]]"))
+                .Where(x => x.Item2)
+                .Select(x => x.Item1)
+                .Single();
+
+            var result = firstDivider * secondDivider;
+
+            return result.ToString();
+        }
+
         private bool IsInCorrectOrder(IntTree left, IntTree right)
         {
             return Compare(left, right) == ComparisonResult.Correct;
@@ -123,11 +182,6 @@ namespace AdventOfCode._2022.Day13
             Correct,
             Incorrect,
             Unknown
-        }
-
-        public override string Part2()
-        {
-            return "";
         }
 
         private class IntTree
