@@ -9,8 +9,26 @@ namespace AdventOfCode.Shared.Geometry
         public int Width { get; }
         public int Height { get; }
 
+        private int _minX;
+        private int _maxX;
+        private int _minY;
+        private int _maxY;
+
         public Grid2D(int width, int height)
+            : this(0, 0, width - 1, height - 1)
         {
+        }
+
+        public Grid2D(int minX, int minY, int maxX, int maxY)
+        {
+            var height = maxY - minY + 1;
+            var width = maxX - minX + 1;
+
+            _minX = minX;
+            _minY = minY;
+            _maxX = maxX;
+            _maxY = maxY;
+
             _grid = new T[width, height];
             Width = width;
             Height = height;
@@ -18,8 +36,8 @@ namespace AdventOfCode.Shared.Geometry
 
         public bool IsInGrid(int x, int y)
         {
-            return 0 <= x && x < Width
-                && 0 <= y && y < Height;
+            return _minX <= x && x <= _maxX
+                && _minY <= y && y <= _maxY;
         }
 
         public bool IsInGrid(Coordinate2D coordinate)
@@ -29,7 +47,7 @@ namespace AdventOfCode.Shared.Geometry
 
         public T Read(int x, int y)
         {
-            return _grid[x, y];
+            return _grid[x - _minX, y - _minY];
         }
 
         public T Read(Coordinate2D coordinate)
@@ -39,7 +57,7 @@ namespace AdventOfCode.Shared.Geometry
 
         public void Write(int x, int y, T value)
         {
-            _grid[x, y] = value;
+            _grid[x - _minX, y - _minY] = value;
         }
 
         public void Write(Coordinate2D coordinate, T value)

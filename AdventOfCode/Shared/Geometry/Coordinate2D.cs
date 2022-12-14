@@ -13,6 +13,13 @@ namespace AdventOfCode.Shared.Geometry
             Y = y;
         }
 
+        public Coordinate2D(string coordinate)
+        {
+            var split = coordinate.Split(",");
+            X = long.Parse(split[0]);
+            Y = long.Parse(split[1]);
+        }
+
         public Coordinate2D Add(Coordinate2D coordinate)
         {
             return new Coordinate2D(X + coordinate.X, Y + coordinate.Y);
