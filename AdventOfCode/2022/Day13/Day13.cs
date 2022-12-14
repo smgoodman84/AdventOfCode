@@ -13,7 +13,7 @@ namespace AdventOfCode._2022.Day13
 {
     public class Day13 : Day
     {
-        public Day13() : base(2022, 13, "Day13/input_2022_13.txt", "5905", "")
+        public Day13() : base(2022, 13, "Day13/input_2022_13.txt", "5905", "21691")
         {
 
         }
