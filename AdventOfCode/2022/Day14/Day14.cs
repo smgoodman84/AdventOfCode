@@ -19,31 +19,16 @@ namespace AdventOfCode._2022.Day14
         }
 
         private static Coordinate2D SandOrigin = new Coordinate2D(500, 0);
-        private Grid2D<Item> _cave;
+        private List<Path> _rockPaths;
 
         public override void Initialise()
         {
-            var rockPaths = InputLines
+            _rockPaths = InputLines
                 .Select(x => new Path(x))
                 .ToList();
-
-            var minX = rockPaths.Select(p => p.MinX).Concat(new[] { SandOrigin.X }).Min();
-            var maxX = rockPaths.Select(p => p.MaxX).Concat(new[] { SandOrigin.X }).Max();
-            var minY = rockPaths.Select(p => p.MinY).Concat(new[] { SandOrigin.Y }).Min();
-            var maxY = rockPaths.Select(p => p.MaxY).Concat(new[] { SandOrigin.Y }).Max();
-
-            _cave = new Grid2D<Item>((int)minX, (int)minY, (int)maxX, (int)maxY);
-
-            foreach (var rockPath in rockPaths)
-            {
-                foreach (var coordinate in rockPath.WalkPath())
-                {
-                    _cave.Write(coordinate, Item.Rock);
-                }
-            }
         }
 
-        public bool DoesNextSandComesToRest()
+        private bool DoesNextSandComesToRest(Grid2D<Item> cave, Coordinate2D atPosition = null)
         {
             var sandPosition = SandOrigin;
 
@@ -51,50 +36,71 @@ namespace AdventOfCode._2022.Day14
             {
                 var down = sandPosition.Up(); // Inverted Coordinate System
 
-                if (!_cave.IsInGrid(down))
+                if (!cave.IsInGrid(down))
                 {
                     return false;
                 }
 
-                if (_cave.Read(down) == Item.Empty)
+                if (cave.Read(down) == Item.Empty)
                 {
                     sandPosition = down;
                     continue;
                 }
 
                 var downLeft = down.Left();
-                if (!_cave.IsInGrid(downLeft))
+                if (!cave.IsInGrid(downLeft))
                 {
                     return false;
                 }
 
-                if (_cave.Read(downLeft) == Item.Empty)
+                if (cave.Read(downLeft) == Item.Empty)
                 {
                     sandPosition = downLeft;
                     continue;
                 }
 
                 var downRight = down.Right();
-                if (!_cave.IsInGrid(downRight))
+                if (!cave.IsInGrid(downRight))
                 {
                     return false;
                 }
 
-                if (_cave.Read(downRight) == Item.Empty)
+                if (cave.Read(downRight) == Item.Empty)
                 {
                     sandPosition = downRight;
                     continue;
                 }
 
-                _cave.Write(sandPosition, Item.Sand);
+                cave.Write(sandPosition, Item.Sand);
+                if (atPosition != null)
+                {
+                    var result = sandPosition.X == atPosition.X
+                        && sandPosition.Y == atPosition.Y;
+                    return result;
+                }
                 return true;
             }
         }
 
         public override string Part1()
         {
+            var minX = _rockPaths.Select(p => p.MinX).Concat(new[] { SandOrigin.X }).Min();
+            var maxX = _rockPaths.Select(p => p.MaxX).Concat(new[] { SandOrigin.X }).Max();
+            var minY = _rockPaths.Select(p => p.MinY).Concat(new[] { SandOrigin.Y }).Min();
+            var maxY = _rockPaths.Select(p => p.MaxY).Concat(new[] { SandOrigin.Y }).Max();
+
+            var cave = new Grid2D<Item>((int)minX, (int)minY, (int)maxX, (int)maxY);
+
+            foreach (var rockPath in _rockPaths)
+            {
+                foreach (var coordinate in rockPath.WalkPath())
+                {
+                    cave.Write(coordinate, Item.Rock);
+                }
+            }
+
             var sandCount = 0;
-            while (DoesNextSandComesToRest())
+            while (DoesNextSandComesToRest(cave))
             {
                 sandCount += 1;
             }
@@ -104,7 +110,34 @@ namespace AdventOfCode._2022.Day14
 
         public override string Part2()
         {
-            return "";
+            var minX = _rockPaths.Select(p => p.MinX).Concat(new[] { SandOrigin.X }).Min() - 500;
+            var maxX = _rockPaths.Select(p => p.MaxX).Concat(new[] { SandOrigin.X }).Max() + 500;
+            var minY = _rockPaths.Select(p => p.MinY).Concat(new[] { SandOrigin.Y }).Min();
+            var maxY = _rockPaths.Select(p => p.MaxY).Concat(new[] { SandOrigin.Y }).Max() + 2;
+
+            var cave = new Grid2D<Item>((int)minX, (int)minY, (int)maxX, (int)maxY);
+
+            foreach (var rockPath in _rockPaths)
+            {
+                foreach (var coordinate in rockPath.WalkPath())
+                {
+                    cave.Write(coordinate, Item.Rock);
+                }
+            }
+
+            for (var x = minX; x <= maxX; x++)
+            {
+                cave.Write((int)x, (int)maxY, Item.Rock);
+            }
+
+            var sandCount = 0;
+            while (!DoesNextSandComesToRest(cave, SandOrigin))
+            {
+                sandCount += 1;
+            }
+            sandCount += 1;
+
+            return sandCount.ToString();
         }
 
         private enum Item
