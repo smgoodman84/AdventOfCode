@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AdventOfCode.Shared.Geometry
 {
@@ -23,6 +24,12 @@ namespace AdventOfCode.Shared.Geometry
         public Coordinate2D Add(Coordinate2D coordinate)
         {
             return new Coordinate2D(X + coordinate.X, Y + coordinate.Y);
+        }
+
+        public long ManhattanDistanceTo(Coordinate2D coordinate)
+        {
+            return Math.Abs(coordinate.X - X)
+                + Math.Abs(coordinate.Y - Y);
         }
 
         public IEnumerable<Coordinate2D> Neighbours()
