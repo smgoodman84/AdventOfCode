@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using AdventOfCode.Shared;
+using AdventOfCode.Shared.DataStructures;
 using AdventOfCode.Shared.FileProcessing;
 using AdventOfCode.Shared.Geometry;
 using AdventOfCode.Shared.Numbers;
@@ -15,7 +16,7 @@ namespace AdventOfCode._2022.Day17
 {
     public class Day17 : Day
     {
-        public Day17() : base(2022, 17, "Day17/input_2022_17.txt", "3071", "")
+        public Day17() : base(2022, 17, "Day17/input_2022_17.txt", "3071", "1523615160362")
         {
 
         }
@@ -41,17 +42,17 @@ namespace AdventOfCode._2022.Day17
 ##
 ";
 
-        private Queue<Grid2D<Space>> _rocks;
-        private Queue<Move> _moves;
+        private List<Grid2D<Space>> _rocks;
+        private List<Move> _moves;
         public override void Initialise()
         {
             _moves = Parse(InputLines.Single());
             _rocks = ParsePieces();
         }
 
-        private Queue<Grid2D<Space>> ParsePieces()
+        private List<Grid2D<Space>> ParsePieces()
         {
-            var result = new Queue<Grid2D<Space>>();
+            var results = new List<Grid2D<Space>>();
 
             var rocks = LineGrouper.GroupLinesBySeperator(Rocks.Split(Environment.NewLine));
 
@@ -86,10 +87,10 @@ namespace AdventOfCode._2022.Day17
                     y -= 1;
                 }
 
-                result.Enqueue(grid);
+                results.Add(grid);
             }
 
-            return result;
+            return results;
         }
 
         private enum Space
@@ -104,203 +105,246 @@ namespace AdventOfCode._2022.Day17
             Right
         }
 
-        private Queue<Move> Parse(string input)
+        private List<Move> Parse(string input)
         {
-            var queue = new Queue<Move>();
+            var list = new List<Move>();
             foreach (var c in input)
             {
                 if (c == '<')
                 {
-                    queue.Enqueue(Move.Left);
+                    list.Add(Move.Left);
                 }
                 else if (c == '>')
                 {
-                    queue.Enqueue(Move.Right);
+                    list.Add(Move.Right);
                 }
             }
-            return queue;
-        }
-
-        private Grid2D<Space> GetNextRock()
-        {
-            var rock = _rocks.Dequeue();
-            _rocks.Enqueue(rock);
-            return rock;
-        }
-
-        private Move GetNextMove()
-        {
-            var move = _moves.Dequeue();
-            _moves.Enqueue(move);
-            return move;
+            return list;
         }
 
         public override string Part1()
         {
-            return GetHeightAfterRocks(2022).ToString();
+            return new RockDrop(new Ring<Grid2D<Space>>(_rocks), new Ring<Move>(_moves), 2022)
+                .GetHeightAfterRocks()
+                .ToString();
         }
 
         public override string Part2()
         {
-            return "";
+            return new RockDrop(new Ring<Grid2D<Space>>(_rocks), new Ring<Move>(_moves), 1000000000000)
+                .GetHeightAfterRocks()
+                .ToString();
         }
 
-        private int GetHeightAfterRocks(int rockCount)
+
+        private class RockDrop
         {
-            var maxHeight = (_rocks.Max(p => p.Height) * (rockCount + 1)) + 3;
-            var chamber = new Grid2D<Space>(7, maxHeight);
-            var highestRock = 0;
+            private readonly Ring<Grid2D<Space>> _rocks;
+            private readonly Ring<Move> _moves;
+            private readonly long _rockCount;
+            private readonly Grid2D<Space> _chamber;
+            private long _highestRock;
+            private long _highestRockOffset = 0;
+            private long _rocksSkipped = 0;
 
-            var rockNumber = 1;
-            while (rockNumber <= rockCount)
+            public RockDrop(Ring<Grid2D<Space>> rocks, Ring<Move> moves, long rockCount)
             {
-                var rock = GetNextRock();
-                var rockLocation = new Coordinate2D(2, 3 + highestRock);
+                _rocks = rocks;
+                _moves = moves;
+                _rockCount = rockCount;
 
-                /*
-                Console.WriteLine($"Rock {rockNumber} Dropped:");
-                for (var y = highestRock + 3 + rock.Height; y >= 0; y--)
+                long loopSize = _rocks.Count * _moves.Count;
+                long maxRockHeight = _rocks.Max(p => p.Height);
+                long simpleMaxHeight = (int)(maxRockHeight * loopSize * 2) + 3;
+                long complexMaxHeight = (_rocks.Max(p => p.Height) * (rockCount + 1)) + 3;
+                var maxHeight = (int)long.Min(simpleMaxHeight, complexMaxHeight);
+                _chamber = new Grid2D<Space>(7, maxHeight);
+                _highestRock = 0;
+            }
+
+            private string GetCurrentContext()
+            {
+                var rockIndex = _rocks.Index;
+                var moveIndex = _moves.Index;
+                var top = DrawChamber(5).ReplaceLineEndings("_");
+                return $"{rockIndex}_{moveIndex}_{top}"; 
+            }
+
+            Dictionary<string, (long rockNumber, long highestRock)> _contextCache = new Dictionary<string, (long rockNumber, long highestRock)>();
+
+            public long GetHeightAfterRocks()
+            {
+                long rockNumber = 1;
+                while (rockNumber + _rocksSkipped <= _rockCount)
                 {
-                    Console.Write('|');
-                    for (var x = 0; x < chamber.Width; x++)
+                    if (_highestRockOffset == 0)
                     {
-                        var isChamberRock = chamber.Read(x, y) == Space.Rock;
-                        var fallingCoordinates = rockLocation.Add(new Coordinate2D(-x, -y));
-                        var isFallingRock = rock.IsInGrid(fallingCoordinates) && rock.Read(fallingCoordinates) == Space.Rock;
-                        if (isChamberRock)
+                        var context = GetCurrentContext();
+                        if (_contextCache.ContainsKey(context))
                         {
-                            Console.Write('#');
-                        }
-                        if (isFallingRock)
-                        {
-                            Console.Write('@');
+                            var happenedAt = _contextCache[context];
+                            var previousRockNumber = happenedAt.rockNumber;
+                            var previousHighestRock = happenedAt.highestRock;
+
+                            var rockLoopLength = rockNumber - previousRockNumber;
+                            var loopHeight = _highestRock - previousHighestRock;
+
+                            var rocksRemaining = _rockCount - rockNumber;
+                            var loopsToSkip = rocksRemaining / rockLoopLength;
+
+                            _highestRockOffset = loopsToSkip * loopHeight;
+                            _rocksSkipped = loopsToSkip * rockLoopLength;
                         }
                         else
                         {
-                            Console.Write('.');
-                        }
-                    }
-                    Console.WriteLine('|');
-                }
-                */
-                var rockLanded = false;
-                while (!rockLanded)
-                {
-                    var move = GetNextMove();
-                    if (move == Move.Left)
-                    {
-                        var left = rockLocation.Left();
-                        if (CanRockMoveTo(chamber, rock, left))
-                        {
-                            rockLocation = left;
-                        }
-                    }
-                    else if (move == Move.Right)
-                    {
-                        var right = rockLocation.Right();
-                        if (CanRockMoveTo(chamber, rock, right))
-                        {
-                            rockLocation = right;
+                            _contextCache.Add(context, (rockNumber, _highestRock));
                         }
                     }
 
-                    var down = rockLocation.Down();
-                    if (CanRockMoveTo(chamber, rock, down))
-                    {
-                        rockLocation = down;
-                    }
-                    else
-                    {
-                        var highestNewRock = SettleRock(chamber, rock, rockLocation) + 1;
-                        if (highestNewRock > highestRock)
-                        {
-                            highestRock = highestNewRock;
-                        }
 
-                        rockLanded = true;
-                    }
-                }
+                    var rock = _rocks.CurrentThenMoveNext();
+                    var rockLocation = new Coordinate2D(2, 3 + _highestRock);
 
-                if (rockNumber < 5)
-                {
-                    Console.WriteLine($"Rock {rockNumber} Landed:");
-                    for (var y = highestRock; y >= 0; y--)
+                    var rockLanded = false;
+                    while (!rockLanded)
                     {
-                        Console.Write('|');
-                        for (var x = 0; x < chamber.Width; x++)
+                        var move = _moves.CurrentThenMoveNext();
+                        if (move == Move.Left)
                         {
-                            var isRock = chamber.Read(x, y) == Space.Rock;
-                            if (isRock)
+                            var left = rockLocation.Left();
+                            if (CanRockMoveTo(rock, left))
                             {
-                                Console.Write('#');
-                            }
-                            else
-                            {
-                                Console.Write('.');
+                                rockLocation = left;
                             }
                         }
-                        Console.WriteLine('|');
+                        else if (move == Move.Right)
+                        {
+                            var right = rockLocation.Right();
+                            if (CanRockMoveTo(rock, right))
+                            {
+                                rockLocation = right;
+                            }
+                        }
+
+                        var down = rockLocation.Down();
+                        if (CanRockMoveTo(rock, down))
+                        {
+                            rockLocation = down;
+                        }
+                        else
+                        {
+                            var highestNewRock = SettleRock(rock, rockLocation) + 1;
+                            if (highestNewRock > _highestRock)
+                            {
+                                _highestRock = highestNewRock;
+                            }
+
+                            rockLanded = true;
+                        }
                     }
-                }
 
-                rockNumber += 1;
-            }
-
-            return highestRock;
-        }
-
-        private int SettleRock(
-            Grid2D<Space> chamber,
-            Grid2D<Space> rock,
-            Coordinate2D rockLocation)
-        {
-            var maxHeight = 0L;
-            for (var y = 0; y < rock.Height; y++)
-            {
-                for (var x = 0; x < rock.Width; x++)
-                {
-                    if (rock.Read(x, y) == Space.Rock)
+                    if (rockNumber < 0)
                     {
-                        var chamberLocation = rockLocation.Add(new Coordinate2D(x, y));
-                        chamber.Write(chamberLocation, Space.Rock);
-                        if (chamberLocation.Y > maxHeight)
-                        {
-                            maxHeight = chamberLocation.Y;
-                        }
+                        Console.WriteLine($"Rock {rockNumber} Landed:");
+                        Console.WriteLine(DrawChamber());
                     }
-                }
-            }
 
-            return (int)maxHeight;
-        }
-
-        private bool CanRockMoveTo(
-            Grid2D<Space> chamber,
-            Grid2D<Space> rock,
-            Coordinate2D rockLocation)
-        {
-            for(var y = 0; y < rock.Height; y++)
-            {
-                for (var x = 0; x < rock.Width; x++)
-                {
-                    if (rock.Read(x, y) == Space.Rock)
+                    if (rockNumber + _rocksSkipped == _rockCount)
                     {
-                        var chamberLocation = rockLocation.Add(new Coordinate2D(x, y));
-                        if (!chamber.IsInGrid(chamberLocation))
-                        {
-                            return false;
-                        }
+                        return _highestRock + _highestRockOffset;
+                    }
 
-                        var chamberIsRock = chamber.Read(chamberLocation) == Space.Rock;
-                        if (chamberIsRock)
+                    rockNumber += 1;
+                }
+
+                return -1;
+            }
+
+            private int SettleRock(
+                Grid2D<Space> rock,
+                Coordinate2D rockLocation)
+            {
+                var maxHeight = 0L;
+                for (var y = 0; y < rock.Height; y++)
+                {
+                    for (var x = 0; x < rock.Width; x++)
+                    {
+                        if (rock.Read(x, y) == Space.Rock)
                         {
-                            return false;
+                            var chamberLocation = rockLocation.Add(new Coordinate2D(x, y));
+                            _chamber.Write(chamberLocation, Space.Rock);
+                            if (chamberLocation.Y > maxHeight)
+                            {
+                                maxHeight = chamberLocation.Y;
+                            }
                         }
                     }
                 }
+
+                return (int)maxHeight;
             }
 
-            return true;
+            private bool CanRockMoveTo(
+                Grid2D<Space> rock,
+                Coordinate2D rockLocation)
+            {
+                for (var y = 0; y < rock.Height; y++)
+                {
+                    for (var x = 0; x < rock.Width; x++)
+                    {
+                        if (rock.Read(x, y) == Space.Rock)
+                        {
+                            var chamberLocation = rockLocation.Add(new Coordinate2D(x, y));
+                            if (!_chamber.IsInGrid(chamberLocation))
+                            {
+                                return false;
+                            }
+
+                            var chamberIsRock = _chamber.Read(chamberLocation) == Space.Rock;
+                            if (chamberIsRock)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            private string DrawChamber(int rows = -1)
+            {
+                if (rows == -1)
+                {
+                    rows = (int)_highestRock;
+                }
+
+                var drawUntil = _highestRock - rows;
+                if (drawUntil < 0)
+                {
+                    drawUntil = 0;
+                }
+
+                var chamber = new StringBuilder();
+                for (var y = (int)_highestRock; y >= drawUntil; y--)
+                {
+                    chamber.Append('|');
+                    for (var x = 0; x < _chamber.Width; x++)
+                    {
+                        var isRock = _chamber.Read(x, y) == Space.Rock;
+                        if (isRock)
+                        {
+                            chamber.Append('#');
+                        }
+                        else
+                        {
+                            chamber.Append('.');
+                        }
+                    }
+                    chamber.AppendLine("|");
+                }
+                return chamber.ToString();
+            }
         }
     }
 }
