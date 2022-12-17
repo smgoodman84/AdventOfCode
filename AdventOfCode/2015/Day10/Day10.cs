@@ -18,20 +18,29 @@ namespace AdventOfCode._2015.Day10
 
         public override string Part1()
         {
-            var value = InputLines.Single();
+            var input = InputLines.Single();
+            var output = Iterate(input, 40);
 
-            for(var i = 0; i < 40; i++)
+            return output.Length.ToString();
+        }
+
+        public override string Part2()
+        {
+            var input = InputLines.Single();
+            var output = Iterate(input, 50);
+
+            return output.Length.ToString();
+        }
+
+        private string Iterate(string value, int count)
+        {
+            for (var i = 0; i < count; i++)
             {
                 value = Iterate(value);
                 // Console.WriteLine(value);
             }
 
-            return value.Length.ToString();
-        }
-
-        public override string Part2()
-        {
-            return "";
+            return value;
         }
 
         private string Iterate(string value)
