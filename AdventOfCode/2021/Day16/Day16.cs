@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using AdventOfCode.Shared;
-
 
 namespace AdventOfCode._2021.Day16
 {

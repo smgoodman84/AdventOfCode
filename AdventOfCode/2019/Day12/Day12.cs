@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2019.Day12
 {
-    class Day12 : Day
+    public class Day12 : Day
     {
         public Day12() : base(2019, 12, "Day12/input_2019_12.txt", "7013", "324618307124784")
         {
@@ -203,7 +202,7 @@ namespace AdventOfCode._2019.Day12
 
         public Day12 Simulate(int iterations)
         {
-            foreach(var iteration in Enumerable.Range(1, iterations))
+            foreach (var iteration in Enumerable.Range(1, iterations))
             {
                 AdvanceSimulation();
             }
@@ -220,7 +219,7 @@ namespace AdventOfCode._2019.Day12
 
         private void ApplyVelocity()
         {
-            foreach(var moon in _moons)
+            foreach (var moon in _moons)
             {
                 moon.ApplyVelocity();
             }
@@ -228,9 +227,9 @@ namespace AdventOfCode._2019.Day12
 
         private void ApplyGravity()
         {
-            foreach(var moon1 in _moons)
+            foreach (var moon1 in _moons)
             {
-                foreach(var moon2 in _moons.Where(m => m.Id > moon1.Id))
+                foreach (var moon2 in _moons.Where(m => m.Id > moon1.Id))
                 {
                     if (moon1.Position.X > moon2.Position.X)
                     {

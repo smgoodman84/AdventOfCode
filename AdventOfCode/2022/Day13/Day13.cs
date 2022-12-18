@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
-using AdventOfCode.Shared.Geometry;
-using AdventOfCode.Shared.PrimitiveExtensions;
 
 namespace AdventOfCode._2022.Day13
 {

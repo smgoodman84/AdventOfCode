@@ -94,10 +94,12 @@ namespace AdventOfCode._2019.Day11
                 var directionToTurn = (int)await _controllerToRobotPipe.ReadInput();
                 switch (directionToTurn)
                 {
-                    case 0: _direction += 3;
+                    case 0:
+                        _direction += 3;
                         TraceLine($"Turning left");
                         break;
-                    case 1: _direction += 1;
+                    case 1:
+                        _direction += 1;
                         TraceLine($"Turning right");
                         break;
                 }

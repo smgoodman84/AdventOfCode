@@ -61,7 +61,7 @@ namespace AdventOfCode._2019.Day07
 
             IInput input = new PreparedInput(0);
             IOPipe pipe = null;
-            foreach(var amplifier in amplifiers)
+            foreach (var amplifier in amplifiers)
             {
                 var amplifierInputs = new CombinedInput(phaseSettings, input);
 

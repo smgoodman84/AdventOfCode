@@ -5,7 +5,7 @@ using AdventOfCode.Shared;
 
 namespace AdventOfCode._2019.Day04
 {
-    class Day04 : Day
+    public class Day04 : Day
     {
         public Day04() : base(2019, 4, "Day04/input_2019_04.txt", "1764", "1196")
         {
@@ -61,7 +61,7 @@ namespace AdventOfCode._2019.Day04
         private static bool AdjacentDigitsMatch(int[] input)
         {
             var lastC = -1;
-            foreach(var c in input)
+            foreach (var c in input)
             {
                 if (c == lastC)
                 {
@@ -78,7 +78,7 @@ namespace AdventOfCode._2019.Day04
         {
             var runs = new Dictionary<int, int>();
 
-            foreach(var c in input)
+            foreach (var c in input)
             {
                 if (!runs.ContainsKey(c))
                 {
@@ -86,7 +86,7 @@ namespace AdventOfCode._2019.Day04
                 }
                 else
                 {
-                    runs[c] +=  1;
+                    runs[c] += 1;
                 }
             }
 

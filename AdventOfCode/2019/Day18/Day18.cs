@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2019.Day18
@@ -40,9 +38,9 @@ namespace AdventOfCode._2019.Day18
 
         private class Context
         {
-            List<char> keys = new List<char>();
-            Point location;
-            Point previousLocation;
+            public List<char> keys = new List<char>();
+            public Point location;
+            public Point previousLocation;
         }
     }
 }

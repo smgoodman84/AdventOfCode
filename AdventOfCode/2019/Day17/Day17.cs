@@ -84,9 +84,9 @@ namespace AdventOfCode._2019.Day17
             Initialise();
             _ascii.Repair(0, 2);
 
-            foreach(var direction in directions)
+            foreach (var direction in directions)
             {
-                foreach(var c in direction)
+                foreach (var c in direction)
                 {
                     _asciiInput.Output(c);
                 }
@@ -331,7 +331,7 @@ namespace AdventOfCode._2019.Day17
                 var functionList = new List<int>();
                 for (var i = 0; i < directionsString.Length;)
                 {
-                    foreach(var function in functions)
+                    foreach (var function in functions)
                     {
                         if (directionsString.Substring(i, function.Item2.Length) == function.Item2)
                         {

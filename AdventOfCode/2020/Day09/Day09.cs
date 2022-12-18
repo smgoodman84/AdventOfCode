@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2020.Day09

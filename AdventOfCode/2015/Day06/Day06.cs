@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AdventOfCode.Shared;
@@ -8,7 +7,7 @@ using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2015.Day06
 {
-	public class Day06 : Day
+    public class Day06 : Day
 	{
 		public Day06() : base(2015, 6, "Day06/input_2015_06.txt", "543903", "14687245")
         {

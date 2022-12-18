@@ -5,7 +5,7 @@ namespace AdventOfCode._2019.Intcode
     public class CombinedInput : IInput
     {
         private IInput[] _inputs;
-        int index = 0;
+        private int index = 0;
 
         public CombinedInput(params IInput[] inputs)
         {

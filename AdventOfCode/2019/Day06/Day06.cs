@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2019.Day06
 {
-    class Day06 : Day
+    public class Day06 : Day
     {
         public Day06() : base(2019, 6, "Day06/input_2019_06.txt", "294191", "424")
         {
@@ -51,7 +50,7 @@ namespace AdventOfCode._2019.Day06
             return startPath.Length + endPath.Length - (commonPath.Count() * 2);
         }
 
-        private string[] GetPath(Dictionary<string,string> orbiterDictionary, string location)
+        private string[] GetPath(Dictionary<string, string> orbiterDictionary, string location)
         {
             var path = new List<string>();
             while (orbiterDictionary.ContainsKey(location))

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AdventOfCode.Shared;
@@ -9,7 +7,7 @@ namespace AdventOfCode._2019.Day08
 {
     public class Day08 : Day
     {
-        const string part2Result = "\n#  # ###  #  # #### ###  \n#  # #  # #  # #    #  # \n#  # ###  #  # ###  #  # \n#  # #  # #  # #    ###  \n#  # #  # #  # #    #    \n ##  ###   ##  #    #    \n";
+        private const string part2Result = "\n#  # ###  #  # #### ###  \n#  # #  # #  # #    #  # \n#  # ###  #  # ###  #  # \n#  # #  # #  # #    ###  \n#  # #  # #  # #    #    \n ##  ###   ##  #    #    \n";
 
         public Day08() : base(2019, 8, "Day08/input_2019_08.txt", "1677", part2Result)
         {
@@ -64,7 +62,7 @@ namespace AdventOfCode._2019.Day08
 
             result.Append('\n');
             var y = 0;
-            while(y < image.GetLength(1))
+            while (y < image.GetLength(1))
             {
                 var x = 0;
                 while (x < image.GetLength(0))
@@ -109,9 +107,9 @@ namespace AdventOfCode._2019.Day08
         public int FindLayerWithFewestZerosAndGetNumberOfOnesTimeNumberOfTwos()
         {
             var layer = _layers
-                .Select(l => (l, l.CountPixelsMatching(0)))
-                .OrderBy(x => x.Item2)
-                .Select(x => x.Item1)
+                .Select(l => (Layer: l, PixelsMatching: l.CountPixelsMatching(0)))
+                .OrderBy(x => x.PixelsMatching)
+                .Select(x => x.Layer)
                 .First();
 
             var ones = layer.CountPixelsMatching(1);

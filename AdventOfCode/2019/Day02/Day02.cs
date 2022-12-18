@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using AdventOfCode._2019.Intcode;
+﻿using AdventOfCode._2019.Intcode;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2019.Day02

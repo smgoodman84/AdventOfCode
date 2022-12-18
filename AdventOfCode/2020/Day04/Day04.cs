@@ -2,7 +2,6 @@
 using System.Linq;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
-using AdventOfCode2020;
 
 namespace AdventOfCode._2020.Day04
 {

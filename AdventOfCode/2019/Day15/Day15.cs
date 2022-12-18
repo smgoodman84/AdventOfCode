@@ -200,7 +200,7 @@ namespace AdventOfCode._2019.Day15
                 Oxygen
             }
 
-            private Dictionary<int,Dictionary<int,MapStatus>> _map = new Dictionary<int, Dictionary<int, MapStatus>>();
+            private Dictionary<int, Dictionary<int, MapStatus>> _map = new Dictionary<int, Dictionary<int, MapStatus>>();
             public void MapLocation(Point location, MapStatus status)
             {
                 if (!_map.ContainsKey(location.X))
@@ -232,7 +232,7 @@ namespace AdventOfCode._2019.Day15
                 var yMin = _map.SelectMany(x => x.Value.Keys).Min();
                 var yMax = _map.SelectMany(x => x.Value.Keys).Max();
 
-                for(var y = yMax; y >= yMin; y--)
+                for (var y = yMax; y >= yMin; y--)
                 {
                     for (var x = xMin; x <= xMax; x++)
                     {

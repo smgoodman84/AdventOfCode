@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using AdventOfCode.Shared;
 
@@ -57,9 +55,9 @@ namespace AdventOfCode._2019.Day10
         private Asteroid GetMaximumVisibilityAsteroid()
         {
             return _asteroids
-                .Select(a => (a, VisibleFrom(a).Count()))
-                .OrderByDescending(x => x.Item2)
-                .Select(x => x.Item1)
+                .Select(a => (Asteroid: a, VisibleFromCount: VisibleFrom(a).Count()))
+                .OrderByDescending(x => x.VisibleFromCount)
+                .Select(x => x.Asteroid)
                 .First();
         }
 
@@ -85,9 +83,9 @@ namespace AdventOfCode._2019.Day10
             if (render)
             {
                 var renderList = orderedAsteroids
-                    .Select((a, i) => (a, i + 1))
-                    .OrderBy(x => x.Item1.Y)
-                    .ThenBy(x => x.Item1.X)
+                    .Select((a, i) => (Asteroid: a, Index: i + 1))
+                    .OrderBy(x => x.Asteroid.Y)
+                    .ThenBy(x => x.Asteroid.X)
                     .ToArray();
 
                 var index = 0;
@@ -98,10 +96,10 @@ namespace AdventOfCode._2019.Day10
                     foreach (var x in Enumerable.Range(0, orderedAsteroids.Max(a => a.X) + 1))
                     {
                         if (index < renderList.Length
-                            && x == renderList[index].Item1.X
-                            && y == renderList[index].Item1.Y)
+                            && x == renderList[index].Asteroid.X
+                            && y == renderList[index].Asteroid.Y)
                         {
-                            Trace($"[{renderList[index].Item2.ToString().PadLeft(3, ' ')}]");
+                            Trace($"[{renderList[index].Index.ToString().PadLeft(3, ' ')}]");
                             index += 1;
                         }
                         else

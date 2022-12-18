@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode.Shared;
-using AdventOfCode.Shared.FileProcessing;
 
 namespace AdventOfCode._2022.Day02
 {

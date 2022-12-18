@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using AdventOfCode.Shared;
-using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2015.Day10
 {

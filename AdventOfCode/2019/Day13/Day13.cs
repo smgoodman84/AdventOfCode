@@ -166,7 +166,7 @@ namespace AdventOfCode._2019.Day13
         {
             var direction = line[0];
             var count = int.Parse(line.Substring(1));
-            switch(direction)
+            switch (direction)
             {
                 case 'L': return Left(count);
                 case 'R': return Right(count);

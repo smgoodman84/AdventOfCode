@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AdventOfCode._2019.Intcode
 {
-    class IntcodeMachine
+    internal class IntcodeMachine
     {
         public static IntcodeMachine LoadFromFile(string filename)
         {
@@ -33,9 +33,9 @@ namespace AdventOfCode._2019.Intcode
                 .ToArray();
         }
 
-        const int PositionMode = 0;
-        const int ImmediateMode = 1;
-        const int RelativeMode = 2;
+        private const int PositionMode = 0;
+        private const int ImmediateMode = 1;
+        private const int RelativeMode = 2;
 
         private long[] _originalMemory;
         private long[] _memory;
@@ -143,7 +143,7 @@ namespace AdventOfCode._2019.Intcode
             switch (_parameterModes[parameterNumber - 1])
             {
                 case PositionMode:
-                     WriteMemory(parameterValue, value);
+                    WriteMemory(parameterValue, value);
                     break;
 
                 case RelativeMode:
@@ -177,7 +177,7 @@ namespace AdventOfCode._2019.Intcode
             var opCode = ReadMemory(_programCounter);
 
             long divisor = 100;
-            for (var param = 0; param < 3; param ++)
+            for (var param = 0; param < 3; param++)
             {
                 _parameterModes[param] = (int)((opCode / divisor) % 10);
                 divisor *= 10;

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace AdventOfCode.Shared.DataStructures
 {
-	public class Ring<T> : Queue<T>
+    public class Ring<T> : Queue<T>
 	{
 		public int Index { get; private set; }
 

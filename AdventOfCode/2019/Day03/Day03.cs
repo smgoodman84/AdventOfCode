@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2019.Day03
 {
-    class Day03 : Day
+    public class Day03 : Day
     {
         public Day03() : base(2019, 3, "Day03/input_2019_03.txt", "232", "6084")
         {
@@ -141,7 +140,7 @@ namespace AdventOfCode._2019.Day03
                     case 'R': return new Coordinate(X + 1, Y);
                 }
 
-                throw new Exception ($"Unexpected direction: {direction}");
+                throw new Exception($"Unexpected direction: {direction}");
             }
 
             public int ManhattenDistanceFromOrigin()

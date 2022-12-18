@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using AdventOfCode.Shared;
 
@@ -123,7 +122,7 @@ namespace AdventOfCode._2019.Day14
 
             var reaction = _reactions.First(r => r.Output.Name == chemical.Name);
             chemical.ProducedBy = reaction;
-            foreach(var input in reaction.Inputs)
+            foreach (var input in reaction.Inputs)
             {
                 SetProducedBy(input);
             }

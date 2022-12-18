@@ -1,12 +1,11 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using AdventOfCode.Shared;
 
 namespace AdventOfCode._2019.Day16
 {
-    class Day16 : Day
+    public class Day16 : Day
     {
         public Day16() : base(2019, 16, "Day16/input_2019_16.txt", "52611030", "")
         {
@@ -51,7 +50,7 @@ namespace AdventOfCode._2019.Day16
 
                     var index = 0;
                     var total = 0;
-                    foreach(var patternElement in pattern)
+                    foreach (var patternElement in pattern)
                     {
                         //TraceLine($"{input[index]}*{patternElement} + ");
                         total += input[index] * patternElement;
