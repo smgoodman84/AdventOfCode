@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode.Shared.Geometry
+﻿using System.Collections.Generic;
+
+namespace AdventOfCode.Shared.Geometry
 {
     public class Coordinate3D
     {
@@ -51,6 +53,25 @@
                 X,
                 Y,
                 Z + z);
+        }
+
+
+        public Coordinate3D Up() => AddY(1);
+        public Coordinate3D Down() => AddY(-1);
+        public Coordinate3D Left() => AddX(-1);
+        public Coordinate3D Right() => AddX(1);
+        public Coordinate3D Forward() => AddZ(1);
+        public Coordinate3D Backward() => AddZ(-1);
+
+
+        public IEnumerable<Coordinate3D> Neighbours()
+        {
+            yield return Up();
+            yield return Down();
+            yield return Left();
+            yield return Right();
+            yield return Forward();
+            yield return Backward();
         }
 
         public override string ToString()
