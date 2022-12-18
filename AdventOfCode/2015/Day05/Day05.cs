@@ -36,7 +36,7 @@ namespace AdventOfCode._2015.Day05
             var invalidPairs = new string[] { "ab", "cd", "pq", "xy" };
 
 
-            foreach(var c in input)
+            foreach (var c in input)
             {
                 if (vowels.Contains(c))
                 {
@@ -133,7 +133,7 @@ namespace AdventOfCode._2015.Day05
         {
             for (var index = 1; index < input.Length - 1; index++)
             {
-                if (input[index -1 ] == input[index + 1])
+                if (input[index - 1] == input[index + 1])
                 {
                     var highlighted = $"{new string('_', index)}{input[index]}{new string('_', input.Length - index - 1)}";
                     TraceLine($"{highlighted} Sandwich");

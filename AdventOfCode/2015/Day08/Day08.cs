@@ -37,8 +37,6 @@ namespace AdventOfCode._2015.Day08
 
         private class StringParser
         {
-            private readonly string _input;
-
             public int StringLength { get; }
             public int MemoryLength { get; }
             public int EncodedLength { get; }
@@ -47,8 +45,6 @@ namespace AdventOfCode._2015.Day08
 
             public StringParser(string input)
             {
-                _input = input;
-
                 StringLength = input.Length;
                 MemoryLength = GetMemoryLength(input);
                 EncodedLength = GetEncodedLength(input);

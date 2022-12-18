@@ -39,12 +39,11 @@ namespace AdventOfCode._2015.Day10
 
         private string Iterate(string value)
         {
-            var index = 0;
             var currentChar = ' ';
             int runLength = 0;
             var output = new StringBuilder();
 
-            foreach(var c in value)
+            foreach (var c in value)
             {
                 if (c == currentChar)
                 {

@@ -11,9 +11,9 @@ namespace AdventOfCode._2015.Day09
         {
         }
 
-        private static Regex _inputParser = new Regex("^(?<source>.*) to (?<destination>.*) = (?<distance>[0-9]*)$", RegexOptions.Compiled);
+        private static readonly Regex _inputParser = new Regex("^(?<source>.*) to (?<destination>.*) = (?<distance>[0-9]*)$", RegexOptions.Compiled);
 
-        private Dictionary<string, Dictionary<string, int>> _distances
+        private readonly Dictionary<string, Dictionary<string, int>> _distances
             = new Dictionary<string, Dictionary<string, int>>();
 
         public override void Initialise()

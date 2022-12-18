@@ -8,8 +8,8 @@ using AdventOfCode.Shared.Geometry;
 namespace AdventOfCode._2015.Day06
 {
     public class Day06 : Day
-	{
-		public Day06() : base(2015, 6, "Day06/input_2015_06.txt", "543903", "14687245")
+    {
+        public Day06() : base(2015, 6, "Day06/input_2015_06.txt", "543903", "14687245")
         {
         }
 
@@ -104,14 +104,13 @@ namespace AdventOfCode._2015.Day06
 
             private InstructionCode ParseCode(string code)
             {
-                switch (code)
+                return code switch
                 {
-                    case "toggle": return InstructionCode.Toggle;
-                    case "turn on": return InstructionCode.TurnOn;
-                    case "turn off": return InstructionCode.TurnOff;
-                }
-
-                throw new Exception($"Unknown InstructionCode {code}");
+                    "toggle" => InstructionCode.Toggle,
+                    "turn on" => InstructionCode.TurnOn,
+                    "turn off" => InstructionCode.TurnOff,
+                    _ => throw new Exception($"Unknown InstructionCode {code}"),
+                };
             }
         }
 
@@ -125,9 +124,9 @@ namespace AdventOfCode._2015.Day06
 
         private class Grid : IGrid
         {
-            private bool[,] _grid;
-            private int _width;
-            private int _height;
+            private readonly bool[,] _grid;
+            private readonly int _width;
+            private readonly int _height;
             private int _totalActive;
 
             public Grid(int width, int height)
@@ -175,9 +174,9 @@ namespace AdventOfCode._2015.Day06
 
         private class VariableGrid : IGrid
         {
-            private int[,] _grid;
-            private int _width;
-            private int _height;
+            private readonly int[,] _grid;
+            private readonly int _width;
+            private readonly int _height;
             private int _totalActive;
 
             public VariableGrid(int width, int height)

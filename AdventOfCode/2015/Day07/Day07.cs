@@ -10,7 +10,7 @@ namespace AdventOfCode._2015.Day07
         {
         }
 
-        private Dictionary<string, ISignal> _signals = new Dictionary<string, ISignal>();
+        private readonly Dictionary<string, ISignal> _signals = new Dictionary<string, ISignal>();
 
         public override void Initialise()
         {
@@ -175,10 +175,10 @@ namespace AdventOfCode._2015.Day07
             {
                 if (_gotOutput)
                 {
-                    return $"Cached {_signal.ToString()} = {_output}";
+                    return $"Cached {_signal} = {_output}";
                 }
 
-                return $"Cached {_signal.ToString()}";
+                return $"Cached {_signal}";
             }
         }
 

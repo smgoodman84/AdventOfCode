@@ -15,14 +15,14 @@ namespace AdventOfCode._2015.Day02
         public override void Initialise()
         {
             _presents = InputLines
-                .Select(l => Present.Parse(l))
+                .Select(Present.Parse)
                 .ToList();
         }
 
         private class Present : RectangularCuboid
         {
             public Present(long width, long height, long length)
-                : base (width, height, length)
+                : base(width, height, length)
             {
             }
 
