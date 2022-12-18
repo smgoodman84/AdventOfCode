@@ -1,79 +1,106 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace AdventOfCode.Shared.Geometry
 {
-    public class Grid2D<T>
+    public class Grid3D<T>
     {
-        private T[,] _grid;
+        private T[,,] _grid;
 
         public int Width { get; }
         public int Height { get; }
+        public int Depth { get; }
 
-        private int _minX;
-        private int _maxX;
-        private int _minY;
-        private int _maxY;
+        public int MinX { get; }
+        public int MaxX { get; }
+        public int MinY { get; }
+        public int MaxY { get; }
+        public int MinZ { get; }
+        public int MaxZ { get; }
 
-        public Grid2D(int width, int height)
-            : this(0, 0, width - 1, height - 1)
+        public Grid3D(int width, int height, int depth)
+            : this(0, 0, 0, width - 1, height - 1, depth - 1)
         {
         }
 
-        public Grid2D(int minX, int minY, int maxX, int maxY)
+        public Grid3D(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
         {
             var height = maxY - minY + 1;
             var width = maxX - minX + 1;
+            var depth = maxZ - minZ + 1;
 
-            _minX = minX;
-            _minY = minY;
-            _maxX = maxX;
-            _maxY = maxY;
+            MinX = minX;
+            MinY = minY;
+            MinZ = minZ;
+            MaxX = maxX;
+            MaxY = maxY;
+            MaxZ = maxZ;
 
-            _grid = new T[width, height];
+            _grid = new T[width, height, depth];
             Width = width;
             Height = height;
+            Depth = depth;
         }
 
-        public bool IsInGrid(int x, int y)
+        public bool IsInGrid(int x, int y, int z)
         {
-            return _minX <= x && x <= _maxX
-                && _minY <= y && y <= _maxY;
+            return MinX <= x && x <= MaxX
+                && MinY <= y && y <= MaxY
+                && MinZ <= z && z <= MaxZ;
         }
 
-        public bool IsInGrid(Coordinate2D coordinate)
+        public bool IsInGrid(Coordinate3D coordinate)
         {
-            return IsInGrid((int)coordinate.X, (int)coordinate.Y);
+            return IsInGrid((int)coordinate.X, (int)coordinate.Y, (int)coordinate.Z);
         }
 
-        public T Read(int x, int y)
+        public T Read(int x, int y, int z)
         {
-            return _grid[x - _minX, y - _minY];
+            return _grid[x - MinX, y - MinY, z - MinZ];
         }
 
-        public T Read(Coordinate2D coordinate)
+        public T Read(Coordinate3D coordinate)
         {
-            return Read((int)coordinate.X, (int)coordinate.Y);
+            return Read((int)coordinate.X, (int)coordinate.Y, (int)coordinate.Z);
         }
 
-        public void Write(int x, int y, T value)
+        public void Write(int x, int y, int z, T value)
         {
-            _grid[x - _minX, y - _minY] = value;
+            _grid[x - MinX, y - MinY, z - MinZ] = value;
         }
 
-        public void Write(Coordinate2D coordinate, T value)
+        public void Write(Coordinate3D coordinate, T value)
         {
-            Write((int)coordinate.X, (int)coordinate.Y, value);
+            Write((int)coordinate.X, (int)coordinate.Y, (int)coordinate.Z, value);
         }
 
         public IEnumerable<T> ReadAll()
         {
-            for(var y = 0; y < Height; y++)
+            foreach (var y in AllY())
             {
-                for (var x = 0; x < Width; x++)
+                foreach (var x in AllX())
                 {
-                    yield return Read(x, y);
+                    foreach (var z in AllZ())
+                    {
+                        yield return Read(x, y, z);
+                    }
                 }
             }
+        }
+
+        public IEnumerable<int> AllX()
+        {
+            return Enumerable.Range(MinX, Width);
+        }
+
+        public IEnumerable<int> AllY()
+        {
+            return Enumerable.Range(MinY, Height);
+        }
+
+        public IEnumerable<int> AllZ()
+        {
+            return Enumerable.Range(MinZ, Depth);
         }
     }
 }
