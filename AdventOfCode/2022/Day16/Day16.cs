@@ -10,7 +10,7 @@ namespace AdventOfCode._2022.Day16
     {
         private static readonly Regex InputParser = new Regex("Valve (?<valve>.*) has flow rate=(?<flowrate>[0-9]*); tunnel[s]* lead[s]* to valve[s]* (?<leadsto>.*)");
 
-        public Day16() : base(2022, 16, "Day16/input_2022_16.txt", "", "")
+        public Day16() : base(2022, 16, "Day16/input_2022_16.txt", "1488", "")
         {
 
         }
@@ -38,15 +38,17 @@ namespace AdventOfCode._2022.Day16
             var possibleMoves = _valves.SelectMany(v => v.LeadsTo.Select(lt => (v.Name, lt))).ToList();
             var shortestPaths = new ShortestPaths(possibleMoves);
 
-
+            /*
             var findBestPath = new FindBestPath(shortestPaths, _valves, "AA");
             var maximumFlow = findBestPath.GetMaximumFlow();
 
             return maximumFlow.ToString();
+            */
 
+            var valvemap = new ValveMap(shortestPaths, _valves, "AA", 30);
 
-            var valvemap = new ValveMap(shortestPaths, _valves, "AA");
-            var possibleOutcomes = valvemap.GetAllPossibleOutcomes(30, null).ToList();
+            // var example = valvemap.FollowPath("DD", "BB", "JJ", "HH", "EE", "CC");
+            var possibleOutcomes = valvemap.GetTopOutcomes(15).ToList();
             var result = possibleOutcomes.Max(x => x.GetPressureReleased());
             return result.ToString();
         }
@@ -175,19 +177,21 @@ namespace AdventOfCode._2022.Day16
             private readonly ShortestPaths _shortestPaths;
             private readonly string _location;
             private int _pressureReleased = 0;
+            private int _timeAvailable;
             private readonly string _logMessage;
 
-            public ValveMap(ShortestPaths shortestPaths, IEnumerable<Valve> valves, string location)
+            public ValveMap(ShortestPaths shortestPaths, IEnumerable<Valve> valves, string location, int timeAvailable)
             {
                 _shortestPaths = shortestPaths;
                 _overrides = valves.ToDictionary(v => v.Name, v => v);
                 _allLocations = valves.Select(v => v.Name).ToList();
                 _location = location;
                 MinutesPassed = 0;
+                _timeAvailable = timeAvailable;
                 _logMessage = "Start";
             }
 
-            private ValveMap(ShortestPaths shortestPaths, ValveMap baseMap, Valve overrideValve)
+            private ValveMap(ShortestPaths shortestPaths, ValveMap baseMap, Valve overrideValve, int timeAvailable)
             {
                 _shortestPaths = shortestPaths;
                 _base = baseMap;
@@ -198,10 +202,11 @@ namespace AdventOfCode._2022.Day16
                 _location = baseMap._location;
                 _allLocations = baseMap._allLocations;
                 MinutesPassed = baseMap.MinutesPassed + 1;
+                _timeAvailable = timeAvailable;
                 _logMessage = $"Open {overrideValve.Name}";
             }
 
-            private ValveMap(ShortestPaths shortestPaths, ValveMap baseMap, string location)
+            private ValveMap(ShortestPaths shortestPaths, ValveMap baseMap, string location, int timeAvailable)
             {
                 _shortestPaths = shortestPaths;
                 _base = baseMap;
@@ -209,9 +214,26 @@ namespace AdventOfCode._2022.Day16
                 _location = location;
                 _allLocations = baseMap._allLocations;
                 MinutesPassed = baseMap.MinutesPassed + 1;
+                _timeAvailable = timeAvailable;
                 _logMessage = $"Move to {location}";
             }
 
+            public ValveMap FollowPath(params string[] locations)
+            {
+                if (MinutesPassed == _timeAvailable)
+                {
+                    return this;
+                }
+
+                if (!locations.Any())
+                {
+                    return SitOutTheClock();
+                }
+
+                return NavigateToLocationAndOpenValve(locations.First())
+                    .FollowPath(locations.Skip(1).ToArray());
+            }
+            /*
             public IEnumerable<ValveMap> GetAllPossibleOutcomes(int duration, string aimingFor)
             {
                 if (MinutesPassed < duration)
@@ -259,6 +281,38 @@ namespace AdventOfCode._2022.Day16
                     Console.WriteLine($"Possibility {GetPressureReleased()}");
                 }
             }
+            */
+            public IEnumerable<ValveMap> GetTopOutcomes(int depth)
+            {
+                var topDestinations = TopDestinations(depth).ToList();
+
+                if (!topDestinations.Any())
+                {
+                    yield return SitOutTheClock();
+                }
+
+                foreach (var topDestination in topDestinations)
+                {
+                    foreach (var outcome in NavigateToLocationAndOpenValve(topDestination).GetTopOutcomes(depth))
+                    {
+                        yield return outcome;
+                    }
+                }
+            }
+
+            public ValveMap SitOutTheClock()
+            {
+                if (MinutesPassed == _timeAvailable)
+                {
+                    return this;
+                }
+
+
+                // Console.WriteLine($"{MinutesPassed} Sitting out the clock");
+                ReleasePressure();
+                return new ValveMap(_shortestPaths, this, _location, _timeAvailable).SitOutTheClock();
+            }
+
 
             private Valve GetCurrentValve() => GetValve(_location);
 
@@ -277,6 +331,36 @@ namespace AdventOfCode._2022.Day16
                 return GetCurrentValve().LeadsTo;
             }
 
+            public IEnumerable<string> TopDestinations(int count)
+            {
+                var potentialValves = _allLocations
+                    .Where(l => l != _location)
+                    .Select(GetValve)
+                    .Where(v => !v.IsOpen && v.FlowRate > 0)
+                    .Select(v => (Location: v.Name, PotentialFlowRate: GetPotentialFlowRate(v.Name)))
+                    .ToList();
+
+                var locations = potentialValves
+                    .Where(x => x.PotentialFlowRate > 0)
+                    .OrderByDescending(x => x.PotentialFlowRate)
+                    .Take(count)
+                    .Select(v => v.Location)
+                    .ToList();
+
+                return locations;
+            }
+
+            private int GetPotentialFlowRate(string location)
+            {
+                var shortestPath = _shortestPaths.GetShortestPath(_location, location, new List<string>());
+                var timeUntilOpen = shortestPath.Stops.Count + 2;
+                var flowDuration = _timeAvailable - MinutesPassed - timeUntilOpen;
+                var valveFlow = GetValve(location).FlowRate;
+                var flowValue = flowDuration > 0 ? flowDuration * valveFlow : 0;
+                return flowValue;
+            }
+
+            /*
             public IEnumerable<string> WorthMovingTo()
             {
                 foreach (var location in _allLocations)
@@ -307,16 +391,33 @@ namespace AdventOfCode._2022.Day16
                     }
                 }
             }
+            */
+            public ValveMap NavigateToLocationAndOpenValve(string location)
+            {
+                if (CanMoveDirectlyTo(location))
+                {
+                    return MoveTo(location).OpenValve();
+                }
+
+                var nextStep = _shortestPaths.GetNextStep(_location, location);
+                return MoveTo(nextStep).NavigateToLocationAndOpenValve(location);
+            }
+
+            public bool CanMoveDirectlyTo(string location)
+            {
+                return GetCurrentValve().LeadsTo.Contains(location);
+            }
 
             public ValveMap MoveTo(string location)
             {
-                if (!GetCurrentValve().LeadsTo.Contains(location))
+                if (!CanMoveDirectlyTo(location))
                 {
                     throw new Exception($"Cannot move to {location}");
                 }
 
+                // Console.WriteLine($"{MinutesPassed} Moving to {location}");
                 ReleasePressure();
-                return new ValveMap(_shortestPaths, this, location);
+                return new ValveMap(_shortestPaths, this, location, _timeAvailable);
             }
 
             public bool CanOpenValve()
@@ -328,14 +429,16 @@ namespace AdventOfCode._2022.Day16
             public ValveMap OpenValve()
             {
                 var currentValve = GetCurrentValve();
-                if (currentValve.IsOpen)
+                if (!CanOpenValve())
                 {
-                    throw new Exception($"Valve {_location} is already open");
+                    throw new Exception($"Cannot open valve {_location}");
                 }
+
+                // Console.WriteLine($"{MinutesPassed} Opening {_location}");
                 var replacementValve = new Valve(currentValve.Name, currentValve.FlowRate, currentValve.LeadsTo, true);
 
                 ReleasePressure();
-                return new ValveMap(_shortestPaths, this, replacementValve);
+                return new ValveMap(_shortestPaths, this, replacementValve, _timeAvailable);
             }
 
             public int GetPressureReleased()
@@ -346,8 +449,9 @@ namespace AdventOfCode._2022.Day16
             private void ReleasePressure()
             {
                 _pressureReleased = _allLocations
-                    .Select(location => GetPressureReleasedAtLocation(location))
-                    .Sum();
+                    .Sum(GetPressureReleasedAtLocation);
+
+                // Console.WriteLine($"{MinutesPassed} Released Pressure {_pressureReleased}");
             }
 
             private int GetPressureReleasedAtLocation(string location)
