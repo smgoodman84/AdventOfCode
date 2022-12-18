@@ -35,120 +35,23 @@ namespace AdventOfCode._2022.Day16
 
         public override string Part1()
         {
-            var possibleMoves = _valves.SelectMany(v => v.LeadsTo.Select(lt => (v.Name, lt))).ToList();
-            var shortestPaths = new ShortestPaths(possibleMoves);
-
-            /*
-            var findBestPath = new FindBestPath(shortestPaths, _valves, "AA");
-            var maximumFlow = findBestPath.GetMaximumFlow();
-
-            return maximumFlow.ToString();
-            */
-
-            var valvemap = new ValveMap(shortestPaths, _valves, "AA", 30);
+            var valvemap = new ValveMap(_valves, "AA", null, 30);
 
             // var example = valvemap.FollowPath("DD", "BB", "JJ", "HH", "EE", "CC");
             var possibleOutcomes = valvemap.GetTopOutcomes(15).ToList();
             var result = possibleOutcomes.Max(x => x.GetPressureReleased());
+
             return result.ToString();
-        }
-
-        private class FindBestPath
-        {
-            private readonly Dictionary<string, Valve> _valves;
-            private readonly List<string> _allLocations;
-            private readonly ShortestPaths _shortestPaths;
-            private string _location;
-
-            public FindBestPath(ShortestPaths shortestPaths, IEnumerable<Valve> valves, string location)
-            {
-                _shortestPaths = shortestPaths;
-                _allLocations = valves.Select(v => v.Name).ToList();
-                _valves = valves.ToDictionary(v => v.Name, v => v);
-                _location = location;
-            }
-
-            public int GetMaximumFlow()
-            {
-                int timeAvailable = 30;
-                int timeUsed = 0;
-                int totalFlowDelivered = 0;
-
-                while (timeUsed < timeAvailable)
-                {
-                    var maximumFlowValue = 0;
-                    Path pathForMaximum = null;
-                    int flowDurationForMaximum = 0;
-                    int flowForMaximum = 0;
-
-                    var worthAimingFor = WorthAimingFor();
-
-                    foreach (var location in worthAimingFor)
-                    {
-                        var shortestPath = _shortestPaths.GetShortestPath(_location, location, new List<string>());
-                        var timeUntilOpen = shortestPath.Stops.Count + 2;
-                        var flowDuration = timeAvailable - timeUsed - timeUntilOpen;
-                        var valveFlow = _valves[location].FlowRate;
-                        var flowValue = flowDuration > 0 ? flowDuration * valveFlow : 0;
-                        if (flowValue > maximumFlowValue)
-                        {
-                            maximumFlowValue = flowValue;
-                            pathForMaximum = shortestPath;
-                            flowDurationForMaximum = flowDuration;
-                            flowForMaximum = valveFlow;
-                        }
-                    }
-
-                    if (pathForMaximum != null)
-                    {
-                        foreach (var stop in pathForMaximum.Stops.Concat(new[] { pathForMaximum.End }))
-                        {
-                            timeUsed += 1;
-                            _location = stop;
-                            Console.WriteLine($"{timeUsed} Moved to {stop}");
-                        }
-                        timeUsed += 1;
-                        OpenValve(pathForMaximum.End);
-                        Console.WriteLine($"{timeUsed} Opened {pathForMaximum.End} to gain {maximumFlowValue} ({flowForMaximum} * {flowDurationForMaximum})");
-                        totalFlowDelivered += maximumFlowValue;
-                    }
-                    else
-                    {
-                        timeUsed += 1;
-                        Console.WriteLine($"{timeUsed} Do nothing");
-                    }
-                }
-
-
-                return totalFlowDelivered;
-            }
-
-            private void OpenValve(string location)
-            {
-                var valve = _valves[location];
-                _valves[location] = new Valve(valve.Name, valve.FlowRate, valve.LeadsTo, true);
-            }
-
-            public IEnumerable<string> WorthAimingFor()
-            {
-                foreach (var location in _allLocations)
-                {
-                    if (location != _location)
-                    {
-                        var valve = _valves[location];
-                        if (!valve.IsOpen && valve.FlowRate > 0)
-                        {
-                            yield return valve.Name;
-                        }
-                    }
-                }
-            }
-
         }
 
         public override string Part2()
         {
-            return "";
+            var valvemap = new ValveMap(_valves, "AA", "AA", 26);
+
+            var possibleOutcomes = valvemap.GetTopOutcomes(15).ToList();
+            var result = possibleOutcomes.Max(x => x.GetPressureReleased());
+
+            return result.ToString();
         }
 
         private class Valve
@@ -175,47 +78,86 @@ namespace AdventOfCode._2022.Day16
             private readonly List<string> _allLocations;
             private readonly Dictionary<string, Valve> _overrides;
             private readonly ShortestPaths _shortestPaths;
+            private readonly string _elephantlocation;
             private readonly string _location;
             private int _pressureReleased = 0;
             private int _timeAvailable;
             private readonly string _logMessage;
 
-            public ValveMap(ShortestPaths shortestPaths, IEnumerable<Valve> valves, string location, int timeAvailable)
+            public ValveMap(
+                IEnumerable<Valve> valves,
+                string location,
+                string elephantLocation,
+                int timeAvailable)
             {
-                _shortestPaths = shortestPaths;
+                var possibleMoves = valves.SelectMany(v => v.LeadsTo.Select(lt => (v.Name, lt))).ToList();
+                _shortestPaths = new ShortestPaths(possibleMoves);
                 _overrides = valves.ToDictionary(v => v.Name, v => v);
                 _allLocations = valves.Select(v => v.Name).ToList();
                 _location = location;
+                _elephantlocation = elephantLocation;
                 MinutesPassed = 0;
                 _timeAvailable = timeAvailable;
                 _logMessage = "Start";
             }
 
-            private ValveMap(ShortestPaths shortestPaths, ValveMap baseMap, Valve overrideValve, int timeAvailable)
+            private ValveMap(
+                ValveMap baseMap,
+                IEnumerable<Valve> overrideValves,
+                string location,
+                string elephantLocation)
             {
-                _shortestPaths = shortestPaths;
-                _base = baseMap;
-                _overrides = new Dictionary<string, Valve>
+                var logs = overrideValves.Select(o => $"Open {o.Name}").ToList();
+                if (_location != location)
                 {
-                    { overrideValve.Name, overrideValve}
-                };
-                _location = baseMap._location;
+                    logs.Add($"Move to {location}");
+                }
+
+                if (_elephantlocation != elephantLocation)
+                {
+                    logs.Add($"Elephant move to {location}");
+                }
+
+                _logMessage =string.Join(", ", logs);
+
+                _shortestPaths = baseMap._shortestPaths;
+                _base = baseMap;
+                _overrides = overrideValves.ToDictionary(o => o.Name, o => o);
+                _location = location;
+                _elephantlocation = elephantLocation;
                 _allLocations = baseMap._allLocations;
                 MinutesPassed = baseMap.MinutesPassed + 1;
-                _timeAvailable = timeAvailable;
-                _logMessage = $"Open {overrideValve.Name}";
+                _timeAvailable = baseMap._timeAvailable;
             }
 
-            private ValveMap(ShortestPaths shortestPaths, ValveMap baseMap, string location, int timeAvailable)
+            private ValveMap(ValveMap baseMap)
+                : this(
+                      baseMap,
+                      Enumerable.Empty<Valve>(),
+                      baseMap._location,
+                      baseMap._elephantlocation)
             {
-                _shortestPaths = shortestPaths;
-                _base = baseMap;
-                _overrides = new Dictionary<string, Valve>();
-                _location = location;
-                _allLocations = baseMap._allLocations;
-                MinutesPassed = baseMap.MinutesPassed + 1;
-                _timeAvailable = timeAvailable;
-                _logMessage = $"Move to {location}";
+
+            }
+
+            private ValveMap(ValveMap baseMap, IEnumerable<Valve> overrideValves)
+                : this(
+                      baseMap,
+                      overrideValves,
+                      baseMap._location,
+                      baseMap._elephantlocation)
+            {
+
+            }
+
+            private ValveMap(ValveMap baseMap, string location, string elephantLocation)
+                : this(
+                      baseMap,
+                      Enumerable.Empty<Valve>(),
+                      location,
+                      elephantLocation)
+            {
+
             }
 
             public ValveMap FollowPath(params string[] locations)
@@ -233,55 +175,7 @@ namespace AdventOfCode._2022.Day16
                 return NavigateToLocationAndOpenValve(locations.First())
                     .FollowPath(locations.Skip(1).ToArray());
             }
-            /*
-            public IEnumerable<ValveMap> GetAllPossibleOutcomes(int duration, string aimingFor)
-            {
-                if (MinutesPassed < duration)
-                {
-                    if (CanOpenValve() && aimingFor == _location)
-                    {
-                        // Console.WriteLine($"M{MinutesPassed} - Opening {_location}");
-                        var openValve = OpenValve();
-                        foreach (var outcome in openValve.GetAllPossibleOutcomes(duration, null))
-                        {
-                            yield return outcome;
-                        }
-                    }
 
-                    if (aimingFor != null && aimingFor != _location)
-                    {
-                        var nextStep = _shortestPaths.GetNextStep(_location, aimingFor);
-                        var movedTo = MoveTo(nextStep);
-                        if (nextStep == aimingFor)
-                        {
-                            aimingFor = null;
-                        }
-
-                        foreach (var outcome in movedTo.GetAllPossibleOutcomes(duration, aimingFor))
-                        {
-                            yield return outcome;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var aimFor in WorthAimingFor())
-                        {
-                            Console.WriteLine($"M{MinutesPassed} - Aiming for {aimFor}");
-                            var destination = _shortestPaths.GetNextStep(_location, aimFor);
-                            var movedTo = MoveTo(destination);
-                            foreach (var outcome in movedTo.GetAllPossibleOutcomes(duration, aimFor))
-                            {
-                                yield return outcome;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Possibility {GetPressureReleased()}");
-                }
-            }
-            */
             public IEnumerable<ValveMap> GetTopOutcomes(int depth)
             {
                 var topDestinations = TopDestinations(depth).ToList();
@@ -310,7 +204,7 @@ namespace AdventOfCode._2022.Day16
 
                 // Console.WriteLine($"{MinutesPassed} Sitting out the clock");
                 ReleasePressure();
-                return new ValveMap(_shortestPaths, this, _location, _timeAvailable).SitOutTheClock();
+                return new ValveMap(this).SitOutTheClock();
             }
 
 
@@ -360,38 +254,6 @@ namespace AdventOfCode._2022.Day16
                 return flowValue;
             }
 
-            /*
-            public IEnumerable<string> WorthMovingTo()
-            {
-                foreach (var location in _allLocations)
-                {
-                    if (location != _location)
-                    {
-                        var valve = GetValve(location);
-                        if (!valve.IsOpen && valve.FlowRate > 0)
-                        {
-                            var nextStep = _shortestPaths.GetNextStep(_location, location);
-                            yield return nextStep;
-                        }
-                    }
-                }
-            }
-
-            public IEnumerable<string> WorthAimingFor()
-            {
-                foreach (var location in _allLocations)
-                {
-                    if (location != _location)
-                    {
-                        var valve = GetValve(location);
-                        if (!valve.IsOpen && valve.FlowRate > 0)
-                        {
-                            yield return valve.Name;
-                        }
-                    }
-                }
-            }
-            */
             public ValveMap NavigateToLocationAndOpenValve(string location)
             {
                 if (CanMoveDirectlyTo(location))
@@ -417,7 +279,7 @@ namespace AdventOfCode._2022.Day16
 
                 // Console.WriteLine($"{MinutesPassed} Moving to {location}");
                 ReleasePressure();
-                return new ValveMap(_shortestPaths, this, location, _timeAvailable);
+                return new ValveMap(this, location, _elephantlocation);
             }
 
             public bool CanOpenValve()
@@ -438,7 +300,7 @@ namespace AdventOfCode._2022.Day16
                 var replacementValve = new Valve(currentValve.Name, currentValve.FlowRate, currentValve.LeadsTo, true);
 
                 ReleasePressure();
-                return new ValveMap(_shortestPaths, this, replacementValve, _timeAvailable);
+                return new ValveMap(this, new [] { replacementValve });
             }
 
             public int GetPressureReleased()
