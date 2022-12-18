@@ -13,6 +13,14 @@
             Z = z;
         }
 
+        public Coordinate3D(string coordinate)
+        {
+            var split = coordinate.Split(",");
+            X = long.Parse(split[0]);
+            Y = long.Parse(split[1]);
+            Z = long.Parse(split[2]);
+        }
+
         public Coordinate3D Add(Coordinate3D coordinate)
         {
             return new Coordinate3D(

@@ -67,7 +67,7 @@ namespace AdventOfCode.Shared.Geometry
 
         public IEnumerable<T> ReadAll()
         {
-            for (var y = 0; y < Height; y++)
+            for(var y = 0; y < Height; y++)
             {
                 for (var x = 0; x < Width; x++)
                 {
