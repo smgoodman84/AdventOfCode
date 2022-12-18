@@ -71,7 +71,7 @@ namespace AdventOfCode._2022.Day02
             }
 
             var result = new StringBuilder();
-            foreach(var stack in _stacks)
+            foreach (var stack in _stacks)
             {
                 result.Append(stack.Value.Peek());
             }

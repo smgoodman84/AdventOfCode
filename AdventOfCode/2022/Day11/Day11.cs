@@ -47,7 +47,6 @@ namespace AdventOfCode._2022.Day11
                 var operation = new Operation(monkey[2]
                     .Trim()
                     .Replace("Operation: new = ", ""));
-                    
 
                 var divisibleTest = int.Parse(monkey[3]
                     .Trim()
@@ -191,9 +190,9 @@ namespace AdventOfCode._2022.Day11
 
         private class Operation
         {
-            private string _left;
-            private string _operator;
-            private string _right;
+            private readonly string _left;
+            private readonly string _operator;
+            private readonly string _right;
 
             public Operation(string operation)
             {
@@ -311,7 +310,7 @@ namespace AdventOfCode._2022.Day11
 
         private class BigItem : IItem
         {
-            private Dictionary<int, DivisibleBy> _divisibleBy = new Dictionary<int, DivisibleBy>();
+            private readonly Dictionary<int, DivisibleBy> _divisibleBy = new Dictionary<int, DivisibleBy>();
 
             public BigItem(int value, IEnumerable<int> divisors)
             {

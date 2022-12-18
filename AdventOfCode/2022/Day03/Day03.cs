@@ -65,9 +65,9 @@ namespace AdventOfCode._2022.Day02
 
         private class Rucksack
         {
-            private List<int> _contentPriorities;
-            private List<int> _pocketOnePriorities;
-            private List<int> _pocketTwoPriorities;
+            private readonly List<int> _contentPriorities;
+            private readonly List<int> _pocketOnePriorities;
+            private readonly List<int> _pocketTwoPriorities;
 
             public Rucksack(string contents)
             {

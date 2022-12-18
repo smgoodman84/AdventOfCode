@@ -39,10 +39,10 @@ namespace AdventOfCode._2022.Day09
         {
             private readonly List<Instruction> _instructions;
 
-            private Coordinate2D[] _rope;
-            private List<Coordinate2D> _tailVisits;
+            private readonly Coordinate2D[] _rope;
+            private readonly List<Coordinate2D> _tailVisits;
 
-            private Dictionary<Direction, Coordinate2D> _directionMoves
+            private readonly Dictionary<Direction, Coordinate2D> _directionMoves
                 = new Dictionary<Direction, Coordinate2D>
                 {
                     { Direction.Up, new Coordinate2D(0, -1) },
@@ -95,8 +95,6 @@ namespace AdventOfCode._2022.Day09
             private void UpdateTailPosition(int tailIndex)
             {
                 var headIndex = tailIndex - 1;
-                
-
 
                 if (_rope[headIndex].X > _rope[tailIndex].X + 1)
                 {

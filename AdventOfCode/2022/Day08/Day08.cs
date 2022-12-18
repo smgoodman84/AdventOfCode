@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using AdventOfCode.Shared;
-using AdventOfCode.Shared.FileProcessing;
 using AdventOfCode.Shared.Geometry;
-using AdventOfCode.Shared.PrimitiveExtensions;
 
 namespace AdventOfCode._2022.Day08
 {
@@ -29,7 +25,7 @@ namespace AdventOfCode._2022.Day08
 
         private class TreeGrid
         {
-            private int[][] _treeHeights;
+            private readonly int[][] _treeHeights;
             public TreeGrid(int[][] treeHeights)
             {
                 _treeHeights = treeHeights;
@@ -46,7 +42,7 @@ namespace AdventOfCode._2022.Day08
             public int TotalVisible { get; }
 
             private readonly TreeGrid _treeGrid;
-            private bool[][] _visible;
+            private readonly bool[][] _visible;
 
             public TreeVisibility(TreeGrid treeGrid)
             {
@@ -158,7 +154,7 @@ namespace AdventOfCode._2022.Day08
             private int GetScoreForViewLine(IEnumerable<Coordinate2D> viewLine)
             {
                 var totalVisible = 0;
-                foreach(var coordinate in viewLine)
+                foreach (var coordinate in viewLine)
                 {
                     totalVisible += 1;
 

@@ -52,7 +52,7 @@ namespace AdventOfCode._2022.Day02
                 Draw
             }
 
-            private static Dictionary<Move, Move> Beats = new Dictionary<Move, Move>
+            private static readonly Dictionary<Move, Move> Beats = new Dictionary<Move, Move>
             {
                 { Move.Rock, Move.Scissors },
                 { Move.Paper, Move.Rock },

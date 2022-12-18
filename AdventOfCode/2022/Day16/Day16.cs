@@ -8,7 +8,7 @@ namespace AdventOfCode._2022.Day16
 {
     public class Day16 : Day
     {
-        private static Regex InputParser = new Regex("Valve (?<valve>.*) has flow rate=(?<flowrate>[0-9]*); tunnel[s]* lead[s]* to valve[s]* (?<leadsto>.*)");
+        private static readonly Regex InputParser = new Regex("Valve (?<valve>.*) has flow rate=(?<flowrate>[0-9]*); tunnel[s]* lead[s]* to valve[s]* (?<leadsto>.*)");
 
         public Day16() : base(2022, 16, "Day16/input_2022_16.txt", "", "")
         {
@@ -53,8 +53,8 @@ namespace AdventOfCode._2022.Day16
 
         private class FindBestPath
         {
-            private Dictionary<string, Valve> _valves;
-            private List<string> _allLocations;
+            private readonly Dictionary<string, Valve> _valves;
+            private readonly List<string> _allLocations;
             private readonly ShortestPaths _shortestPaths;
             private string _location;
 
@@ -99,7 +99,7 @@ namespace AdventOfCode._2022.Day16
 
                     if (pathForMaximum != null)
                     {
-                        foreach(var stop in pathForMaximum.Stops.Concat(new[] { pathForMaximum.End }))
+                        foreach (var stop in pathForMaximum.Stops.Concat(new[] { pathForMaximum.End }))
                         {
                             timeUsed += 1;
                             _location = stop;
@@ -169,13 +169,13 @@ namespace AdventOfCode._2022.Day16
         {
             public int MinutesPassed { get; }
 
-            private ValveMap _base;
-            private List<string> _allLocations;
-            private Dictionary<string, Valve> _overrides;
+            private readonly ValveMap _base;
+            private readonly List<string> _allLocations;
+            private readonly Dictionary<string, Valve> _overrides;
             private readonly ShortestPaths _shortestPaths;
-            private string _location;
+            private readonly string _location;
             private int _pressureReleased = 0;
-            private string _logMessage;
+            private readonly string _logMessage;
 
             public ValveMap(ShortestPaths shortestPaths, IEnumerable<Valve> valves, string location)
             {
@@ -279,7 +279,7 @@ namespace AdventOfCode._2022.Day16
 
             public IEnumerable<string> WorthMovingTo()
             {
-                foreach(var location in _allLocations)
+                foreach (var location in _allLocations)
                 {
                     if (location != _location)
                     {
@@ -365,8 +365,8 @@ namespace AdventOfCode._2022.Day16
 
         private class ShortestPaths
         {
-            Dictionary<string, Dictionary<string, Path>> _shortestPaths;
-            List<(string from, string to)> _possibleMoves;
+            private readonly Dictionary<string, Dictionary<string, Path>> _shortestPaths;
+            private readonly List<(string from, string to)> _possibleMoves;
 
             public ShortestPaths(List<(string from, string to)> possibleMoves)
             {
@@ -414,7 +414,7 @@ namespace AdventOfCode._2022.Day16
                     .Select(x => x.to)
                     .ToList();
 
-                foreach(var nextStep in possibleNextSteps)
+                foreach (var nextStep in possibleNextSteps)
                 {
                     if (!visited.Contains(nextStep))
                     {

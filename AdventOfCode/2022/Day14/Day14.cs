@@ -12,7 +12,7 @@ namespace AdventOfCode._2022.Day14
 
         }
 
-        private static Coordinate2D SandOrigin = new Coordinate2D(500, 0);
+        private static readonly Coordinate2D SandOrigin = new Coordinate2D(500, 0);
         private List<Path> _rockPaths;
 
         public override void Initialise()
@@ -143,7 +143,7 @@ namespace AdventOfCode._2022.Day14
 
         private class Path
         {
-            private List<Coordinate2D> _points;
+            private readonly List<Coordinate2D> _points;
 
             public long MinX => _points.Select(p => p.X).Min();
             public long MaxX => _points.Select(p => p.X).Max();
@@ -164,7 +164,7 @@ namespace AdventOfCode._2022.Day14
                 yield return start;
 
                 var current = start;
-                foreach(var end in _points.Skip(1))
+                foreach (var end in _points.Skip(1))
                 {
                     var xDelta = 0;
                     if (end.X > current.X)

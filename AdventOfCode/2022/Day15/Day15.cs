@@ -10,7 +10,7 @@ namespace AdventOfCode._2022.Day15
 {
     public class Day15 : Day
     {
-        private static Regex InputParser = new Regex("Sensor at x=(?<sensorx>[-]?[0-9]*), y=(?<sensory>[-]?[0-9]*): closest beacon is at x=(?<beaconx>[-]?[0-9]*), y=(?<beacony>[-]?[0-9]*)");
+        private static readonly Regex InputParser = new Regex("Sensor at x=(?<sensorx>[-]?[0-9]*), y=(?<sensory>[-]?[0-9]*): closest beacon is at x=(?<beaconx>[-]?[0-9]*), y=(?<beacony>[-]?[0-9]*)");
 
         public Day15() : base(2022, 15, "Day15/input_2022_15.txt", "5511201", "11318723411840")
         {

@@ -26,7 +26,7 @@ namespace AdventOfCode._2022.Day12
             foreach (var line in InputLines)
             {
                 var x = 0;
-                foreach(var c in line)
+                foreach (var c in line)
                 {
                     if (c == 'S')
                     {

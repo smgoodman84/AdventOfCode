@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using AdventOfCode.Shared;
-using AdventOfCode.Shared.FileProcessing;
-using AdventOfCode.Shared.PrimitiveExtensions;
 
 namespace AdventOfCode._2022.Day02
 {

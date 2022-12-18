@@ -60,10 +60,10 @@ namespace AdventOfCode._2022.Day17
                 var grid = new Grid2D<Space>(width, height);
 
                 var y = height - 1;
-                foreach(var line in rock)
+                foreach (var line in rock)
                 {
                     var x = 0;
-                    foreach(var c in line)
+                    foreach (var c in line)
                     {
                         switch (c)
                         {
@@ -162,10 +162,10 @@ namespace AdventOfCode._2022.Day17
                 var rockIndex = _rocks.Index;
                 var moveIndex = _moves.Index;
                 var top = DrawChamber(5).ReplaceLineEndings("_");
-                return $"{rockIndex}_{moveIndex}_{top}"; 
+                return $"{rockIndex}_{moveIndex}_{top}";
             }
 
-            Dictionary<string, (long rockNumber, long highestRock)> _contextCache = new Dictionary<string, (long rockNumber, long highestRock)>();
+            private readonly Dictionary<string, (long rockNumber, long highestRock)> _contextCache = new Dictionary<string, (long rockNumber, long highestRock)>();
 
             public long GetHeightAfterRocks()
             {
