@@ -172,13 +172,13 @@ namespace AdventOfCode._2022.Day16
                     return SitOutTheClock();
                 }
 
-                return NavigateToLocationAndOpenValve(locations.First())
+                return NavigateToLocationAndOpenValve((locations.First(), null))
                     .FollowPath(locations.Skip(1).ToArray());
             }
 
             public IEnumerable<ValveMap> GetTopOutcomes(int depth)
             {
-                var topDestinations = TopDestinations(depth).ToList();
+                var topDestinations = TopDestinations(_location, _elephantlocation, depth).ToList();
 
                 if (!topDestinations.Any())
                 {
@@ -225,13 +225,13 @@ namespace AdventOfCode._2022.Day16
                 return GetCurrentValve().LeadsTo;
             }
 
-            public IEnumerable<string> TopDestinations(int count)
+            public IEnumerable<string> TopDestinations(string location, int count)
             {
                 var potentialValves = _allLocations
-                    .Where(l => l != _location)
+                    .Where(l => l != location)
                     .Select(GetValve)
                     .Where(v => !v.IsOpen && v.FlowRate > 0)
-                    .Select(v => (Location: v.Name, PotentialFlowRate: GetPotentialFlowRate(v.Name)))
+                    .Select(v => (Location: v.Name, PotentialFlowRate: GetPotentialFlowRate(location, v.Name)))
                     .ToList();
 
                 var locations = potentialValves
@@ -244,9 +244,23 @@ namespace AdventOfCode._2022.Day16
                 return locations;
             }
 
-            private int GetPotentialFlowRate(string location)
+            public IEnumerable<(string, string)> TopDestinations(string location, string elephantLocation, int count)
             {
-                var shortestPath = _shortestPaths.GetShortestPath(_location, location, new List<string>());
+                var locations = TopDestinations(location, count);
+                var elephantLocations = TopDestinations(elephantLocation, count);
+
+                foreach(var l in locations)
+                {
+                    foreach (var e in elephantLocations)
+                    {
+                        yield return (l, e);
+                    }
+                }
+            }
+
+            private int GetPotentialFlowRate(string currentLocation, string location)
+            {
+                var shortestPath = _shortestPaths.GetShortestPath(currentLocation, location, new List<string>());
                 var timeUntilOpen = shortestPath.Stops.Count + 2;
                 var flowDuration = _timeAvailable - MinutesPassed - timeUntilOpen;
                 var valveFlow = GetValve(location).FlowRate;
@@ -254,15 +268,17 @@ namespace AdventOfCode._2022.Day16
                 return flowValue;
             }
 
-            public ValveMap NavigateToLocationAndOpenValve(string location)
+            public ValveMap NavigateToLocationAndOpenValve((string, string) locations)
             {
-                if (CanMoveDirectlyTo(location))
+                var myLocation = locations.Item1;
+
+                if (CanMoveDirectlyTo(myLocation))
                 {
-                    return MoveTo(location).OpenValve();
+                    return MoveTo(myLocation).OpenValve();
                 }
 
-                var nextStep = _shortestPaths.GetNextStep(_location, location);
-                return MoveTo(nextStep).NavigateToLocationAndOpenValve(location);
+                var nextStep = _shortestPaths.GetNextStep(_location, myLocation);
+                return MoveTo(nextStep).NavigateToLocationAndOpenValve(locations);
             }
 
             public bool CanMoveDirectlyTo(string location)
