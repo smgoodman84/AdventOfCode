@@ -9,178 +9,133 @@ namespace AdventOfCode._2022.Day20
 {
     public class Day20 : Day
     {
-        private static readonly Regex BlueprintRegex = new Regex("Blueprint (?<blueprint>[0-9]*): (?<robotcosts>.*)");
-
-        public Day20() : base(2022, 20, "Day20/input_2022_20.txt", "9945", "")
+        public Day20() : base(2022, 20, "Day20/input_2022_20.txt", "9945", "3338877775442")
         {
 
-        }
-
-        private List<Item> _items;
-        public override void Initialise()
-        {
-            _items = InputLines
-                .Select((x, i) => new Item
-                {
-                    Value = int.Parse(x),
-                    OriginalPosition = i,
-                    CurrentPosition = i
-                })
-                .ToList();
         }
 
         public override string Part1()
         {
-            Console.WriteLine("We have");
-            PrintList();
+            return Decrypt(1, 1);
+        }
 
-            foreach (var item in _items.ToList())
-            {
-                if (item.Value != 0)
+        public override string Part2()
+        {
+            return Decrypt(811589153L, 10);
+        }
+
+        private string Decrypt(long decryptionKey, int iterations)
+        {
+            var _items = InputLines
+                .Select((x, i) => new Item
                 {
-                    var currentPosition = item.CurrentPosition;
+                    Value = long.Parse(x) * decryptionKey,
+                    OriginalPosition = i,
+                    CurrentPosition = i
+                })
+                .ToList();
 
-                    
+            // Console.WriteLine("We have");
+            // PrintList();
 
-                    var newPosition = currentPosition + item.Value;
-
-                    if (newPosition < 0)
+            foreach (var iteration in Enumerable.Range(1, iterations))
+            {
+                foreach (var item in _items.OrderBy(i => i.OriginalPosition).ToList())
+                {
+                    if (item.Value != 0)
                     {
-                        var actualNewPosition = newPosition;
-                        while (actualNewPosition < 0)
-                        {
-                            actualNewPosition += _items.Count - 1;
-                        }
+                        var currentPosition = item.CurrentPosition;
+                        var newPosition = currentPosition + item.Value;
 
-                        if (currentPosition > actualNewPosition)
+                        if (newPosition < 0)
                         {
-                            item.CurrentPosition = actualNewPosition;
-                            for (var i = currentPosition - 1; i >= actualNewPosition; i--)
+                            long count = (_items.Count - 1);
+                            var divideBy = -newPosition / count;
+                            var add = (divideBy + 1L) * count;
+                            var actualNewPosition = newPosition + add;
+
+                            if (currentPosition > actualNewPosition)
                             {
-                                _items[i].CurrentPosition += 1;
+                                item.CurrentPosition = actualNewPosition;
+                                for (var i = currentPosition - 1; i >= actualNewPosition; i--)
+                                {
+                                    _items[(int)i].CurrentPosition += 1;
+                                }
+                                _items.RemoveAt((int)currentPosition);
+                                _items.Insert((int)actualNewPosition, item);
                             }
-                            _items.RemoveAt(currentPosition);
-                            _items.Insert(actualNewPosition, item);
-                        }
-                        else if (currentPosition < actualNewPosition)
-                        {
-                            item.CurrentPosition = actualNewPosition;
-                            for (var i = currentPosition + 1; i <= actualNewPosition; i++)
+                            else if (currentPosition < actualNewPosition)
                             {
-                                _items[i].CurrentPosition -= 1;
+                                item.CurrentPosition = actualNewPosition;
+                                for (var i = currentPosition + 1; i <= actualNewPosition; i++)
+                                {
+                                    _items[(int)i].CurrentPosition -= 1;
+                                }
+                                _items.RemoveAt((int)currentPosition);
+                                _items.Insert((int)actualNewPosition, item);
                             }
-                            _items.RemoveAt(currentPosition);
-                            _items.Insert(actualNewPosition, item);
                         }
-                    }
-                    else if (newPosition >= _items.Count)
-                    {
-                        var actualNewPosition = newPosition;
-                        while (actualNewPosition >= _items.Count)
+                        else if (newPosition >= _items.Count)
                         {
-                            actualNewPosition -= (_items.Count - 1);
-                        }
+                            long count = _items.Count - 1;
+                            var divideBy = newPosition / count;
+                            var subtract = divideBy * count;
+                            var actualNewPosition = newPosition - subtract;
 
-                        if (currentPosition > actualNewPosition)
-                        {
-                            item.CurrentPosition = actualNewPosition;
-                            for (var i = currentPosition - 1; i >= actualNewPosition; i--)
+                            if (currentPosition > actualNewPosition)
                             {
-                                _items[i].CurrentPosition += 1;
+                                item.CurrentPosition = actualNewPosition;
+                                for (var i = currentPosition - 1; i >= actualNewPosition; i--)
+                                {
+                                    _items[(int)i].CurrentPosition += 1;
+                                }
+                                _items.RemoveAt((int)currentPosition);
+                                _items.Insert((int)actualNewPosition, item);
                             }
-                            _items.RemoveAt(currentPosition);
-                            _items.Insert(actualNewPosition, item);
-                        }
-                        else if (currentPosition < actualNewPosition)
-                        {
-                            item.CurrentPosition = actualNewPosition;
-                            for (var i = currentPosition + 1; i <= actualNewPosition; i++)
+                            else if (currentPosition < actualNewPosition)
                             {
-                                _items[i].CurrentPosition -= 1;
+                                item.CurrentPosition = actualNewPosition;
+                                for (var i = currentPosition + 1; i <= actualNewPosition; i++)
+                                {
+                                    _items[(int)i].CurrentPosition -= 1;
+                                }
+                                _items.RemoveAt((int)currentPosition);
+                                _items.Insert((int)actualNewPosition, item);
                             }
-                            _items.RemoveAt(currentPosition);
-                            _items.Insert(actualNewPosition, item);
                         }
-                    }
-                    else if (currentPosition > newPosition)
-                    {
-                        item.CurrentPosition = newPosition;
-                        for (var i = currentPosition - 1; i >= newPosition; i--)
+                        else if (currentPosition > newPosition)
                         {
-                            _items[i].CurrentPosition += 1;
-                        }
-                        _items.RemoveAt(currentPosition);
-                        _items.Insert(newPosition, item);
-                    }
-                    else if (currentPosition < newPosition)
-                    {
-                        item.CurrentPosition = newPosition;
-                        for (var i = currentPosition + 1; i <= newPosition; i++)
-                        {
-                            _items[i].CurrentPosition -= 1;
-                        }
-                        _items.RemoveAt(currentPosition);
-                        _items.Insert(newPosition, item);
-                    }
-                    
-
-                    /*
-
-                    var newPosition = (item.CurrentPosition + item.Value + _items.Count) % _items.Count;
-                    if (item.Value < 0)
-                    {
-                        newPosition = (newPosition + _items.Count - 1) % _items.Count;
-                    }
-
-                    item.CurrentPosition = newPosition;
-                    if (currentPosition < newPosition)
-                    {
-                        for (var i = currentPosition + 1; i <= newPosition; i++)
-                        {
-                            _items[i].CurrentPosition -= 1;
-                        }
-                        _items.RemoveAt(currentPosition);
-                        _items.Insert(newPosition, item);
-                    }
-
-                    if (currentPosition > newPosition)
-                    {
-                        for (var i = currentPosition - 1; i >= newPosition; i--)
-                        {
-                            _items[i].CurrentPosition += 1;
-                        }
-                        _items.RemoveAt(currentPosition);
-                        _items.Insert(newPosition, item);
-                    }
-
-                    /*
-                    if (item.Value < 0)
-                    {
-                        if (newPosition == 0)
-                        {
-                            newPosition = _items.Count + 1;
                             item.CurrentPosition = newPosition;
+                            for (var i = currentPosition - 1; i >= newPosition; i--)
+                            {
+                                _items[(int)i].CurrentPosition += 1;
+                            }
+                            _items.RemoveAt((int)currentPosition);
+                            _items.Insert((int)newPosition, item);
+                        }
+                        else if (currentPosition < newPosition)
+                        {
+                            item.CurrentPosition = newPosition;
+                            for (var i = currentPosition + 1; i <= newPosition; i++)
+                            {
+                                _items[(int)i].CurrentPosition -= 1;
+                            }
+                            _items.RemoveAt((int)currentPosition);
+                            _items.Insert((int)newPosition, item);
                         }
 
-                        _items.Insert(newPosition - 1, item);
-                    }
-                    else
-                    {
-                        _items.Insert(newPosition, item);
-                    }*/
 
+                        // Console.WriteLine($"Moved {item}");
+                        // PrintList();
 
-                    Console.WriteLine($"Moved {item}");
-                    // Console.WriteLine("We have");
-                    // PrintList();
+                        var incorrectlyPlaced = _items
+                            .Select((x, i) => (x, i, x.CurrentPosition != i))
+                            .ToList();
 
-                    var incorrectlyPlaced = _items
-                        .Select((x, i) => (x, i, x.CurrentPosition != i))
-                        .ToList();
-
-                    if (incorrectlyPlaced.Any(x => x.Item3))
-                    {
-                        throw new Exception("We messed up");
+                        if (incorrectlyPlaced.Any(x => x.Item3))
+                        {
+                            throw new Exception("We messed up");
+                        }
                     }
                 }
             }
@@ -200,16 +155,11 @@ namespace AdventOfCode._2022.Day20
             return result.ToString();
         }
 
-        public override string Part2()
-        {
-            return "";
-        }
-
         private class Item
         {
-            public int Value { get; set; }
-            public int OriginalPosition { get; set; }
-            public int CurrentPosition { get; set; }
+            public long Value { get; set; }
+            public long OriginalPosition { get; set; }
+            public long CurrentPosition { get; set; }
 
             public override string ToString()
             {
@@ -217,9 +167,9 @@ namespace AdventOfCode._2022.Day20
             }
         }
 
-        private void PrintList()
+        private void PrintList(List<Item> items)
         {
-            foreach (var item in _items)
+            foreach (var item in items)
             {
                 Console.WriteLine(item.ToString());
             }
