@@ -51,8 +51,15 @@ namespace AdventOfCode._2022.Day16
             var possibleOutcomes = valvemap.FollowObjective(100).ToList();
             var best = possibleOutcomes.OrderByDescending(x => x.GetPressureReleased()).First();
 
+            var ordered = possibleOutcomes.OrderBy(x => x.ToString()).ToList();
+
             var log = best.GetFullLog();
             Console.WriteLine(log);
+
+
+// JJ,BB,CC | DD,HH,EE
+            var minutes = best.GetWhenMinutesPassed(3);
+            var next = minutes.GetNextObjectiveStep(100);
             var result = possibleOutcomes.Max(x => x.GetPressureReleased());
 
             return result.ToString();
@@ -201,6 +208,66 @@ namespace AdventOfCode._2022.Day16
 
             }
 
+            public ValveMap GetWhenMinutesPassed(int minutes)
+            {
+                var current = this;
+                while (current.MinutesPassed > minutes)
+                {
+                    current = current._base;
+                }
+
+                return current;
+            }
+
+            private string GetElephantObjective()
+            {
+                var objectives = new List<string>();
+
+                var currentObjective = string.Empty;
+                var current = this;
+                while (current != null)
+                {
+                    var objective = current._objective.NavigateElephantToAndOpen;
+                    if (objective != string.Empty
+                        && objective != currentObjective)
+                    {
+                        currentObjective = objective;
+                        objectives.Add(objective);
+                    }
+                    current = current._base;
+                }
+
+                objectives.Reverse();
+                return string.Join(",", objectives);
+            }
+
+            private string GetObjective()
+            {
+                var objectives = new List<string>();
+
+                var currentObjective = string.Empty;
+                var current = this;
+                while (current != null)
+                {
+                    var objective = current._objective.NavigateToAndOpen;
+                    if (objective != string.Empty
+                        && objective != currentObjective)
+                    {
+                        currentObjective = objective;
+                        objectives.Add(objective);
+                    }
+                    current = current._base;
+                }
+
+                objectives.Reverse();
+                return string.Join(",", objectives);
+            }
+
+            public override string ToString()
+            {
+                return $"{GetObjective()} | {GetElephantObjective()}";
+            }
+
             public ValveMap FollowPath(params string[] locations)
             {
                 if (MinutesPassed == _timeAvailable)
@@ -311,11 +378,19 @@ namespace AdventOfCode._2022.Day16
             {
                 ReleasePressure();
 
+
+                // JJ,BB,CC | DD,HH,EE
                 var destination = _objective.NavigateToAndOpen;
                 var elephantDestination = _objective.NavigateElephantToAndOpen;
                 var openedValve = false;
                 var elephantOpenedValve = false;
                 var openedValves = new List<string>();
+
+                if (GetObjective().StartsWith("JJ,BB") && GetElephantObjective().StartsWith("DD"))
+                {
+                    var log = GetFullLog();
+                    var stop = "here";
+                }
 
                 var valveOverrides = new List<Valve>();
                 if (destination != string.Empty &&
@@ -409,16 +484,13 @@ namespace AdventOfCode._2022.Day16
                         newElephantLocation = _shortestPaths.GetNextStep(_elephantLocation, elephantDestination);
                     }
 
-                    foreach (var l in locations)
+                    foreach (var l in locations.Where(l => l != elephantDestination))
                     {
                         anyLocations = true;
-                        if (l != elephantDestination)
-                        {
-                            var nextStep = _shortestPaths.GetNextStep(_location, l);
-                            var newLocation = openedValve ? _location : nextStep;
+                        var nextStep = _shortestPaths.GetNextStep(_location, l);
+                        var newLocation = openedValve ? _location : nextStep;
 
-                            yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(l, elephantDestination));
-                        }
+                        yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(l, elephantDestination));
                     }
 
                     if (!anyLocations)
@@ -437,16 +509,13 @@ namespace AdventOfCode._2022.Day16
                         newLocation = _shortestPaths.GetNextStep(_location, destination);
                     }
 
-                    foreach (var e in elephantLocations)
+                    foreach (var e in elephantLocations.Where(e => e != destination))
                     {
                         anyLocations = true;
-                        if (destination != e)
-                        {
-                            var elephantNextStep = _shortestPaths.GetNextStep(_elephantLocation, e);
-                            var newElephantLocation = elephantOpenedValve ? _elephantLocation : elephantNextStep;
+                        var elephantNextStep = _shortestPaths.GetNextStep(_elephantLocation, e);
+                        var newElephantLocation = elephantOpenedValve ? _elephantLocation : elephantNextStep;
 
-                            yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(destination, e));
-                        }
+                        yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(destination, e));
                     }
 
                     if (!anyLocations)
