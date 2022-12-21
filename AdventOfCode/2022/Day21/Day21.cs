@@ -9,21 +9,21 @@ namespace AdventOfCode._2022.Day21
 {
     public class Day21 : Day
     {
-        public Day21() : base(2022, 21, "Day21/input_2022_21.txt", "", "")
+        public Day21() : base(2022, 21, "Day21/input_2022_21.txt", "85616733059734", "")
         {
 
         }
 
-        private Dictionary<string, Expression> _lookup;
+        private Dictionary<string, IExpression> _lookup;
         public override void Initialise()
         {
-            _lookup = new Dictionary<string, Expression>();
+            _lookup = new Dictionary<string, IExpression>();
             foreach (var line in InputLines)
             {
                 var nameSplit = line.Split(": ");
                 var name = nameSplit[0];
                 var expression = nameSplit[1];
-                _lookup.Add(name, new Expression(name, expression, _lookup));
+                _lookup.Add(name, CreateExpression(name, expression));
             }
         }
 
@@ -37,17 +37,45 @@ namespace AdventOfCode._2022.Day21
             return "";
         }
 
-        private class Expression
+        private interface IExpression
         {
-            private readonly string _expression;
-            private readonly Dictionary<string, Expression> _lookup;
-            private bool _evaluated = false;
-            private long _value = 0;
 
-            public Expression(string name, string expression, Dictionary<string, Expression> lookup)
+            public string Name { get; }
+
+            public long Evaluate();
+        }
+
+        private IExpression CreateExpression(string name, string expression)
+        {
+            if (long.TryParse(expression, out var constant))
+            {
+                return new Constant(name, constant);
+            }
+
+            var split = expression.Split(" ");
+            var left = new ExpressionWrapper(split[0], _lookup);
+            var right = new ExpressionWrapper(split[2], _lookup);
+
+            switch (split[1])
+            {
+                case "+": return new Add(name, left, right);
+                case "-": return new Subtract(name, left, right);
+                case "*": return new Multiply(name, left, right);
+                case "/": return new Divide(name, left, right);
+            }
+
+            throw new Exception($"Failed to create expression {expression}");
+        }
+
+        private class ExpressionWrapper : IExpression
+        {
+            private readonly Dictionary<string, IExpression> _lookup;
+            private bool _evaluated;
+            private long _value;
+
+            public ExpressionWrapper(string name, Dictionary<string, IExpression> lookup)
             {
                 Name = name;
-                _expression = expression;
                 _lookup = lookup;
             }
 
@@ -57,58 +85,109 @@ namespace AdventOfCode._2022.Day21
             {
                 if (!_evaluated)
                 {
-                    _value = UnacachedEvaluate();
-                    Console.WriteLine($"{Name}: Evaluated {_expression} to be {_value}");
+                    _value = _lookup[Name].Evaluate();
                     _evaluated = true;
                 }
 
                 return _value;
             }
+        }
 
-            private long UnacachedEvaluate()
+        private class Constant : IExpression
+        {
+            private readonly long _value;
+
+            public string Name { get; }
+
+            public Constant(string name, long value)
             {
-                Console.WriteLine($"{Name}: Evaluating {_expression}");
-                if (_expression.Contains("*"))
-                {
-                    var split = _expression.Split(" * ");
-                    var leftName = split[0];
-                    var rightName = split[1];
-                    var left = _lookup[leftName];
-                    var right = _lookup[rightName];
-                    return left.Evaluate() * right.Evaluate();
-                }
+                Name = name;
+                _value = value;
+            }
 
-                if (_expression.Contains("/"))
-                {
-                    var split = _expression.Split(" / ");
-                    var leftName = split[0];
-                    var rightName = split[1];
-                    var left = _lookup[leftName];
-                    var right = _lookup[rightName];
-                    return left.Evaluate() / right.Evaluate();
-                }
+            public long Evaluate()
+            {
+                return _value;
+            }
+        }
 
-                if (_expression.Contains("+"))
-                {
-                    var split = _expression.Split(" + ");
-                    var leftName = split[0];
-                    var rightName = split[1];
-                    var left = _lookup[leftName];
-                    var right = _lookup[rightName];
-                    return left.Evaluate() + right.Evaluate();
-                }
+        private class Add : IExpression
+        {
+            private readonly IExpression _left;
+            private readonly IExpression _right;
 
-                if (_expression.Contains("-"))
-                {
-                    var split = _expression.Split(" - ");
-                    var leftName = split[0];
-                    var rightName = split[1];
-                    var left = _lookup[leftName];
-                    var right = _lookup[rightName];
-                    return left.Evaluate() - right.Evaluate();
-                }
+            public string Name { get; }
 
-                return long.Parse(_expression);
+            public Add(string name, IExpression left, IExpression right)
+            {
+                Name = name;
+                _left = left;
+                _right = right;
+            }
+
+            public long Evaluate()
+            {
+                return _left.Evaluate() + _right.Evaluate();
+            }
+        }
+
+        private class Subtract : IExpression
+        {
+            private readonly IExpression _left;
+            private readonly IExpression _right;
+
+            public string Name { get; }
+
+            public Subtract(string name, IExpression left, IExpression right)
+            {
+                Name = name;
+                _left = left;
+                _right = right;
+            }
+
+            public long Evaluate()
+            {
+                return _left.Evaluate() - _right.Evaluate();
+            }
+        }
+
+        private class Multiply : IExpression
+        {
+            private readonly IExpression _left;
+            private readonly IExpression _right;
+
+            public string Name { get; }
+
+            public Multiply(string name, IExpression left, IExpression right)
+            {
+                Name = name;
+                _left = left;
+                _right = right;
+            }
+
+            public long Evaluate()
+            {
+                return _left.Evaluate() * _right.Evaluate();
+            }
+        }
+
+        private class Divide : IExpression
+        {
+            private readonly IExpression _left;
+            private readonly IExpression _right;
+
+            public string Name { get; }
+
+            public Divide(string name, IExpression left, IExpression right)
+            {
+                Name = name;
+                _left = left;
+                _right = right;
+            }
+
+            public long Evaluate()
+            {
+                return _left.Evaluate() / _right.Evaluate();
             }
         }
     }
