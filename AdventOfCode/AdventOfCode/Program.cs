@@ -35,10 +35,10 @@ namespace AdventOfCode.AdventOfCode
                 .ThenBy(day => day.DayNumber)
                 .ToList();
 
-            // var runPredicate = RunDay(2021, 22);
-            // var runPredicate = RunLatestDayInYear(2022, days);
-            // var runPredicate = RunYear(2021);
-            var runPredicate = RunAll();
+            // var runPredicate = RunDay(2022, 16);
+            var runPredicate = RunLatestDayInYear(2022, days);
+            // var runPredicate = RunYear(2022);
+            // var runPredicate = RunAll();
 
             var resultDetails = new List<Result>();
             foreach (var day in days.Where(x => runPredicate(x)))
@@ -119,14 +119,20 @@ namespace AdventOfCode.AdventOfCode
             public Func<string> ResultFunction { get; set; }
 
             public void Execute() {
+                var stopwatch = Stopwatch.StartNew();
                 try
                 {
                     Value = ResultFunction();
                 }
                 catch (Exception ex)
                 {
+                    stopwatch.Stop();
                     Exception = ex;
                     ResultType = ResultType.Exception;
+                }
+                finally
+                {
+                    RuntimeMilliseconds = stopwatch.ElapsedMilliseconds;
                 }
             }
         }
@@ -157,7 +163,7 @@ namespace AdventOfCode.AdventOfCode
                 ResultFunction = resultFunc
             };
 
-            var stopwatch = Stopwatch.StartNew();
+            // var stopwatch = Stopwatch.StartNew();
             // string result = null;
             try
             {
@@ -166,7 +172,7 @@ namespace AdventOfCode.AdventOfCode
                 Thread thread = new Thread(new ThreadStart(resultDetails.Execute), 16*1024*1024);
                 thread.Start();
 
-                var timeout = 60_000;
+                var timeout = 600_000;
                 var delay = 1;
                 while (thread.IsAlive && timeout > 0)
                 {
@@ -211,8 +217,8 @@ namespace AdventOfCode.AdventOfCode
             }
             finally
             {
-                stopwatch.Stop();
-                resultDetails.RuntimeMilliseconds = stopwatch.ElapsedMilliseconds;
+                // stopwatch.Stop();
+                // resultDetails.RuntimeMilliseconds = stopwatch.ElapsedMilliseconds;
             }
 
             if (resultDetails.ResultType != ResultType.None)
