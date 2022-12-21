@@ -35,7 +35,7 @@ namespace AdventOfCode._2022.Day16
 
         public override string Part1()
         {
-            var valvemap = new ValveMap(_valves, "AA", null, 30);
+            var valvemap = new ValveMap(_valves, "AA", null, 30, new Objective());
 
             // var example = valvemap.FollowPath("DD", "BB", "JJ", "HH", "EE", "CC");
             var possibleOutcomes = valvemap.GetTopOutcomes(15).ToList();
@@ -46,9 +46,13 @@ namespace AdventOfCode._2022.Day16
 
         public override string Part2()
         {
-            var valvemap = new ValveMap(_valves, "AA", "AA", 26);
+            var valvemap = new ValveMap(_valves, "AA", "AA", 26, new Objective());
 
-            var possibleOutcomes = valvemap.GetTopOutcomes(15).ToList();
+            var possibleOutcomes = valvemap.FollowObjective(100).ToList();
+            var best = possibleOutcomes.OrderByDescending(x => x.GetPressureReleased()).First();
+
+            var log = best.GetFullLog();
+            Console.WriteLine(log);
             var result = possibleOutcomes.Max(x => x.GetPressureReleased());
 
             return result.ToString();
@@ -70,6 +74,22 @@ namespace AdventOfCode._2022.Day16
             }
         }
 
+        private class Objective
+        {
+            public string NavigateToAndOpen { get; }
+            public string NavigateElephantToAndOpen { get; }
+
+            public Objective() : this(string.Empty, string.Empty)
+            {
+            }
+
+            public Objective(string navigateToAndOpen, string navigateElephantToAndOpen)
+            {
+                NavigateToAndOpen = navigateToAndOpen;
+                NavigateElephantToAndOpen = navigateElephantToAndOpen;
+            }
+        }
+
         private class ValveMap
         {
             public int MinutesPassed { get; }
@@ -78,26 +98,29 @@ namespace AdventOfCode._2022.Day16
             private readonly List<string> _allLocations;
             private readonly Dictionary<string, Valve> _overrides;
             private readonly ShortestPaths _shortestPaths;
-            private readonly string _elephantlocation;
+            private readonly string _elephantLocation;
             private readonly string _location;
             private int _pressureReleased = 0;
             private int _timeAvailable;
+            private readonly Objective _objective;
             private readonly string _logMessage;
 
             public ValveMap(
                 IEnumerable<Valve> valves,
                 string location,
                 string elephantLocation,
-                int timeAvailable)
+                int timeAvailable,
+                Objective objective)
             {
                 var possibleMoves = valves.SelectMany(v => v.LeadsTo.Select(lt => (v.Name, lt))).ToList();
                 _shortestPaths = new ShortestPaths(possibleMoves);
                 _overrides = valves.ToDictionary(v => v.Name, v => v);
                 _allLocations = valves.Select(v => v.Name).ToList();
                 _location = location;
-                _elephantlocation = elephantLocation;
+                _elephantLocation = elephantLocation;
                 MinutesPassed = 0;
                 _timeAvailable = timeAvailable;
+                _objective = objective;
                 _logMessage = "Start";
             }
 
@@ -105,29 +128,37 @@ namespace AdventOfCode._2022.Day16
                 ValveMap baseMap,
                 IEnumerable<Valve> overrideValves,
                 string location,
-                string elephantLocation)
+                string elephantLocation,
+                Objective objective)
             {
-                var logs = overrideValves.Select(o => $"Open {o.Name}").ToList();
-                if (_location != location)
+                MinutesPassed = baseMap.MinutesPassed + 1;
+
+                var logs = new List<string>
+                {
+                    $"{baseMap.GetPressureReleased()} Pressure Released"
+                };
+                logs.AddRange(overrideValves.Select(o => $"Open {o.Name}"));
+                if (baseMap._location != location)
                 {
                     logs.Add($"Move to {location}");
                 }
 
-                if (_elephantlocation != elephantLocation)
+                if (baseMap._elephantLocation != elephantLocation)
                 {
-                    logs.Add($"Elephant move to {location}");
+                    logs.Add($"Elephant move to {elephantLocation}");
                 }
 
-                _logMessage =string.Join(", ", logs);
+                _logMessage = logs.Any() ? string.Join(", ", logs) : "Do Nothing";
+                _logMessage = $"{MinutesPassed} {_logMessage}";
 
                 _shortestPaths = baseMap._shortestPaths;
                 _base = baseMap;
                 _overrides = overrideValves.ToDictionary(o => o.Name, o => o);
                 _location = location;
-                _elephantlocation = elephantLocation;
+                _elephantLocation = elephantLocation;
                 _allLocations = baseMap._allLocations;
-                MinutesPassed = baseMap.MinutesPassed + 1;
                 _timeAvailable = baseMap._timeAvailable;
+                _objective = objective;
             }
 
             private ValveMap(ValveMap baseMap)
@@ -135,27 +166,37 @@ namespace AdventOfCode._2022.Day16
                       baseMap,
                       Enumerable.Empty<Valve>(),
                       baseMap._location,
-                      baseMap._elephantlocation)
+                      baseMap._elephantLocation,
+                      baseMap._objective)
             {
 
             }
 
-            private ValveMap(ValveMap baseMap, IEnumerable<Valve> overrideValves)
+            private ValveMap(
+                ValveMap baseMap,
+                IEnumerable<Valve> overrideValves,
+                Objective objective)
                 : this(
                       baseMap,
                       overrideValves,
                       baseMap._location,
-                      baseMap._elephantlocation)
+                      baseMap._elephantLocation,
+                      objective)
             {
 
             }
 
-            private ValveMap(ValveMap baseMap, string location, string elephantLocation)
+            private ValveMap(
+                ValveMap baseMap,
+                string location,
+                string elephantLocation,
+                Objective objective)
                 : this(
                       baseMap,
                       Enumerable.Empty<Valve>(),
                       location,
-                      elephantLocation)
+                      elephantLocation,
+                      objective)
             {
 
             }
@@ -172,13 +213,13 @@ namespace AdventOfCode._2022.Day16
                     return SitOutTheClock();
                 }
 
-                return NavigateToLocationAndOpenValve((locations.First(), null))
+                return NavigateToLocationAndOpenValve(locations.First())
                     .FollowPath(locations.Skip(1).ToArray());
             }
 
             public IEnumerable<ValveMap> GetTopOutcomes(int depth)
             {
-                var topDestinations = TopDestinations(_location, _elephantlocation, depth).ToList();
+                var topDestinations = TopDestinations(_location, depth).ToList();
 
                 if (!topDestinations.Any())
                 {
@@ -209,6 +250,7 @@ namespace AdventOfCode._2022.Day16
 
 
             private Valve GetCurrentValve() => GetValve(_location);
+            private Valve GetCurrentElephantValve() => GetValve(_elephantLocation);
 
             private Valve GetValve(string location)
             {
@@ -225,10 +267,11 @@ namespace AdventOfCode._2022.Day16
                 return GetCurrentValve().LeadsTo;
             }
 
-            public IEnumerable<string> TopDestinations(string location, int count)
+            public IEnumerable<string> TopDestinations(string location, int count, IEnumerable<string> exclusions = null)
             {
                 var potentialValves = _allLocations
                     .Where(l => l != location)
+                    .Where(l => exclusions == null || !exclusions.Contains(l))
                     .Select(GetValve)
                     .Where(v => !v.IsOpen && v.FlowRate > 0)
                     .Select(v => (Location: v.Name, PotentialFlowRate: GetPotentialFlowRate(location, v.Name)))
@@ -244,20 +287,6 @@ namespace AdventOfCode._2022.Day16
                 return locations;
             }
 
-            public IEnumerable<(string, string)> TopDestinations(string location, string elephantLocation, int count)
-            {
-                var locations = TopDestinations(location, count);
-                var elephantLocations = TopDestinations(elephantLocation, count);
-
-                foreach(var l in locations)
-                {
-                    foreach (var e in elephantLocations)
-                    {
-                        yield return (l, e);
-                    }
-                }
-            }
-
             private int GetPotentialFlowRate(string currentLocation, string location)
             {
                 var shortestPath = _shortestPaths.GetShortestPath(currentLocation, location, new List<string>());
@@ -268,17 +297,190 @@ namespace AdventOfCode._2022.Day16
                 return flowValue;
             }
 
-            public ValveMap NavigateToLocationAndOpenValve((string, string) locations)
+            public IEnumerable<ValveMap> FollowObjective(int count)
             {
-                var myLocation = locations.Item1;
+                var nextSteps = GetNextObjectiveStep(count).ToList();
+                var completedSteps = nextSteps.Where(x => x.MinutesPassed == _timeAvailable);
+                var incompleteSteps = nextSteps.Where(x => x.MinutesPassed < _timeAvailable);
+                var completedIncomplete = incompleteSteps.SelectMany(x => x.FollowObjective(count));
 
-                if (CanMoveDirectlyTo(myLocation))
+                return completedSteps.Concat(completedIncomplete);
+            }
+
+            public IEnumerable<ValveMap> GetNextObjectiveStep(int count)
+            {
+                ReleasePressure();
+
+                var destination = _objective.NavigateToAndOpen;
+                var elephantDestination = _objective.NavigateElephantToAndOpen;
+                var openedValve = false;
+                var elephantOpenedValve = false;
+                var openedValves = new List<string>();
+
+                var valveOverrides = new List<Valve>();
+                if (destination != string.Empty &&
+                    _location == destination)
                 {
-                    return MoveTo(myLocation).OpenValve();
+                    var currentValve = GetCurrentValve();
+                    if (CanOpenValve())
+                    {
+                        // Console.WriteLine($"{MinutesPassed} Opening {_location}");
+                        var replacementValve = new Valve(currentValve.Name, currentValve.FlowRate, currentValve.LeadsTo, true);
+                        valveOverrides.Add(replacementValve);
+                        openedValves.Add(currentValve.Name);
+                        destination = string.Empty;
+                        openedValve = true;
+                    }
                 }
 
-                var nextStep = _shortestPaths.GetNextStep(_location, myLocation);
-                return MoveTo(nextStep).NavigateToLocationAndOpenValve(locations);
+                if (elephantDestination != string.Empty &&
+                    _elephantLocation == elephantDestination)
+                {
+                    var currentValve = GetCurrentElephantValve();
+                    if (CanElephantOpenValve())
+                    {
+                        // Console.WriteLine($"{MinutesPassed} Opening {_location}");
+                        var replacementValve = new Valve(currentValve.Name, currentValve.FlowRate, currentValve.LeadsTo, true);
+                        valveOverrides.Add(replacementValve);
+                        openedValves.Add(currentValve.Name);
+                        elephantDestination = string.Empty;
+                        elephantOpenedValve = true;
+                    }
+                }
+
+                if (destination == string.Empty && elephantDestination == string.Empty)
+                {
+                    var locations = TopDestinations(_location, count, openedValves).ToList();
+                    var elephantLocations = TopDestinations(_elephantLocation, count, openedValves).ToList();
+
+                    var anyLocations = false;
+                    var anyElephantLocations = false;
+                    foreach (var l in locations)
+                    {
+                        anyLocations = true;
+                        foreach (var e in elephantLocations)
+                        {
+                            if (l != e)
+                            {
+                                anyElephantLocations = true;
+                                var nextStep = _shortestPaths.GetNextStep(_location, l);
+                                var newLocation = openedValve ? _location : nextStep;
+
+                                var elephantNextStep = _shortestPaths.GetNextStep(_elephantLocation, e);
+                                var newElephantLocation = elephantOpenedValve ? _elephantLocation : elephantNextStep;
+
+                                yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(l, e));
+                            }
+                        }
+                    }
+
+                    if (!anyLocations)
+                    {
+                        foreach (var e in elephantLocations)
+                        {
+                            anyElephantLocations = true;
+
+                            var elephantNextStep = _shortestPaths.GetNextStep(_elephantLocation, e);
+                            var newElephantLocation = elephantOpenedValve ? _elephantLocation : elephantNextStep;
+
+                            yield return new ValveMap(this, valveOverrides, _location, newElephantLocation, new Objective(_location, e));
+                        }
+                    }
+
+                    if (!anyElephantLocations)
+                    {
+                        foreach (var l in locations)
+                        {
+                            var nextStep = _shortestPaths.GetNextStep(_location, l);
+                            var newLocation = openedValve ? _location : nextStep;
+
+                            yield return new ValveMap(this, valveOverrides, newLocation, _elephantLocation, new Objective(l, _elephantLocation));
+                        }
+                    }
+                }
+                else if (destination == string.Empty)
+                {
+                    var locations = TopDestinations(_location, count, openedValves);
+                    var anyLocations = false;
+
+                    var newElephantLocation = _elephantLocation;
+                    if (!elephantOpenedValve && elephantDestination != _elephantLocation)
+                    {
+                        newElephantLocation = _shortestPaths.GetNextStep(_elephantLocation, elephantDestination);
+                    }
+
+                    foreach (var l in locations)
+                    {
+                        anyLocations = true;
+                        if (l != elephantDestination)
+                        {
+                            var nextStep = _shortestPaths.GetNextStep(_location, l);
+                            var newLocation = openedValve ? _location : nextStep;
+
+                            yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(l, elephantDestination));
+                        }
+                    }
+
+                    if (!anyLocations)
+                    {
+                        yield return new ValveMap(this, valveOverrides, _location, newElephantLocation, new Objective(_location, elephantDestination));
+                    }
+                }
+                else if (elephantDestination == string.Empty)
+                {
+                    var elephantLocations = TopDestinations(_elephantLocation, count, openedValves);
+                    var anyLocations = false;
+
+                    var newLocation = _location;
+                    if (!openedValve && destination != _location)
+                    {
+                        newLocation = _shortestPaths.GetNextStep(_location, destination);
+                    }
+
+                    foreach (var e in elephantLocations)
+                    {
+                        anyLocations = true;
+                        if (destination != e)
+                        {
+                            var elephantNextStep = _shortestPaths.GetNextStep(_elephantLocation, e);
+                            var newElephantLocation = elephantOpenedValve ? _elephantLocation : elephantNextStep;
+
+                            yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(destination, e));
+                        }
+                    }
+
+                    if (!anyLocations)
+                    {
+                        yield return new ValveMap(this, valveOverrides, newLocation, _elephantLocation, new Objective(destination, _elephantLocation));
+                    }
+                }
+                else
+                {
+                    var newLocation = _location;
+                    if (!openedValve && destination != _location)
+                    {
+                        newLocation = _shortestPaths.GetNextStep(_location, destination);
+                    }
+
+                    var newElephantLocation = _elephantLocation;
+                    if (!elephantOpenedValve && elephantDestination != _elephantLocation)
+                    {
+                        newElephantLocation = _shortestPaths.GetNextStep(_elephantLocation, elephantDestination);
+                    }
+
+                    yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(destination, elephantDestination));
+                }
+            }
+
+            public ValveMap NavigateToLocationAndOpenValve(string location)
+            {
+                if (CanMoveDirectlyTo(location))
+                {
+                    return MoveTo(location).OpenValve();
+                }
+
+                var nextStep = _shortestPaths.GetNextStep(_location, location);
+                return MoveTo(nextStep).NavigateToLocationAndOpenValve(location);
             }
 
             public bool CanMoveDirectlyTo(string location)
@@ -295,8 +497,15 @@ namespace AdventOfCode._2022.Day16
 
                 // Console.WriteLine($"{MinutesPassed} Moving to {location}");
                 ReleasePressure();
-                return new ValveMap(this, location, _elephantlocation);
+                return new ValveMap(this, location, _elephantLocation, this._objective);
             }
+
+            public bool CanElephantOpenValve()
+            {
+                var currentValve = GetCurrentElephantValve();
+                return !currentValve.IsOpen && currentValve.FlowRate != 0;
+            }
+
 
             public bool CanOpenValve()
             {
@@ -316,7 +525,7 @@ namespace AdventOfCode._2022.Day16
                 var replacementValve = new Valve(currentValve.Name, currentValve.FlowRate, currentValve.LeadsTo, true);
 
                 ReleasePressure();
-                return new ValveMap(this, new [] { replacementValve });
+                return new ValveMap(this, new [] { replacementValve }, this._objective);
             }
 
             public int GetPressureReleased()
@@ -342,6 +551,11 @@ namespace AdventOfCode._2022.Day16
                 }
 
                 return 0;
+            }
+
+            internal string GetFullLog()
+            {
+                return $"{_base?.GetFullLog()}{Environment.NewLine}{_logMessage}";
             }
         }
 
@@ -377,6 +591,11 @@ namespace AdventOfCode._2022.Day16
                 string destination,
                 List<string> visited)
             {
+                if (source == null)
+                {
+                    var stop = true;
+                }
+
                 if (_shortestPaths[source].ContainsKey(destination))
                 {
                     return _shortestPaths[source][destination];
