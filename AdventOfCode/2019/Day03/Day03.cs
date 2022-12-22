@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode.Shared;
+using AdventOfCode.Shared.DataStructures;
+using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2019.Day03
 {
@@ -30,14 +32,14 @@ namespace AdventOfCode._2019.Day03
             return FindClosestSignalIntersection(0, 1).ToString();
         }
 
-        public int FindClosestIntersection(int firstWireIndex, int secondWireIndex)
+        public long FindClosestIntersection(int firstWireIndex, int secondWireIndex)
         {
             var wire0 = _wires[firstWireIndex];
             var wire1 = _wires[secondWireIndex];
 
             var intersections = wire0.GetIntersections(wire1).ToList();
 
-            var result = intersections.Min(c => c.Key.ManhattenDistanceFromOrigin());
+            var result = intersections.Min(c => c.Key.ManhattanDistanceTo(Coordinate2D.Origin));
 
             return result;
         }
@@ -56,17 +58,17 @@ namespace AdventOfCode._2019.Day03
 
         private class Wire
         {
-            public readonly List<Coordinate> Locations;
+            public readonly List<Coordinate2D> Locations;
             public Wire(string wireDescription)
             {
                 Locations = ParseWire(wireDescription);
             }
 
-            private static List<Coordinate> ParseWire(string wireDescription)
+            private static List<Coordinate2D> ParseWire(string wireDescription)
             {
-                var coordinates = new List<Coordinate>();
+                var coordinates = new List<Coordinate2D>();
 
-                var location = new Coordinate(0, 0);
+                var location = Coordinate2D.Origin;
 
                 var directions = wireDescription.Split(",");
                 foreach (var direction in directions)
@@ -76,7 +78,7 @@ namespace AdventOfCode._2019.Day03
 
                     while (distanceToMove > 0)
                     {
-                        location = location.NextCoordinate(dir);
+                        location = location.Neighbour(ParseDirection(dir));
                         coordinates.Add(location);
                         distanceToMove -= 1;
                     }
@@ -85,30 +87,20 @@ namespace AdventOfCode._2019.Day03
                 return coordinates;
             }
 
-            public IEnumerable<KeyValuePair<Coordinate, int>> GetIntersections(Wire wire)
+            public IEnumerable<KeyValuePair<Coordinate2D, int>> GetIntersections(Wire wire)
             {
-                var locationDictionary = new Dictionary<int, Dictionary<int, int>>();
+                var locationDictionary = new Dictionary2D<long, long, int>();
                 var signalDelay = 1;
                 foreach (var location in Locations)
                 {
-                    if (!locationDictionary.ContainsKey(location.X))
-                    {
-                        locationDictionary.Add(location.X, new Dictionary<int, int>());
-                    }
-
-                    if (!locationDictionary[location.X].ContainsKey(location.Y))
-                    {
-                        locationDictionary[location.X].Add(location.Y, signalDelay);
-                    }
-
+                    locationDictionary[location.X][location.Y] = signalDelay;
                     signalDelay += 1;
                 }
 
                 signalDelay = 1;
                 foreach (var location in wire.Locations)
                 {
-                    if (locationDictionary.ContainsKey(location.X)
-                        && locationDictionary[location.X].ContainsKey(location.Y))
+                    if (locationDictionary.ContainsKey(location.X, location.Y))
                     {
                         var thisSignalDelay = locationDictionary[location.X][location.Y];
                         yield return KeyValuePair.Create(location, signalDelay + thisSignalDelay);
@@ -119,34 +111,17 @@ namespace AdventOfCode._2019.Day03
             }
         }
 
-        private class Coordinate
+        private static Direction ParseDirection(char direction)
         {
-            public readonly int X;
-            public readonly int Y;
-
-            public Coordinate(int x, int y)
+            switch (direction)
             {
-                X = x;
-                Y = y;
+                case 'U': return Direction.Up;
+                case 'D': return Direction.Down;
+                case 'L': return Direction.Left;
+                case 'R': return Direction.Right;
             }
 
-            public Coordinate NextCoordinate(char direction)
-            {
-                switch (direction)
-                {
-                    case 'U': return new Coordinate(X, Y + 1);
-                    case 'D': return new Coordinate(X, Y - 1);
-                    case 'L': return new Coordinate(X - 1, Y);
-                    case 'R': return new Coordinate(X + 1, Y);
-                }
-
-                throw new Exception($"Unexpected direction: {direction}");
-            }
-
-            public int ManhattenDistanceFromOrigin()
-            {
-                return Math.Abs(X) + Math.Abs(Y);
-            }
+            throw new Exception($"Unexpected direction: {direction}");
         }
     }
 }

@@ -40,6 +40,23 @@ namespace AdventOfCode.Shared.Geometry
             yield return Right();
         }
 
+        public Coordinate2D Neighbour(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Up:
+                    return Up();
+                case Direction.Down:
+                    return Down();
+                case Direction.Left:
+                    return Left();
+                case Direction.Right:
+                    return Right();
+            }
+
+            throw new Exception($"Unsupported Direction {direction}");
+        }
+
         public Coordinate2D Up()
         {
             return new Coordinate2D(X, Y + 1);
