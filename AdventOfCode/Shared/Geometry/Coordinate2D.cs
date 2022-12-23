@@ -57,21 +57,30 @@ namespace AdventOfCode.Shared.Geometry
             throw new Exception($"Unsupported Direction {direction}");
         }
 
+        public Coordinate2D NorthEast() => North().East();
+        public Coordinate2D NorthWest() => North().West();
+        public Coordinate2D North() => Up();
         public Coordinate2D Up()
         {
             return new Coordinate2D(X, Y + 1);
         }
 
+
+        public Coordinate2D SouthEast() => South().East();
+        public Coordinate2D SouthWest() => South().West();
+        public Coordinate2D South() => Down();
         public Coordinate2D Down()
         {
             return new Coordinate2D(X, Y - 1);
         }
 
+        public Coordinate2D West() => Left();
         public Coordinate2D Left()
         {
             return new Coordinate2D(X - 1, Y);
         }
 
+        public Coordinate2D East() => Right();
         public Coordinate2D Right()
         {
             return new Coordinate2D(X + 1, Y);

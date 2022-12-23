@@ -6,13 +6,21 @@ namespace AdventOfCode.Shared.DataStructures
 	{
 		private Dictionary<TKey1, Dictionary<TKey2, TValue>> _dictionary = new Dictionary<TKey1, Dictionary<TKey2, TValue>>();
 
-		public void Add(TKey1 key1, TKey2 key2, TValue value)
-		{
+        public IEnumerable<TKey1> Keys => _dictionary.Keys;
+
+        public void Add(TKey1 key1, TKey2 key2, TValue value)
+        {
             EnsureKey1Exits(key1);
             _dictionary[key1].Add(key2, value);
-		}
+        }
 
-		public bool ContainsKey(TKey1 key1, TKey2 key2)
+        public void Set(TKey1 key1, TKey2 key2, TValue value)
+        {
+            EnsureKey1Exits(key1);
+            _dictionary[key1][key2] = value;
+        }
+
+        public bool ContainsKey(TKey1 key1, TKey2 key2)
 		{
 			return _dictionary.ContainsKey(key1)
 				&& _dictionary[key1].ContainsKey(key2);
