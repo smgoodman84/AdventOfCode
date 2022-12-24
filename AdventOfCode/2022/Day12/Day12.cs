@@ -11,7 +11,7 @@ namespace AdventOfCode._2022.Day12
 
         }
 
-        private Grid2D<Location> _locations;
+        private IGrid2D<Location> _locations;
         private Coordinate2D _startLocation;
         private Coordinate2D _endLocation;
 

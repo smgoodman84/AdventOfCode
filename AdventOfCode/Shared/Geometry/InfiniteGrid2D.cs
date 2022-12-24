@@ -4,17 +4,18 @@ using AdventOfCode.Shared.DataStructures;
 
 namespace AdventOfCode.Shared.Geometry
 {
-    public class InfiniteGrid2D<T>
+    public class InfiniteGrid2D<T> : IGrid2D<T>
     {
         private Dictionary2D<long, long, T> _grid;
 
         public long Width { get; private set; }
         public long Height { get; private set; }
 
-        private long _minX;
-        private long _maxX;
-        private long _minY;
-        private long _maxY;
+        public long MinX { get; private set; }
+        public long MaxX { get; private set; }
+        public long MinY { get; private set; }
+        public long MaxY { get; private set; }
+
         private bool _any;
         private T _defaultValue;
 
@@ -24,10 +25,11 @@ namespace AdventOfCode.Shared.Geometry
             _defaultValue = defaultValue;
         }
 
+        public bool IsInGrid(int x, int y) => IsInGrid((long)x, (long)y);
         public bool IsInGrid(long x, long y)
         {
-            return _minX <= x && x <= _maxX
-                && _minY <= y && y <= _maxY;
+            return MinX <= x && x <= MaxX
+                && MinY <= y && y <= MaxY;
         }
 
         public bool IsInGrid(Coordinate2D coordinate)
@@ -35,6 +37,7 @@ namespace AdventOfCode.Shared.Geometry
             return IsInGrid(coordinate.X, coordinate.Y);
         }
 
+        public T Read(int x, int y) => Read((long)x, (long)y);
         public T Read(long x, long y)
         {
             return _grid.ContainsKey(x,y) ? _grid[x][y] : _defaultValue;
@@ -45,27 +48,28 @@ namespace AdventOfCode.Shared.Geometry
             return Read(coordinate.X, coordinate.Y);
         }
 
+        public void Write(int x, int y, T value) => Write((long)x, (long)y, value);
         public void Write(long x, long y, T value)
         {
-            if (!_any || x < _minX)
+            if (!_any || x < MinX)
             {
-                _minX = x;
-                Width = _maxX - _minX + 1;
+                MinX = x;
+                Width = MaxX - MinX + 1;
             }
-            if (!_any || x > _maxX)
+            if (!_any || x > MaxX)
             {
-                _maxX = x;
-                Width = _maxX - _minX + 1;
+                MaxX = x;
+                Width = MaxX - MinX + 1;
             }
-            if (!_any || y < _minY)
+            if (!_any || y < MinY)
             {
-                _minY = y;
-                Height = _maxY - _minY + 1;
+                MinY = y;
+                Height = MaxY - MinY + 1;
             }
-            if (!_any || y > _maxY)
+            if (!_any || y > MaxY)
             {
-                _maxY = y;
-                Height = _maxY - _minY + 1;
+                MaxY = y;
+                Height = MaxY - MinY + 1;
             }
 
             _any = true;
@@ -93,9 +97,9 @@ namespace AdventOfCode.Shared.Geometry
 
         public IEnumerable<T> ReadAll()
         {
-            for (var y = _minY; y < Height; y++)
+            for (var y = MinY; y < Height; y++)
             {
-                for (var x = _minX; x < Width; x++)
+                for (var x = MinX; x < Width; x++)
                 {
                     yield return Read(x, y);
                 }
