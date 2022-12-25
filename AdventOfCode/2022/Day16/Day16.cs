@@ -38,7 +38,7 @@ namespace AdventOfCode._2022.Day16
             var valvemap = new ValveMap(_valves, "AA", null, 30, new Objective());
 
             // var example = valvemap.FollowPath("DD", "BB", "JJ", "HH", "EE", "CC");
-            var possibleOutcomes = valvemap.GetTopOutcomes(15).ToList();
+            var possibleOutcomes = valvemap.GetTopOutcomes(0).ToList();
             var result = possibleOutcomes.Max(x => x.GetPressureReleased());
 
             return result.ToString();
@@ -48,9 +48,9 @@ namespace AdventOfCode._2022.Day16
         {
             var valvemap = new ValveMap(_valves, "AA", "AA", 26, new Objective());
 
-            var possibleOutcomes = valvemap.FollowObjective(100).ToList();
+            var possibleOutcomes = valvemap.FollowObjective(15).ToList();
             var best = possibleOutcomes.OrderByDescending(x => x.GetPressureReleased()).First();
-
+            /*
             var ordered = possibleOutcomes.OrderBy(x => x.ToString()).ToList();
 
             var log = best.GetFullLog();
@@ -60,6 +60,7 @@ namespace AdventOfCode._2022.Day16
 // JJ,BB,CC | DD,HH,EE
             var minutes = best.GetWhenMinutesPassed(3);
             var next = minutes.GetNextObjectiveStep(100);
+            */
             var result = possibleOutcomes.Max(x => x.GetPressureReleased());
 
             return result.ToString();
@@ -430,6 +431,8 @@ namespace AdventOfCode._2022.Day16
 
                     var anyLocations = false;
                     var anyElephantLocations = false;
+
+                    var possibilities = new List<(ValveMap, int)>();
                     foreach (var l in locations)
                     {
                         anyLocations = true;
@@ -444,9 +447,17 @@ namespace AdventOfCode._2022.Day16
                                 var elephantNextStep = _shortestPaths.GetNextStep(_elephantLocation, e);
                                 var newElephantLocation = elephantOpenedValve ? _elephantLocation : elephantNextStep;
 
-                                yield return new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(l, e));
+                                var potentialFlow = GetPotentialFlowRate(_location, l)
+                                    + GetPotentialFlowRate(_elephantLocation, e);
+
+                                possibilities.Add((new ValveMap(this, valveOverrides, newLocation, newElephantLocation, new Objective(l, e)), potentialFlow));
                             }
                         }
+                    }
+
+                    foreach(var possibility in possibilities.OrderByDescending(x => x.Item2).Take(count))
+                    {
+                        yield return possibility.Item1;
                     }
 
                     if (!anyLocations)

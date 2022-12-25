@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode.Shared;
+using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2021.Day15
 {
@@ -44,10 +45,10 @@ namespace AdventOfCode._2021.Day15
             foreach (var node in nodes.Values)
             {
                 var coordinate = node.Coordinate;
-                var leftKey = new Coordinate(coordinate.X - 1, coordinate.Y).ToString();
-                var rightKey = new Coordinate(coordinate.X + 1, coordinate.Y).ToString();
-                var upKey = new Coordinate(coordinate.X, coordinate.Y - 1).ToString();
-                var downKey = new Coordinate(coordinate.X, coordinate.Y + 1).ToString();
+                var leftKey = coordinate.Left().ToString();
+                var rightKey = coordinate.Right().ToString();
+                var upKey = coordinate.Down().ToString(); // Inverse coordinate system
+                var downKey = coordinate.Up().ToString(); // Inverse coordinate system
 
                 if (nodes.ContainsKey(leftKey))
                 {
@@ -74,8 +75,8 @@ namespace AdventOfCode._2021.Day15
             var endX = nodes.Values.Max(n => n.Coordinate.X);
             var endY = nodes.Values.Max(n => n.Coordinate.Y);
 
-            var start = nodes[new Coordinate(startX, startY).ToString()];
-            var end = nodes[new Coordinate(endX, endY).ToString()];
+            var start = nodes[new Coordinate2D(startX, startY).ToString()];
+            var end = nodes[new Coordinate2D(endX, endY).ToString()];
 
             var result = shortestPaths.GetShortestPath(start, end, 5000);
 
@@ -194,37 +195,20 @@ namespace AdventOfCode._2021.Day15
 
         private class Node
         {
-            public Node(int x, int y, int distance)
+            public Node(long x, long y, int distance)
             {
-                Coordinate = new Coordinate(x, y);
+                Coordinate = new Coordinate2D(x, y);
                 Distance = distance;
             }
 
             public List<Node> Neighbours { get; } = new List<Node>();
             public int Distance { get; set; }
-            public Coordinate Coordinate { get; set; }
+            public Coordinate2D Coordinate { get; set; }
             public string Identifier => Coordinate.ToString();
 
             public override string ToString()
             {
                 return $"{Coordinate} - {Distance}";
-            }
-        }
-
-        private class Coordinate
-        {
-            public int X { get; private set; }
-            public int Y { get; private set; }
-
-            public Coordinate(int x, int y)
-            {
-                X = x;
-                Y = y;
-            }
-
-            public override string ToString()
-            {
-                return $"{X},{Y}";
             }
         }
     }

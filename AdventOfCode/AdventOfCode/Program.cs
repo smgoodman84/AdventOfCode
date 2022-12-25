@@ -35,10 +35,10 @@ namespace AdventOfCode.AdventOfCode
                 .ThenBy(day => day.DayNumber)
                 .ToList();
 
-            // var runPredicate = RunDay(2022, 16);
-            var runPredicate = RunLatestDayInYear(2022, days);
+            // var runPredicate = RunDay(2019, 3);
+            // var runPredicate = RunLatestDayInYear(2022, days);
             // var runPredicate = RunYear(2022);
-            // var runPredicate = RunAll();
+            var runPredicate = RunAll();
 
             var resultDetails = new List<Result>();
             foreach (var day in days.Where(x => runPredicate(x)))
@@ -172,7 +172,7 @@ namespace AdventOfCode.AdventOfCode
                 Thread thread = new Thread(new ThreadStart(resultDetails.Execute), 16*1024*1024);
                 thread.Start();
 
-                var timeout = 600_000;
+                var timeout = 60_000;
                 var delay = 1;
                 while (thread.IsAlive && timeout > 0)
                 {

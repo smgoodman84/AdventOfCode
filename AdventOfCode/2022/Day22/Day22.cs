@@ -18,6 +18,7 @@ namespace AdventOfCode._2022.Day22
         private List<IInstruction> _instructions;
         private Grid2D<Tile> _map;
         private Bearing _bearing;
+        private Coordinate2D _initialPosition;
         private Coordinate2D _position;
 
         public override void Initialise()
@@ -44,7 +45,8 @@ namespace AdventOfCode._2022.Day22
                     {
                         if (!setPosition && y == 0)
                         {
-                            _position = new Coordinate2D(x, y);
+                            _initialPosition = new Coordinate2D(x, y);
+                            _position = _initialPosition;
                             setPosition = true;
                         }
 
@@ -111,6 +113,23 @@ namespace AdventOfCode._2022.Day22
             return result.ToString();
         }
 
+        public override string Part2()
+        {
+            _bearing = Bearing.Right;
+
+            var totalSpace = _map.ReadAll().Count(x => x != Tile.Void);
+            var spacePerFace = totalSpace / 6;
+            var faceLength = (int)Math.Sqrt(spacePerFace);
+
+            return "";
+        }
+
+        private class CubeNetMap
+        {
+
+        }
+
+
         private int BearingValue(Bearing bearing)
         {
             switch (bearing)
@@ -163,11 +182,6 @@ namespace AdventOfCode._2022.Day22
             }
 
             return position;
-        }
-
-        public override string Part2()
-        {
-            return "";
         }
 
         private enum Tile
