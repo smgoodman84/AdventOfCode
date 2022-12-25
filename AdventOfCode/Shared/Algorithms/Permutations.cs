@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace AdventOfCode.Shared.Algorithms
 {
-	public class Permutations
+    public class Permutations
 	{
 		public static IEnumerable<IEnumerable<T>> GetPermutations<T>(IEnumerable<T> elements)
 		{
@@ -16,6 +16,6 @@ namespace AdventOfCode.Shared.Algorithms
                 }
 			}
 		}
-	}
+    }
 }
 
