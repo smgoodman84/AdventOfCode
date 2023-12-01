@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AdventOfCode.Shared;
-using AdventOfCode.Shared.FileProcessing;
+﻿using AdventOfCode.Shared;
 
 namespace AdventOfCode._2023.Day01
 {
@@ -18,80 +15,75 @@ namespace AdventOfCode._2023.Day01
 
         public override string Part1()
         {
-            var value = InputLines
-                .Select(l => GetNumber(l))
-                .Sum();
-
-            return value.ToString();
-        }
-
-        private static int GetNumber(string line)
-        {
-            var firstDigit = line.First(c => IsNumber(c));
-            var lastDigit = line.Last(c => IsNumber(c));
-            var number = int.Parse($"{firstDigit}{lastDigit}");
-            return number;
-        }
-
-        private static bool IsNumber(char c)
-        {
-            return c >= '0' && c <= '9';
+            return GetCalibrationSum(Digits).ToString();
         }
 
         public override string Part2()
         {
+            var lookup = Digits.Concat(DigitNames)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            return GetCalibrationSum(lookup).ToString();
+        }
+
+        private int GetCalibrationSum(Dictionary<string, int> digitLookup)
+        {
             var value = InputLines
-                .Select(l => GetNumberString(l))
+                .Select(l => GetCalibrationValue(l, digitLookup))
                 .Sum();
 
-            return value.ToString();
+            return value;
         }
 
-        private static int GetNumberString(string line)
+        private static int GetCalibrationValue(string line, Dictionary<string, int> digitLookup)
         {
-            var digitNames = FindDigitNames(line).OrderBy(d => d.Position);
-            var first = digitNames.First();
-            var last = digitNames.Last();
-            var number = int.Parse($"{first.Value}{last.Value}");
-            return number;
+            var digitNames = FindDigits(line, digitLookup);
+            var first = digitNames.First().Value;
+            var last = digitNames.Last().Value;
+            return first * 10 + last;
         }
 
-        private static List<(int Value, int Position)> FindDigitNames(string line)
+        private static List<(int Position, int Value)> FindDigits(string line, Dictionary<string, int> digitLookup)
         {
+            var span = line.AsSpan();
             var result = new List<(int Value, int Position)>();
-            for (var index = 0; index < line.Length; index += 1)
+            for (var position = 0; position < line.Length; position += 1)
             {
-                if (IsNumber(line[index]))
+                foreach (var digit in digitLookup)
                 {
-                    result.Add((int.Parse($"{line[index]}"), index));
-                }
-                else
-                {
-                    var digitValue = 0;
-                    foreach (var digitName in DigitNames)
+                    if (span.Slice(position).StartsWith(digit.Key))
                     {
-                        if (line.Substring(index).StartsWith(digitName))
-                        {
-                            result.Add((digitValue, index));
-                        }
-                        digitValue += 1;
+                        result.Add((position, digit.Value));
                     }
                 }
             }
             return result;
         }
 
-        private static string[] DigitNames = new[] {
-            "zero",
-            "one",
-            "two",
-            "three",
-            "four",
-            "five",
-            "six",
-            "seven",
-            "eight",
-            "nine",
+        private static Dictionary<string, int> Digits = new Dictionary<string, int> {
+            { "0", 0 },
+            { "1", 1 },
+            { "2", 2 },
+            { "3", 3 },
+            { "4", 4 },
+            { "5", 5 },
+            { "6", 6 },
+            { "7", 7 },
+            { "8", 8 },
+            { "9", 9 },
+        };
+
+        private static Dictionary<string, int> DigitNames = new Dictionary<string, int> {
+            { "zero", 0 },
+            { "one", 1 },
+            { "two", 2 },
+            { "three", 3 },
+            { "four", 4 },
+            { "five", 5 },
+            { "six", 6 },
+            { "seven", 7 },
+            { "eight", 8 },
+            { "nine", 9 },
         };
     }
 }
