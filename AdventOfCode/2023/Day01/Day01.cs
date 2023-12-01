@@ -46,7 +46,7 @@ namespace AdventOfCode._2023.Day01
         private static List<(int Position, int Value)> FindDigits(string line, Dictionary<string, int> digitLookup)
         {
             var span = line.AsSpan();
-            var result = new List<(int Value, int Position)>();
+            var result = new List<(int Position, int Value)>();
             for (var position = 0; position < line.Length; position += 1)
             {
                 foreach (var digit in digitLookup)
