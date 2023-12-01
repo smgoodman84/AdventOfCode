@@ -24,7 +24,8 @@ namespace AdventOfCode.AdventOfCode
                 typeof(_2019.Day01.Day01).Assembly,
                 typeof(_2020.Day01.Day01).Assembly,
                 typeof(_2021.Day01.Day01).Assembly,
-                typeof(_2022.Day01.Day01).Assembly
+                typeof(_2022.Day01.Day01).Assembly,
+                typeof(_2023.Day01.Day01).Assembly,
             };
 
             var days = assemblies
@@ -37,8 +38,8 @@ namespace AdventOfCode.AdventOfCode
 
             // var runPredicate = RunDay(2019, 3);
             // var runPredicate = RunLatestDayInYear(2022, days);
-            // var runPredicate = RunYear(2022);
-            var runPredicate = RunAll();
+             var runPredicate = RunYear(2023);
+            // var runPredicate = RunAll();
 
             var resultDetails = new List<Result>();
             foreach (var day in days.Where(x => runPredicate(x)))

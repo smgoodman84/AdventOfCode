@@ -13,5 +13,6 @@
     <ProjectReference Include="..\2020\2020.csproj" />
     <ProjectReference Include="..\2022\2022.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="..\2023\2023.csproj" />
   </ItemGroup>
 </Project>
