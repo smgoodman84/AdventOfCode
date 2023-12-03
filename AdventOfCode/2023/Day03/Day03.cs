@@ -10,53 +10,52 @@ namespace AdventOfCode._2023.Day03
 
         }
 
+        private char[][] _grid;
+        private List<Coordinate2D> _symbols;
+        private List<PartNumber> _partNumbers;
         public override void Initialise()
         {
-        }
-
-        public override string Part1()
-        {
-            var grid = InputLines
+            _grid = InputLines
                 .Select(l => l.Trim().ToArray())
                 .ToArray();
 
-            var symbols = new List<Coordinate2D>();
-            foreach (var y in Enumerable.Range(0, grid.Length))
+            _symbols = new List<Coordinate2D>();
+            foreach (var y in Enumerable.Range(0, _grid.Length))
             {
-                foreach (var x in Enumerable.Range(0, grid[y].Length))
+                foreach (var x in Enumerable.Range(0, _grid[y].Length))
                 {
-                    if (IsSymbol(grid[y][x]))
+                    if (IsSymbol(_grid[y][x]))
                     {
-                        symbols.Add(new Coordinate2D(x, y));
+                        _symbols.Add(new Coordinate2D(x, y));
                     }
                 }
             }
 
-            var partNumbers = new List<PartNumber>();
-            foreach (var y in Enumerable.Range(0, grid.Length))
+            var potentialPartNumbers = new List<PartNumber>();
+            foreach (var y in Enumerable.Range(0, _grid.Length))
             {
                 var readingNumber = false;
                 var number = string.Empty;
                 var location = new List<Coordinate2D>();
-                foreach (var x in Enumerable.Range(0, grid[y].Length))
+                foreach (var x in Enumerable.Range(0, _grid[y].Length))
                 {
-                    var isDigit = IsDigit(grid[y][x]);
+                    var isDigit = IsDigit(_grid[y][x]);
                     if (readingNumber)
                     {
                         if (isDigit)
                         {
-                            number = $"{number}{grid[y][x]}";
+                            number = $"{number}{_grid[y][x]}";
                             location.Add(new Coordinate2D(x, y));
                         }
 
-                        if (!isDigit || x == grid[y].Length - 1)
+                        if (!isDigit || x == _grid[y].Length - 1)
                         {
                             var partNumber = new PartNumber
                             {
                                 Number = int.Parse(number),
                                 Location = location,
                             };
-                            partNumbers.Add(partNumber);
+                            potentialPartNumbers.Add(partNumber);
 
                             readingNumber = false;
                             number = string.Empty;
@@ -68,15 +67,15 @@ namespace AdventOfCode._2023.Day03
                         if (isDigit)
                         {
                             readingNumber = true;
-                            number = $"{number}{grid[y][x]}";
+                            number = $"{number}{_grid[y][x]}";
                             location.Add(new Coordinate2D(x, y));
                         }
                     }
                 }
             }
 
-            var actualPartNumbers = new List<PartNumber>();
-            foreach (var partNumber in partNumbers)
+            _partNumbers = new List<PartNumber>();
+            foreach (var partNumber in potentialPartNumbers)
             {
                 var allNeighbours = partNumber
                     .Location
@@ -84,20 +83,44 @@ namespace AdventOfCode._2023.Day03
                     .Where(n => !partNumber.Location.Any(l => l.X == n.X && l.Y == n.Y))
                     .ToList();
 
-                if (symbols.Any(s => allNeighbours.Any(n => n.X == s.X && n.Y == s.Y)))
+                if (_symbols.Any(s => allNeighbours.Any(n => n.X == s.X && n.Y == s.Y)))
                 {
-                    actualPartNumbers.Add(partNumber);
+                    _partNumbers.Add(partNumber);
                 }
             }
+        }
 
-            var sum = actualPartNumbers.Sum(pn => pn.Number);
+        public override string Part1()
+        {
+            var sum = _partNumbers.Sum(pn => pn.Number);
 
             return sum.ToString();
         }
 
         public override string Part2()
         {
-            return string.Empty;
+            var totalRatios = 0;
+            var potentialGears = _symbols.Where(s => _grid[s.Y][s.X] == '*');
+
+            foreach (var potentialGear in potentialGears)
+            {
+                var gearNeighoburs = potentialGear.AllNeighbours().ToList();
+
+                var neighbouringPartNumbers = _partNumbers
+                    .Where(pn => pn.Location.Any(l => gearNeighoburs.Any(gn => gn.X == l.X && gn.Y == l.Y)))
+                    .ToList();
+
+                if (neighbouringPartNumbers.Count() == 2)
+                {
+                    var ratio = 1;
+                    foreach (var neighbouringPartNumber in neighbouringPartNumbers)
+                    {
+                        ratio *= neighbouringPartNumber.Number;
+                    }
+                    totalRatios += ratio;
+                }
+            }
+            return totalRatios.ToString();
         }
 
         private static bool IsDigit(char c)
