@@ -40,6 +40,18 @@ namespace AdventOfCode.Shared.Geometry
             yield return Right();
         }
 
+        public IEnumerable<Coordinate2D> AllNeighbours()
+        {
+            yield return Up().Left();
+            yield return Up();
+            yield return Up().Right();
+            yield return Left();
+            yield return Right();
+            yield return Down().Left();
+            yield return Down();
+            yield return Down().Right();
+        }
+
         public Coordinate2D Neighbour(Direction direction)
         {
             switch (direction)
