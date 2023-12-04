@@ -4,7 +4,7 @@ namespace AdventOfCode._2023.Day04
 {
     public class Day04 : Day
     {
-        public Day04() : base(2023, 4, "Day04/input_2023_04.txt", "", "")
+        public Day04() : base(2023, 4, "Day04/input_2023_04.txt", "25004", "14427616")
         {
 
         }
@@ -27,7 +27,21 @@ namespace AdventOfCode._2023.Day04
 
         public override string Part2()
         {
-            return string.Empty;
+            var cardCount = _scratchCards.ToDictionary(x => x.CardNumber, x => 1);
+
+            foreach(var card in _scratchCards)
+            {
+                var copiesOfThisCard = cardCount[card.CardNumber];
+                var winningCount = card.WinningNumberCount();
+                for (var count = 1; count <= winningCount; count += 1)
+                {
+                    cardCount[card.CardNumber + count] += copiesOfThisCard;
+                }
+            }
+
+            var totalCards = cardCount.Sum(x => x.Value);
+
+            return totalCards.ToString();
         }
 
         private class ScratchCard
@@ -45,9 +59,14 @@ namespace AdventOfCode._2023.Day04
                 WinningNumbers = numbersSplit[1].Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
             }
 
+            public int WinningNumberCount()
+            {
+                return Numbers.Count(WinningNumbers.Contains);
+            }
+
             public int Points()
             {
-                var winningNumberCount = Numbers.Count(WinningNumbers.Contains);
+                var winningNumberCount = WinningNumberCount();
 
                 if (winningNumberCount == 0)
                 {
