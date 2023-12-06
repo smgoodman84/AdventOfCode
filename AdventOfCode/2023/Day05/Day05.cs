@@ -1,11 +1,12 @@
 ﻿using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
+using AdventOfCode.Shared.Numbers;
 
 namespace AdventOfCode._2023.Day05
 {
     public class Day05 : Day
     {
-        public Day05() : base(2023, 5, "Day05/input_2023_05.txt", "910845529", "", false)
+        public Day05() : base(2023, 5, "Day05/input_2023_05.txt", "910845529", "77435348")
         {
 
         }
@@ -70,7 +71,48 @@ namespace AdventOfCode._2023.Day05
 
         public override string Part2()
         {
-            return string.Empty;
+            var currentType = "seed";
+            var currentRanges = new List<NumberRange>();
+            for(var index = 0; index < _seeds.Count - 1; index += 2)
+            {
+                currentRanges.Add(NumberRange.FromLength(_seeds[index].Number, _seeds[index + 1].Number));
+            }
+
+            while (currentType != "location")
+            {
+                var map = _maps[currentType];
+
+                currentRanges = currentRanges.SelectMany(r => ApplyMaps(r, map.RangeMaps)).ToList();
+
+                currentType = map.Destination;
+            }
+
+
+            return currentRanges.Min(r => r.Start).ToString();
+        }
+
+        private List<NumberRange> ApplyMaps(NumberRange range, List<RangeMap> rangeMaps)
+        {
+
+            var mappedRanges = new List<NumberRange>();
+            var stillUnmapped = new List<NumberRange> { range };
+            foreach (var mapRange in rangeMaps)
+            {
+                stillUnmapped = stillUnmapped
+                    .SelectMany(x => x.Except(mapRange.SourceRange))
+                    .ToList();
+
+                var toMap = range.Intersect(mapRange.SourceRange);
+
+                var mapped = toMap
+                    .Select(m => new NumberRange(m.Start + mapRange.Offset, m.End + mapRange.Offset))
+                    .ToList();
+
+                mappedRanges.AddRange(mapped);
+            }
+            mappedRanges.AddRange(stillUnmapped);
+
+            return mappedRanges;
         }
 
         private class Item
@@ -99,8 +141,7 @@ namespace AdventOfCode._2023.Day05
                 }
 
                 var mapToUse = RangeMaps
-                    .Where(rm => rm.SourceStart <= sourceItem.Number)
-                    .Where(rm => sourceItem.Number <= rm.SourceEnd)
+                    .Where(rm => rm.SourceRange.Contains(sourceItem.Number))
                     .FirstOrDefault();
 
                 destinationItem = new Item
@@ -115,19 +156,20 @@ namespace AdventOfCode._2023.Day05
 
         private class RangeMap
         {
-            public long SourceStart { get; set; }
-            public long DestinationStart { get; set; }
-            public long Range { get; set; }
-            public long SourceEnd => SourceStart + Range - 1;
-            public long DestinationEnd => DestinationStart + Range - 1;
-            public long Offset => DestinationStart - SourceStart;
+            public NumberRange SourceRange { get; set; }
+            public NumberRange DestinationRange { get; set; }
+            public long Offset => DestinationRange.Start - SourceRange.Start;
 
             public RangeMap(string description)
             {
-                var split = description.Split(" ");
-                DestinationStart = long.Parse(split[0]);
-                SourceStart = long.Parse(split[1]);
-                Range = long.Parse(split[2]);
+                var split = description.Split(" ").Select(long.Parse).ToArray();
+                DestinationRange = NumberRange.FromLength(split[0], split[2]);
+                SourceRange = NumberRange.FromLength(split[1], split[2]);
+            }
+
+            public override string ToString()
+            {
+                return $"{SourceRange} -> {DestinationRange}";
             }
         }
     }

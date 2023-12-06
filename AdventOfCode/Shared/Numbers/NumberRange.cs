@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace AdventOfCode.Shared.Numbers
 {
@@ -8,6 +9,11 @@ namespace AdventOfCode.Shared.Numbers
         {
             Start = start;
             End = end;
+        }
+
+        public static NumberRange FromLength(long start, long length)
+        {
+            return new NumberRange(start, start + length - 1);
         }
 
         public long Start { get; }
@@ -87,6 +93,73 @@ namespace AdventOfCode.Shared.Numbers
             }
 
             throw new Exception("Cannot Subtract Range");
+        }
+
+
+        public IEnumerable<NumberRange> Except(NumberRange range)
+        {
+            if (range.End < Start)
+            {
+                return new[] { this };
+            }
+
+            if (End < range.Start)
+            {
+                return new[] { this };
+            }
+
+            if (Start < range.Start && End <= range.End)
+            {
+                return new[] { new NumberRange(Start, range.Start - 1) };
+            }
+
+            if (range.Start <= Start && range.End < End)
+            {
+                return new[] { new NumberRange(range.End + 1, End) };
+            }
+
+            if (range.Start <= Start && range.End >= End)
+            {
+                return Array.Empty<NumberRange>();
+            }
+
+            // range.Start > Start && range.End < End
+            return new[]
+            {
+                new NumberRange(Start, range.Start - 1),
+                new NumberRange(range.End + 1, End)
+            };
+        }
+
+        public IEnumerable<NumberRange> Intersect(NumberRange range)
+        {
+            if (range.End < Start)
+            {
+                return Array.Empty<NumberRange>();
+            }
+
+            if (End < range.Start)
+            {
+                return Array.Empty<NumberRange>();
+            }
+
+            if (Start < range.Start && End <= range.End)
+            {
+                return new[] { new NumberRange(range.Start, End) };
+            }
+
+            if (range.Start <= Start && range.End < End)
+            {
+                return new[] { new NumberRange(Start, range.End) };
+            }
+
+            if (range.Start <= Start && range.End >= End)
+            {
+                return new[] { this };
+            }
+
+            // range.Start > Start && range.End < End
+            return new[] { range };
         }
 
         public override string ToString()

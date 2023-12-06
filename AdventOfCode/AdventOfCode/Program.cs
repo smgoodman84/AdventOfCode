@@ -36,8 +36,8 @@ namespace AdventOfCode.AdventOfCode
                 .ThenBy(day => day.DayNumber)
                 .ToList();
 
-            // var runPredicate = RunDay(2023, 2);
-            var runPredicate = RunLatestDayInYear(2023, days);
+            var runPredicate = RunDay(2023, 5);
+            // var runPredicate = RunLatestDayInYear(2023, days);
             // var runPredicate = RunYear(2023);
             // var runPredicate = RunAll();
 
