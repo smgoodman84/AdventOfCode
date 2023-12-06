@@ -13,6 +13,7 @@
     <None Remove="Day03\" />
     <None Remove="Day04\" />
     <None Remove="Day05\" />
+    <None Remove="Day06\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Day01\" />
@@ -20,6 +21,7 @@
     <Folder Include="Day03\" />
     <Folder Include="Day04\" />
     <Folder Include="Day05\" />
+    <Folder Include="Day06\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Day01\input_2023_01.txt">
@@ -35,6 +37,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Day05\input_2023_05.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Day06\input_2023_06.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
