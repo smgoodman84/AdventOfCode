@@ -5,4 +5,10 @@
     <RootNamespace>AdventOfCode.Shared</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Mathematics\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Mathematics\" />
+  </ItemGroup>
 </Project>
