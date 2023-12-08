@@ -1,4 +1,5 @@
 ﻿using AdventOfCode.Shared;
+using AdventOfCode.Shared.Mathematics;
 
 namespace AdventOfCode._2023.Day08
 {
@@ -22,10 +23,34 @@ namespace AdventOfCode._2023.Day08
 
         public override string Part1()
         {
-            var currentNode = _nodes["AAA"];
+            return GetPathLength("AAA", x => x == "ZZZ").Length.ToString();
+        }
+
+        public override string Part2()
+        {
+            var startNodes = _nodes.Keys.Where(n => n.EndsWith('A')).ToList();
+
+            var pathLengths = startNodes
+                .Select(n => (n, GetPathLength(n, x => x.EndsWith('Z'))))
+                .ToList();
+
+            long lowestCommonMultiple = 1L;
+            foreach (var pathLength in pathLengths)
+            {
+                TraceLine($"{pathLength.n} -> {pathLength.Item2.EndNode} = {pathLength.Item2.Length}");
+                lowestCommonMultiple = MathematicsHelper.LowestCommonMultiple(lowestCommonMultiple, pathLength.Item2.Length);
+            }
+
+            return lowestCommonMultiple.ToString();
+        }
+
+
+        private (int Length, string EndNode) GetPathLength(string startNode, Func<string, bool> endNodePredicate)
+        {
+            var currentNode = _nodes[startNode];
             var steps = 0;
 
-            foreach(var direction in GetDirections())
+            foreach (var direction in GetDirections())
             {
                 if (direction == 'L')
                 {
@@ -39,13 +64,13 @@ namespace AdventOfCode._2023.Day08
                     steps += 1;
                 }
 
-                if (currentNode.Name == "ZZZ")
+                if (endNodePredicate(currentNode.Name))
                 {
-                    return steps.ToString();
+                    return (steps, currentNode.Name);
                 }
             }
 
-            return "LOST";
+            return (-1, "LOST");
         }
 
         private IEnumerable<char> GetDirections()
@@ -60,11 +85,6 @@ namespace AdventOfCode._2023.Day08
                     index -= _directions.Length;
                 }
             }
-        }
-
-        public override string Part2()
-        {
-            return string.Empty;
         }
 
         private class Node

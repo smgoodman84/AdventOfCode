@@ -13,6 +13,21 @@ namespace AdventOfCode.Shared.Mathematics
 
             return (sol1, sol2);
         }
-	}
+
+        public static long GreatestCommonDenominator(long a, long b)
+        {
+            if (a == 0)
+            {
+                return b;
+            }
+                
+            return GreatestCommonDenominator(b % a, a);
+        }
+
+        public static long LowestCommonMultiple(long a, long b)
+        {
+            return (a / GreatestCommonDenominator(a, b)) * b;
+        }
+    }
 }
 
