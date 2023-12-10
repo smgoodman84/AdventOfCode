@@ -104,5 +104,16 @@ namespace AdventOfCode.Shared.Geometry
         }
 
         public static readonly Coordinate2D Origin = new Coordinate2D(0, 0);
+
+        public override bool Equals(object obj)
+        {
+            var coordinate = obj as Coordinate2D;
+            if (coordinate == null)
+            {
+                return false;
+            }
+
+            return coordinate.X == X && coordinate.Y == Y;
+        }
     }
 }
