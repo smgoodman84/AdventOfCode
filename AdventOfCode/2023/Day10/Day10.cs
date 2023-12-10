@@ -5,7 +5,7 @@ namespace AdventOfCode._2023.Day10
 {
     public class Day10 : Day
     {
-        public Day10() : base(2023, 10, "Day10/input_2023_10.txt", "", "", true)
+        public Day10() : base(2023, 10, "Day10/input_2023_10.txt", "6738", "579", false)
         {
 
         }
@@ -63,6 +63,7 @@ namespace AdventOfCode._2023.Day10
                             break;
                         case 'S':
                             _start = new Coordinate2D(x, y);
+                            _map.Read(x, y).MinDistance = 0;
                             break;
                     }
                 }
@@ -71,24 +72,26 @@ namespace AdventOfCode._2023.Day10
 
         public override string Part1()
         {
-            var maxDistance = GetMaxDistance(_start, null, 0) ?? 0;
+            (var anyOnLoop, var maxDistance) = GetMaxDistance(_start, null, 0);
 
-            var furthest = maxDistance / 2;
+            var furthest = (maxDistance ?? 0) / 2;
 
             return furthest.ToString();
         }
 
-        private int? GetMaxDistance(Coordinate2D current, Coordinate2D? previous, int currentDistance)
+        private (bool OnLoop, int? Distance) GetMaxDistance(Coordinate2D current, Coordinate2D? previous, int currentDistance)
         {
-            if (currentDistance > 100000)
-            {
-                return 100000;
-            }
-
+            var currentNode = _map.Read(current);
             if (current.Equals(_start) && previous != null)
             {
                 TraceLine($"Loop Complete: {currentDistance}");
-                return currentDistance;
+                currentNode.OnLoop = true;
+                return (true, currentDistance);
+            }
+
+            if (!currentNode.MinDistance.HasValue || currentDistance < currentNode.MinDistance)
+            {
+                currentNode.MinDistance = currentDistance;
             }
 
             var north = current.North();
@@ -101,43 +104,181 @@ namespace AdventOfCode._2023.Day10
             int? maxEast = null;
             int? maxWest = null;
 
+            var anyOnLoop = false;
             if ((previous == null || !previous.Equals(north)) && CanMoveNorth(current))
             {
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going North");
-                maxNorth = GetMaxDistance(north, current, currentDistance + 1);
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - North {maxNorth}");
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going North");
+                (var onLoop, maxNorth) = GetMaxDistance(north, current, currentDistance + 1);
+                if (onLoop)
+                {
+                    anyOnLoop = true;
+                    _map.Read(north).OnLoop = true;
+                }
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - North {maxNorth}");
             }
 
             if ((previous == null || !previous.Equals(south)) && CanMoveSouth(current))
             {
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going South");
-                maxSouth = GetMaxDistance(south, current, currentDistance + 1);
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - South {maxSouth}");
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going South");
+                (var onLoop, maxSouth) = GetMaxDistance(south, current, currentDistance + 1);
+                if (onLoop)
+                {
+                    anyOnLoop = true;
+                    _map.Read(south).OnLoop = true;
+                }
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - South {maxSouth}");
             }
 
             if ((previous == null || !previous.Equals(east)) && CanMoveEast(current))
             {
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going East");
-                maxEast = GetMaxDistance(east, current, currentDistance + 1);
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - East {maxEast}");
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going East");
+                (var onLoop, maxEast) = GetMaxDistance(east, current, currentDistance + 1);
+                if (onLoop)
+                {
+                    anyOnLoop = true;
+                    _map.Read(east).OnLoop = true;
+                }
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - East {maxEast}");
             }
 
             if ((previous == null || !previous.Equals(west)) && CanMoveWest(current))
             {
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going West");
-                maxWest = GetMaxDistance(west, current, currentDistance + 1);
-                TraceLine($"({current.X},{current.Y}) = {currentDistance} - West {maxWest}");
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - Going West");
+                (var onLoop, maxWest) = GetMaxDistance(west, current, currentDistance + 1);
+                if (onLoop)
+                {
+                    anyOnLoop = true;
+                    _map.Read(west).OnLoop = true;
+                }
+                // TraceLine($"({current.X},{current.Y}) = {currentDistance} - West {maxWest}");
             }
 
-            return new[] { maxNorth, maxSouth, maxEast, maxWest }
+            var maxDistance = new[] { maxNorth, maxSouth, maxEast, maxWest }
                 .Where(x => x.HasValue)
                 .Select(x => x.Value)
                 .Max();
+
+            return (anyOnLoop, maxDistance);
         }
 
         public override string Part2()
         {
-            return string.Empty;
+            var insideLoop = 0;
+            foreach (var y in Enumerable.Range((int)_map.MinY, (int)_map.Height))
+            {
+                var inside = false;
+                var moveIn = ' ';
+                var moveOut = ' ';
+                foreach (var x in Enumerable.Range((int)_map.MinX, (int)_map.Width))
+                {
+                    var node = _map.Read(x, y);
+                    if (inside && !node.OnLoop)
+                    {
+                        insideLoop += 1;
+                        node.Inside = true;
+                        TraceLine($"{x},{y} - Inside");
+                    }
+
+                    if (y == 5) TraceLine($"{x} - {node.Type}: Inside - {inside}");
+                    if (node.OnLoop)
+                    {
+                        if (node.Type == moveIn)
+                        {
+                            if (y == 5) TraceLine($"{x} - {node.Type}: Moved In");
+                            inside = true;
+                            moveIn = ' ';
+                            moveOut = ' ';
+                        }
+
+                        if (node.Type == moveOut)
+                        {
+                            if (y == 5) TraceLine($"{x} - {node.Type}: Moved Out");
+                            inside = false;
+                            moveIn = ' ';
+                            moveOut = ' ';
+                        }
+
+                        if (node.Type == '|' || node.Type == 'S')
+                        {
+                            inside = !inside;
+                            if (y == 5) TraceLine($"{x} - {node.Type}: Flipped");
+                            moveIn = ' ';
+                            moveOut = ' ';
+                        }
+
+                        if (node.Type == 'L')
+                        {
+                            if (inside)
+                            {
+                                moveOut = '7';
+                                moveIn = 'J';
+                            }
+                            else
+                            {
+                                moveOut = 'J';
+                                moveIn = '7';
+                            }
+                        }
+
+                        if (node.Type == 'F')
+                        {
+                            if (inside)
+                            {
+                                moveOut = 'J';
+                                moveIn = '7';
+                            }
+                            else
+                            {
+                                moveOut = '7';
+                                moveIn = 'J';
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+            foreach (var y in Enumerable.Range((int)_map.MinY, (int)_map.Height).OrderByDescending(x => x))
+            {
+                Trace($"{y.ToString().PadLeft(3, '0')}");
+                foreach (var x in Enumerable.Range((int)_map.MinX, (int)_map.Width))
+                {
+                    var node = _map.Read(x, y);
+                    if (node.OnLoop)
+                    {
+                        Trace(BoxLookup(node.Type));
+                    }
+                    else if (node.Inside)
+                    {
+                        Trace('X');
+                    }
+                    else if (node.Type == '.')
+                    {
+                        Trace('.');
+                    }
+                    else
+                    {
+                        Trace(' ');
+                    }
+                }
+                TraceLine();
+            }
+
+            return insideLoop.ToString();
+        }
+
+        private char BoxLookup(char c)
+        {
+            switch (c)
+            {
+                case 'J': return '┘';
+                case 'F': return '┌';
+                case 'L': return '└';
+                case '7': return '┐';
+            }
+
+            return c;
         }
 
         private bool CanMoveNorth(Coordinate2D coordinate)
@@ -208,8 +349,9 @@ namespace AdventOfCode._2023.Day10
             }
 
             public char Type { get; set; }
-            public int X { get; set; }
-            public int Y { get; set; }
+            public bool OnLoop { get; set; } = false;
+            public bool Inside { get; set; } = false;
+            public int? MinDistance { get; set; }
 
             public Node? North { get; set; }
             public Node? East { get; set; }
