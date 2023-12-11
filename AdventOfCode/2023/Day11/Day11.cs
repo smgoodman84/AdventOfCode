@@ -5,7 +5,7 @@ namespace AdventOfCode._2023.Day11
 {
     public class Day11 : Day
     {
-        public Day11() : base(2023, 11, "Day11/input_2023_11.txt", "9684228", "", true)
+        public Day11() : base(2023, 11, "Day11/input_2023_11.txt", "9684228", "483844716556", true)
         {
 
         }
@@ -82,7 +82,7 @@ namespace AdventOfCode._2023.Day11
                     if (g1.GalaxyNumber < g2.GalaxyNumber)
                     {
                         var shortestPath = g1.NewLocation.ManhattanDistanceTo(g2.NewLocation);
-                        TraceLine($"{g1.GalaxyNumber} -> {g2.GalaxyNumber}; {g1.NewLocation} -> {g2.NewLocation} = {shortestPath}");
+                        // TraceLine($"{g1.GalaxyNumber} -> {g2.GalaxyNumber}; {g1.NewLocation} -> {g2.NewLocation} = {shortestPath}");
                         totalShortestPath += shortestPath;
                     }
                 }
@@ -93,7 +93,28 @@ namespace AdventOfCode._2023.Day11
 
         public override string Part2()
         {
-            return string.Empty;
+            foreach (var galaxy in _galaxies)
+            {
+                var newX = galaxy.Location.X + (_emptyColumns.Count(c => c < galaxy.Location.X) * 999_999L);
+                var newY = galaxy.Location.Y + (_emptyRows.Count(c => c < galaxy.Location.Y) * 999_999L);
+                galaxy.NewLocationPart2 = new Coordinate2D(newX, newY);
+            }
+
+            var totalShortestPath = 0L;
+            foreach (var g1 in _galaxies)
+            {
+                foreach (var g2 in _galaxies)
+                {
+                    if (g1.GalaxyNumber < g2.GalaxyNumber)
+                    {
+                        var shortestPath = g1.NewLocationPart2.ManhattanDistanceTo(g2.NewLocationPart2);
+                        // TraceLine($"{g1.GalaxyNumber} -> {g2.GalaxyNumber}; {g1.NewLocationPart2} -> {g2.NewLocationPart2} = {shortestPath}");
+                        totalShortestPath += shortestPath;
+                    }
+                }
+            }
+
+            return totalShortestPath.ToString();
         }
 
         private class Space
@@ -107,6 +128,7 @@ namespace AdventOfCode._2023.Day11
             public int? GalaxyNumber { get; }
             public Coordinate2D Location { get; }
             public Coordinate2D NewLocation { get; set; }
+            public Coordinate2D NewLocationPart2 { get; set; }
 
             public bool IsGalaxy => GalaxyNumber.HasValue;
         }
