@@ -80,6 +80,22 @@ namespace AdventOfCode.Shared.Geometry
             }
         }
 
+        public IEnumerable<T> ReadRow(long y)
+        {
+            for (var x = MinX; x <= MaxX; x++)
+            {
+                yield return Read(x, y);
+            }
+        }
+
+        public IEnumerable<T> ReadColumn(long x)
+        {
+            for (var y = MinY; y <= MaxY; y++)
+            {
+                yield return Read(x, y);
+            }
+        }
+
         public IEnumerable<Coordinate2D> FindCoordinates(Func<T, bool> predicate)
         {
             for (var y = MinY; y <= MaxY; y++)
