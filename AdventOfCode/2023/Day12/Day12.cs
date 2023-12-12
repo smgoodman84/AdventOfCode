@@ -1,26 +1,40 @@
-﻿using AdventOfCode.Shared;
+﻿using System.Linq;
+using AdventOfCode.Shared;
 
 namespace AdventOfCode._2023.Day12
 {
     public class Day12 : Day
     {
-        public Day12() : base(2023, 12, "Day12/input_2023_12.txt", "7402", "", false)
+        public Day12() : base(2023, 12, "Day12/input_2023_12.txt", "7402", "", true)
         {
 
         }
 
-        private List<SpringRow> _rows;
         public override void Initialise()
         {
-            _rows = InputLines
-                .Select(l => new SpringRow(l))
-                .ToList();
         }
 
         public override string Part1()
         {
+            return GetPossibilities(1).ToString();
+        } 
+
+
+        public override string Part2()
+        {
+            return GetPossibilities(5).ToString();
+        }
+
+        private int GetPossibilities(int times)
+        {
+            var rows = InputLines
+                .Select(l => MultiplyLine(l, times))
+                .Select(l => new SpringRow(l))
+                .ToList();
+
             var sum = 0;
-            foreach (var row in _rows)
+            var rowNumber = 1;
+            foreach (var row in rows)
             {
                 var possibilities = row.GetPossibleRows().ToList();
 
@@ -28,15 +42,30 @@ namespace AdventOfCode._2023.Day12
                     .Where(r => r.IsValid())
                     .ToList();
 
-                sum += validPossibilities.Count;
+                var count = validPossibilities.Count;
+
+                TraceLine($"{rowNumber}: {count}");
+
+                sum += count;
+                rowNumber += 1;
             }
 
-            return sum.ToString();
+            return sum;
         }
 
-        public override string Part2()
+        private string MultiplyLine(string line, int times)
         {
-            return string.Empty;
+            if (times == 1)
+            {
+                return line;
+            }
+
+            var split = line.Split(' ');
+
+            var springMultiplied = string.Join("", Enumerable.Range(1, times).Select(l => split[0]));
+            var lengthsMultiplied = string.Join(",", Enumerable.Range(1, times).Select(l => split[1]));
+
+            return $"{springMultiplied} {lengthsMultiplied}";
         }
 
         private class SpringRow
@@ -158,16 +187,19 @@ namespace AdventOfCode._2023.Day12
                     if (SpringStates[index] == SpringState.Unknown)
                     {
                         var operational = SetState(index, SpringState.Operational);
-                        var damaged = SetState(index, SpringState.Damaged);
 
                         foreach (var possibilitity in operational.GetPossibleRows())
                         {
                             yield return possibilitity;
                         }
 
-                        foreach (var possibilitity in damaged.GetPossibleRows())
+                        if (CurrentDamagedSprings < ExpectedDamagedSprings)
                         {
-                            yield return possibilitity;
+                            var damaged = SetState(index, SpringState.Damaged);
+                            foreach (var possibilitity in damaged.GetPossibleRows())
+                            {
+                                yield return possibilitity;
+                            }
                         }
 
                         break;
