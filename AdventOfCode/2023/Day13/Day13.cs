@@ -111,27 +111,7 @@ namespace AdventOfCode._2023.Day13
                 return smudgeVale;
             }
 
-            public int GetReflectionValue()
-            {
-                for (var reflectionIndex = 1; reflectionIndex < _map.Width; reflectionIndex += 1)
-                {
-                    if (ReflectsVertically(reflectionIndex))
-                    {
-                        return reflectionIndex;
-                    }
-                }
-
-                for (var reflectionIndex = 1; reflectionIndex < _map.Height; reflectionIndex += 1)
-                {
-                    if (ReflectsHorizontally(reflectionIndex))
-                    {
-                        return reflectionIndex * 100;
-                    }
-                }
-
-                return 0;
-            }
-
+            public int GetReflectionValue() => GetReflectionValue(-1);
             public int GetReflectionValue(int ignoreReflectionIndex)
             {
                 for (var reflectionIndex = 1; reflectionIndex < _map.Width; reflectionIndex += 1)
