@@ -74,10 +74,16 @@ namespace AdventOfCode._2023.Day12
             public SpringState[] SpringStates { get; set; }
             public List<int> RowLengths { get; }
             public string RowLengthString { get; }
-            public int ExpectedDamagedSprings { get; }
             public int CurrentDamagedSprings { get; }
             public int UnknownSprings { get; }
             public string Description { get; }
+
+
+            public int ExpectedTotalSprings { get; }
+            public int ExpectedDamagedSprings { get; }
+            public int ExpectedDamagedRuns { get; }
+            public int ExpectedOperationalSprings { get; }
+            public int ExpectedOperationalRuns { get; }
 
             public SpringRow(string description)
             {
@@ -92,10 +98,15 @@ namespace AdventOfCode._2023.Day12
                     .Select(int.Parse)
                     .ToList();
 
-                ExpectedDamagedSprings = RowLengths.Sum();
                 CurrentDamagedSprings = SpringStates.Count(s => s == SpringState.Damaged);
                 UnknownSprings = SpringStates.Count(s => s == SpringState.Unknown);
                 Description = description;
+
+                ExpectedTotalSprings = SpringStates.Count();
+                ExpectedDamagedSprings = RowLengths.Sum();
+                ExpectedDamagedRuns = RowLengths.Count();
+                ExpectedOperationalSprings = ExpectedTotalSprings - ExpectedDamagedSprings;
+                ExpectedOperationalRuns = RowLengths.Count() - 1;
             }
 
             public SpringRow(
