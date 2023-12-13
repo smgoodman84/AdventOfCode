@@ -36,6 +36,7 @@ namespace AdventOfCode._2023.Day12
             var rowNumber = 1;
             foreach (var row in rows)
             {
+                // Console.WriteLine(row.Description);
                 var possibilities = row.GetPossibleRows().ToList();
 
                 var validPossibilities = possibilities
@@ -62,7 +63,7 @@ namespace AdventOfCode._2023.Day12
 
             var split = line.Split(' ');
 
-            var springMultiplied = string.Join("", Enumerable.Range(1, times).Select(l => split[0]));
+            var springMultiplied = string.Join("?", Enumerable.Range(1, times).Select(l => split[0]));
             var lengthsMultiplied = string.Join(",", Enumerable.Range(1, times).Select(l => split[1]));
 
             return $"{springMultiplied} {lengthsMultiplied}";
@@ -76,6 +77,8 @@ namespace AdventOfCode._2023.Day12
             public int ExpectedDamagedSprings { get; }
             public int CurrentDamagedSprings { get; }
             public int UnknownSprings { get; }
+            public string Description { get; }
+
             public SpringRow(string description)
             {
                 var split = description.Split(' ');
@@ -92,6 +95,7 @@ namespace AdventOfCode._2023.Day12
                 ExpectedDamagedSprings = RowLengths.Sum();
                 CurrentDamagedSprings = SpringStates.Count(s => s == SpringState.Damaged);
                 UnknownSprings = SpringStates.Count(s => s == SpringState.Unknown);
+                Description = description;
             }
 
             public SpringRow(
@@ -122,11 +126,35 @@ namespace AdventOfCode._2023.Day12
                 return runLengthString == RowLengthString;
             }
 
-            public IEnumerable<int> GetDamagedRunLengths()
+            public IEnumerable<int> GetDamagedRunLengths() => GetDamagedRunLength(SpringStates);
+
+            public IEnumerable<int> GetDamagedRunLengthSoFar()
+            {
+                if (!SpringStates.Any(x => x == SpringState.Unknown))
+                {
+                    return GetDamagedRunLengths();
+                }
+
+                var untilUnknown = SpringStates
+                    .TakeWhile(x => x != SpringState.Unknown)
+                    .ToList();
+
+                var lengthsUntilUnknown = GetDamagedRunLength(untilUnknown).ToList();
+
+                var length = untilUnknown.Count;
+                if (SpringStates[length - 1] != SpringState.Damaged)
+                {
+                    return lengthsUntilUnknown;
+                }
+
+                return lengthsUntilUnknown.Take(lengthsUntilUnknown.Count - 1);
+            }
+
+            public IEnumerable<int> GetDamagedRunLength(IEnumerable<SpringState> states)
             {
                 var currentDamagedCount = 0;
 
-                foreach (var state in SpringStates)
+                foreach (var state in states)
                 {
                     if (state == SpringState.Damaged)
                     {
@@ -159,6 +187,14 @@ namespace AdventOfCode._2023.Day12
                 return SpringState.Unknown;
             }
 
+            public string GetDescription()
+            {
+                return string.Join("",
+                    SpringStates.Select(c => c == SpringState.Damaged ? '#' : c == SpringState.Operational ? '.' : '?')
+                    );
+            }
+
+
             public SpringRow SetState(int index, SpringState state)
             {
                 var newStates = SpringStates.ToArray();
@@ -182,23 +218,47 @@ namespace AdventOfCode._2023.Day12
                     yield return this;
                 }
 
+                var description = GetDescription();
+
                 for (var index = 0; index < SpringStates.Length; index += 1)
                 {
                     if (SpringStates[index] == SpringState.Unknown)
                     {
                         var operational = SetState(index, SpringState.Operational);
+                        var operationalDescription = operational.GetDescription();
 
-                        foreach (var possibilitity in operational.GetPossibleRows())
+                        var operationalDamagedLengthsSoFar = operational.GetDamagedRunLengthSoFar();
+                        var operationalDamagedLengthsSoFarString = string.Join(",", operationalDamagedLengthsSoFar);
+                        if (RowLengthString.StartsWith(operationalDamagedLengthsSoFarString))
                         {
-                            yield return possibilitity;
+                            // Console.WriteLine($"{description} - Set {index} to operational - {operationalDescription} - still valid ({operationalDamagedLengthsSoFarString})");
+                            foreach (var possibilitity in operational.GetPossibleRows())
+                            {
+                                yield return possibilitity;
+                            }
+                        }
+                        else
+                        {
+                            // Console.WriteLine($"{description} - Set {index} to operational - {operationalDescription} - NOT valid ({operationalDamagedLengthsSoFarString})");
                         }
 
                         if (CurrentDamagedSprings < ExpectedDamagedSprings)
                         {
                             var damaged = SetState(index, SpringState.Damaged);
-                            foreach (var possibilitity in damaged.GetPossibleRows())
+                            var damagedDescription = damaged.GetDescription();
+                            var damagedDamagedLengthsSoFar = damaged.GetDamagedRunLengthSoFar();
+                            var damagedDamagedLengthsSoFarString = string.Join(",", damagedDamagedLengthsSoFar);
+                            if (RowLengthString.StartsWith(damagedDamagedLengthsSoFarString))
                             {
-                                yield return possibilitity;
+                                // Console.WriteLine($"{description} - Set {index} to damaged - {damagedDescription} - still valid ({damagedDamagedLengthsSoFarString})");
+                                foreach (var possibilitity in damaged.GetPossibleRows())
+                                {
+                                    yield return possibilitity;
+                                }
+                            }
+                            else
+                            {
+                                // Console.WriteLine($"{description} - Set {index} to damaged - {damagedDescription} - NOT valid ({damagedDamagedLengthsSoFarString})");
                             }
                         }
 
