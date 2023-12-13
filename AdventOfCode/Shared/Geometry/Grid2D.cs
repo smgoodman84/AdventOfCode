@@ -71,9 +71,9 @@ namespace AdventOfCode.Shared.Geometry
 
         public IEnumerable<T> ReadAll()
         {
-            for (var y = MinY; y <= MaxY; y++)
+            foreach (var y in YIndexes())
             {
-                for (var x = MinX; x <= MaxX; x++)
+                foreach (var x in XIndexes())
                 {
                     yield return Read(x, y);
                 }
@@ -82,7 +82,7 @@ namespace AdventOfCode.Shared.Geometry
 
         public IEnumerable<T> ReadRow(long y)
         {
-            for (var x = MinX; x <= MaxX; x++)
+            foreach (var x in XIndexes())
             {
                 yield return Read(x, y);
             }
@@ -90,15 +90,31 @@ namespace AdventOfCode.Shared.Geometry
 
         public IEnumerable<T> ReadColumn(long x)
         {
-            for (var y = MinY; y <= MaxY; y++)
+            foreach (var y in YIndexes())
             {
                 yield return Read(x, y);
             }
         }
 
-        public IEnumerable<Coordinate2D> FindCoordinates(Func<T, bool> predicate)
+        public IEnumerable<long> YIndexes()
         {
             for (var y = MinY; y <= MaxY; y++)
+            {
+                yield return y;
+            }
+        }
+
+        public IEnumerable<long> XIndexes()
+        {
+            for (var y = MinX; y <= MaxX; y++)
+            {
+                yield return y;
+            }
+        }
+
+        public IEnumerable<Coordinate2D> FindCoordinates(Func<T, bool> predicate)
+        {
+            foreach (var y in YIndexes())
             {
                 for (var x = MinX; x <= MaxX; x++)
                 {
