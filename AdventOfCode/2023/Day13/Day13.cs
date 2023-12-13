@@ -6,7 +6,7 @@ namespace AdventOfCode._2023.Day13
 {
     public class Day13 : Day
     {
-        public Day13() : base(2023, 13, "Day13/input_2023_13.txt", "", "", true)
+        public Day13() : base(2023, 13, "Day13/input_2023_13.txt", "29130", "33438", true)
         {
 
         }
@@ -34,7 +34,12 @@ namespace AdventOfCode._2023.Day13
 
         public override string Part2()
         {
-            return string.Empty;
+            var reflectionValues = _patterns
+                .Select(p => p.GetSmudgeReflectionValue())
+                .ToList();
+
+
+            return reflectionValues.Sum().ToString();
         }
 
         private class Pattern
@@ -54,6 +59,58 @@ namespace AdventOfCode._2023.Day13
                 }
             }
 
+            private Pattern(Grid2D<char> map)
+            {
+                _map = map;
+            }
+
+            private Pattern Flip(long x, long y)
+            {
+                var map = new Grid2D<char>((int)_map.Width, (int)_map.Height);
+                foreach (var currentY in _map.YIndexes())
+                {
+                    foreach (var currentX in _map.XIndexes())
+                    {
+                        var currentValue = _map.Read(currentX, currentY);
+                        if (currentX == x && currentY == y)
+                        {
+                            if (currentValue == '.')
+                            {
+                                currentValue = '#';
+                            }
+                            else
+                            {
+                                currentValue = '.';
+                            }
+                        }
+
+                        map.Write(currentX, currentY, currentValue);
+                    }
+                }
+
+                return new Pattern(map);
+            }
+
+            public IEnumerable<Pattern> GetPossibleFlips()
+            {
+                foreach (var y in _map.YIndexes())
+                {
+                    foreach (var x in _map.XIndexes())
+                    {
+                        yield return Flip(x, y);
+                    }
+                }
+            }
+
+            public int GetSmudgeReflectionValue()
+            {
+                var currentReflectionValue = GetReflectionValue();
+                var flips = GetPossibleFlips().ToList();
+                var otherReflectionValues = flips.Select(f => f.GetReflectionValue(currentReflectionValue)).ToList();
+                var smudgeVale = otherReflectionValues.First(x => x != 0 && x != currentReflectionValue);
+                return smudgeVale;
+            }
+
             public int GetReflectionValue()
             {
                 for (var reflectionIndex = 1; reflectionIndex < _map.Width; reflectionIndex += 1)
@@ -69,6 +126,31 @@ namespace AdventOfCode._2023.Day13
                     if (ReflectsHorizontally(reflectionIndex))
                     {
                         return reflectionIndex * 100;
+                    }
+                }
+
+                return 0;
+            }
+
+            public int GetReflectionValue(int ignoreReflectionIndex)
+            {
+                for (var reflectionIndex = 1; reflectionIndex < _map.Width; reflectionIndex += 1)
+                {
+                    if (reflectionIndex != ignoreReflectionIndex
+                        && ReflectsVertically(reflectionIndex))
+                    {
+                        return reflectionIndex;
+                    }
+                }
+
+                for (var reflectionIndex = 1; reflectionIndex < _map.Height; reflectionIndex += 1)
+                {
+                    var resultingReflectionIndex = reflectionIndex * 100;
+
+                    if (resultingReflectionIndex != ignoreReflectionIndex
+                        && ReflectsHorizontally(reflectionIndex))
+                    {
+                        return resultingReflectionIndex;
                     }
                 }
 
