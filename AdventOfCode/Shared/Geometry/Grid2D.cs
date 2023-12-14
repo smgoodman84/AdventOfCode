@@ -125,5 +125,20 @@ namespace AdventOfCode.Shared.Geometry
                 }
             }
         }
+
+        public Grid2D<T> Clone()
+        {
+            var clone = new Grid2D<T>((int)Width, (int)Height);
+
+            foreach (var y in YIndexes())
+            {
+                foreach (var x in XIndexes())
+                {
+                    clone.Write(x, y, Read(x,y));
+                }
+            }
+
+            return clone;
+        }
     }
 }
