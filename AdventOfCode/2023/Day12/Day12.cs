@@ -16,7 +16,7 @@ namespace AdventOfCode._2023.Day12
 
         public override string Part1()
         {
-            return GetPossibilities(1).ToString();
+            return string.Empty; // GetPossibilities(1).ToString();
         } 
 
 
@@ -27,23 +27,32 @@ namespace AdventOfCode._2023.Day12
 
         private int GetPossibilities(int times)
         {
-            var rows = InputLines
+            var targets = InputLines
                 .Select(l => MultiplyLine(l, times))
-                .Select(l => new SpringRow(l))
+                .Select(l => new TargetSpringRow(l))
                 .ToList();
 
             var sum = 0;
             var rowNumber = 1;
-            foreach (var row in rows)
+            foreach (var target in targets)
             {
-                // Console.WriteLine(row.Description);
-                var possibilities = row.GetPossibleRows().ToList();
+                TraceLine(target.Description);
+                var baseSpringRow = new SpringRow(target);
+                var possibilities = baseSpringRow.GetPossibilities().ToList();
 
-                var validPossibilities = possibilities
-                    .Where(r => r.IsValid())
-                    .ToList();
+                var count = 0;
+                foreach (var possibility in possibilities)
+                {
+                    var matches = possibility.MatchesTarget();
+                    TraceLine($"{possibility}: {matches}");
+                    if (matches)
+                    {
+                        count += 1;
+                    }
+                }
+                // var matching = possibilities.Where(x => x.MatchesTarget()).ToList();
 
-                var count = validPossibilities.Count;
+                // var count = matching.Count;
 
                 TraceLine($"{rowNumber}: {count}");
 
@@ -69,23 +78,16 @@ namespace AdventOfCode._2023.Day12
             return $"{springMultiplied} {lengthsMultiplied}";
         }
 
-        private class SpringRow
+        private class TargetSpringRow
         {
-            public SpringState[] SpringStates { get; set; }
-            public List<int> RowLengths { get; }
-            public string RowLengthString { get; }
-            public int CurrentDamagedSprings { get; }
-            public int UnknownSprings { get; }
+            public SpringState[] SpringStates { get; }
+            public List<int> DamagedRowLengths { get; }
+            public string DamagedRowLengthString { get; }
             public string Description { get; }
 
+            public int Length => SpringStates.Length;
 
-            public int ExpectedTotalSprings { get; }
-            public int ExpectedDamagedSprings { get; }
-            public int ExpectedDamagedRuns { get; }
-            public int ExpectedOperationalSprings { get; }
-            public int ExpectedOperationalRuns { get; }
-
-            public SpringRow(string description)
+            public TargetSpringRow(string description)
             {
                 var split = description.Split(' ');
 
@@ -93,99 +95,14 @@ namespace AdventOfCode._2023.Day12
                     .Select(Parse)
                     .ToArray();
 
-                RowLengthString = split[1];
-                RowLengths = RowLengthString.Split(',')
+                DamagedRowLengthString = split[1];
+                DamagedRowLengths = DamagedRowLengthString.Split(',')
                     .Select(int.Parse)
                     .ToList();
 
-                CurrentDamagedSprings = SpringStates.Count(s => s == SpringState.Damaged);
-                UnknownSprings = SpringStates.Count(s => s == SpringState.Unknown);
                 Description = description;
-
-                ExpectedTotalSprings = SpringStates.Count();
-                ExpectedDamagedSprings = RowLengths.Sum();
-                ExpectedDamagedRuns = RowLengths.Count();
-                ExpectedOperationalSprings = ExpectedTotalSprings - ExpectedDamagedSprings;
-                ExpectedOperationalRuns = RowLengths.Count() - 1;
             }
 
-            public SpringRow(
-                SpringState[] springStates,
-                string rowLengthString,
-                List<int> rowLengths,
-                int totalSprings,
-                int currentSprings,
-                int unknownSprings)
-            {
-                SpringStates = springStates;
-                RowLengthString = rowLengthString;
-                RowLengths = rowLengths;
-                ExpectedDamagedSprings = totalSprings;
-                CurrentDamagedSprings = currentSprings;
-                UnknownSprings = unknownSprings;
-            }
-
-            public bool IsValid()
-            {
-                if (CurrentDamagedSprings != ExpectedDamagedSprings)
-                {
-                    return false;
-                }
-
-                var runLengths = GetDamagedRunLengths().ToList();
-                var runLengthString = string.Join(",", runLengths);
-                return runLengthString == RowLengthString;
-            }
-
-            public IEnumerable<int> GetDamagedRunLengths() => GetDamagedRunLength(SpringStates);
-
-            public IEnumerable<int> GetDamagedRunLengthSoFar()
-            {
-                if (!SpringStates.Any(x => x == SpringState.Unknown))
-                {
-                    return GetDamagedRunLengths();
-                }
-
-                var untilUnknown = SpringStates
-                    .TakeWhile(x => x != SpringState.Unknown)
-                    .ToList();
-
-                var lengthsUntilUnknown = GetDamagedRunLength(untilUnknown).ToList();
-
-                var length = untilUnknown.Count;
-                if (SpringStates[length - 1] != SpringState.Damaged)
-                {
-                    return lengthsUntilUnknown;
-                }
-
-                return lengthsUntilUnknown.Take(lengthsUntilUnknown.Count - 1);
-            }
-
-            public IEnumerable<int> GetDamagedRunLength(IEnumerable<SpringState> states)
-            {
-                var currentDamagedCount = 0;
-
-                foreach (var state in states)
-                {
-                    if (state == SpringState.Damaged)
-                    {
-                        currentDamagedCount += 1;
-                    }
-                    else
-                    {
-                        if (currentDamagedCount > 0)
-                        {
-                            yield return currentDamagedCount;
-                            currentDamagedCount = 0;
-                        }
-                    }
-                }
-
-                if (currentDamagedCount > 0)
-                {
-                    yield return currentDamagedCount;
-                }
-            }
 
             private SpringState Parse(char c)
             {
@@ -197,84 +114,146 @@ namespace AdventOfCode._2023.Day12
 
                 return SpringState.Unknown;
             }
+        }
 
-            public string GetDescription()
+        private class SpringRow
+        {
+            public List<SpringRowRun> Row { get; set; }
+            public int CurrentLength { get; set; }
+            public TargetSpringRow Target { get; set; }
+
+            public SpringRow(TargetSpringRow target)
             {
-                return string.Join("",
-                    SpringStates.Select(c => c == SpringState.Damaged ? '#' : c == SpringState.Operational ? '.' : '?')
-                    );
-            }
+                Target = target;
 
-
-            public SpringRow SetState(int index, SpringState state)
-            {
-                var newStates = SpringStates.ToArray();
-                newStates[index] = state;
-
-                var newCurrentDamagedSprings = CurrentDamagedSprings + (state == SpringState.Damaged ? 1 : 0);
-
-                return new SpringRow(
-                    newStates,
-                    RowLengthString,
-                    RowLengths,
-                    ExpectedDamagedSprings,
-                    newCurrentDamagedSprings,
-                    UnknownSprings - 1);
-            }
-
-            public IEnumerable<SpringRow> GetPossibleRows()
-            {
-                if (UnknownSprings == 0)
+                Row = new List<SpringRowRun>();
+                Row.Add(new SpringRowRun
                 {
-                    yield return this;
+                    SpringState = SpringState.Operational,
+                    Length = 0
+                });
+
+                CurrentLength = 0;
+                foreach(var rowLength in target.DamagedRowLengths)
+                {
+
+                    Row.Add(new SpringRowRun
+                    {
+                        SpringState = SpringState.Damaged,
+                        Length = rowLength
+                    });
+                    CurrentLength += rowLength;
+
+                    Row.Add(new SpringRowRun
+                    {
+                        SpringState = SpringState.Operational,
+                        Length = 1
+                    });
+                    CurrentLength += 1;
                 }
 
-                var description = GetDescription();
+                Row.Last().Length = 0;
+                CurrentLength -= 1;
+            }
 
-                for (var index = 0; index < SpringStates.Length; index += 1)
+            private SpringRow()
+            {
+
+            }
+
+            public IEnumerable<SpringRow> GetPossibilities()
+            {
+                var unallocatedCount = Target.Length - CurrentLength;
+                if (unallocatedCount == 0)
                 {
-                    if (SpringStates[index] == SpringState.Unknown)
+                    yield return this;
+                    yield break;
+                }
+
+                var index = 0;
+                foreach (var rowSection in Row)
+                {
+                    if (rowSection.SpringState == SpringState.Operational)
                     {
-                        var operational = SetState(index, SpringState.Operational);
-                        var operationalDescription = operational.GetDescription();
-
-                        var operationalDamagedLengthsSoFar = operational.GetDamagedRunLengthSoFar();
-                        var operationalDamagedLengthsSoFarString = string.Join(",", operationalDamagedLengthsSoFar);
-                        if (RowLengthString.StartsWith(operationalDamagedLengthsSoFarString))
+                        var expanded = Expand(index);
+                        foreach(var expandedPossibility in expanded.GetPossibilities())
                         {
-                            // Console.WriteLine($"{description} - Set {index} to operational - {operationalDescription} - still valid ({operationalDamagedLengthsSoFarString})");
-                            foreach (var possibilitity in operational.GetPossibleRows())
-                            {
-                                yield return possibilitity;
-                            }
+                            yield return expandedPossibility;
                         }
-                        else
-                        {
-                            // Console.WriteLine($"{description} - Set {index} to operational - {operationalDescription} - NOT valid ({operationalDamagedLengthsSoFarString})");
-                        }
-
-                        if (CurrentDamagedSprings < ExpectedDamagedSprings)
-                        {
-                            var damaged = SetState(index, SpringState.Damaged);
-                            var damagedDescription = damaged.GetDescription();
-                            var damagedDamagedLengthsSoFar = damaged.GetDamagedRunLengthSoFar();
-                            var damagedDamagedLengthsSoFarString = string.Join(",", damagedDamagedLengthsSoFar);
-                            if (RowLengthString.StartsWith(damagedDamagedLengthsSoFarString))
-                            {
-                                // Console.WriteLine($"{description} - Set {index} to damaged - {damagedDescription} - still valid ({damagedDamagedLengthsSoFarString})");
-                                foreach (var possibilitity in damaged.GetPossibleRows())
-                                {
-                                    yield return possibilitity;
-                                }
-                            }
-                            else
-                            {
-                                // Console.WriteLine($"{description} - Set {index} to damaged - {damagedDescription} - NOT valid ({damagedDamagedLengthsSoFarString})");
-                            }
-                        }
-
-                        break;
                     }
+
+                    index += 1;
+                }
+            }
+
+            private SpringRow Expand(int index)
+            {
+                var newRow = Row.ToList();
+                newRow[index] = new SpringRowRun
+                {
+                    Length = Row[index].Length + 1,
+                    SpringState = Row[index].SpringState
+                };
+
+                var result = new SpringRow()
+                {
+                    Target = Target,
+                    Row = newRow,
+                    CurrentLength = CurrentLength + 1
+                };
+
+                return result;
+            }
+
+            public bool MatchesTarget()
+            {
+                var rowRunIndex = Row[0].Length == 0 ? 1 : 0;
+                var rowRunCount = 0;
+                for (var targetIndex = 0; targetIndex < Target.Length; targetIndex += 1)
+                {
+                    var target = Target.SpringStates[targetIndex];
+                    var row = Row[rowRunIndex];
+                    var actual = row.SpringState;
+
+                    if (target != SpringState.Unknown && actual != target)
+                    {
+                        return false;
+                    }
+
+                    rowRunCount += 1;
+                    if (rowRunCount >= row.Length)
+                    {
+                        rowRunIndex += 1;
+                        rowRunCount = 0;
+                    }
+                }
+
+                return true;
+            }
+
+            public override string ToString()
+            {
+                return string.Join("", Row.Select(x => x.ToString()));
+            }
+        }
+
+        private class SpringRowRun
+        {
+            public SpringState SpringState { get; set; }
+            public int Length { get; set; }
+
+            public override string ToString()
+            {
+                return new string(GetChar(SpringState), Length);
+            }
+
+            private char GetChar(SpringState state)
+            {
+                switch (state)
+                {
+                    case SpringState.Operational: return '.';
+                    case SpringState.Damaged: return '#';
+                    default: return '?';
                 }
             }
         }
