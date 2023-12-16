@@ -16,7 +16,7 @@ namespace AdventOfCode._2023.Day12
 
         public override string Part1()
         {
-            return string.Empty; // GetPossibilities(1).ToString();
+            return GetPossibilities(1).ToString();
         } 
 
 
@@ -25,14 +25,14 @@ namespace AdventOfCode._2023.Day12
             return GetPossibilities(5).ToString();
         }
 
-        private int GetPossibilities(int times)
+        private long GetPossibilities(int times)
         {
             var targets = InputLines
                 .Select(l => MultiplyLine(l, times))
                 .Select(l => new TargetSpringRow(l))
                 .ToList();
 
-            var sum = 0;
+            long sum = 0;
             var rowNumber = 1;
             foreach (var target in targets)
             {
@@ -40,11 +40,11 @@ namespace AdventOfCode._2023.Day12
                 var baseSpringRow = new SpringRow(target);
                 var possibilities = baseSpringRow.GetPossibilities().ToList();
 
-                var count = 0;
+                long count = 0;
                 foreach (var possibility in possibilities)
                 {
                     var matches = possibility.MatchesTarget();
-                    TraceLine($"{possibility}: {matches}");
+                    // TraceLine($"{possibility}: {matches}");
                     if (matches)
                     {
                         count += 1;
@@ -118,113 +118,111 @@ namespace AdventOfCode._2023.Day12
 
         private class SpringRow
         {
-            public List<SpringRowRun> Row { get; set; }
-            public int CurrentLength { get; set; }
+            public SpringState[] CurrentStates { get; set; }
             public TargetSpringRow Target { get; set; }
 
             public SpringRow(TargetSpringRow target)
             {
                 Target = target;
+                CurrentStates = Enumerable.Range(0, target.Length)
+                    .Select(_ => SpringState.Unknown)
+                    .ToArray();
+            }
 
-                Row = new List<SpringRowRun>();
-                Row.Add(new SpringRowRun
+            public SpringRow(TargetSpringRow target, SpringState[] currentStates)
+            {
+                Target = target;
+                CurrentStates = currentStates;
+            }
+
+            private bool TryPositionUndamaged(int startIndex, int runLength, out SpringRow newRow)
+            {
+                var newStates = CurrentStates.ToArray();
+                for (var index = 0; index < startIndex + runLength; index += 1)
                 {
-                    SpringState = SpringState.Operational,
-                    Length = 0
-                });
-
-                CurrentLength = 0;
-                foreach(var rowLength in target.DamagedRowLengths)
-                {
-
-                    Row.Add(new SpringRowRun
+                    var targetState = Target.SpringStates[index];
+                    if (newStates[index] == SpringState.Unknown)
                     {
-                        SpringState = SpringState.Damaged,
-                        Length = rowLength
-                    });
-                    CurrentLength += rowLength;
+                        if (index < startIndex)
+                        {
+                            newStates[index] = SpringState.Operational;
+                        }
+                        else
+                        {
+                            newStates[index] = SpringState.Damaged;
+                        }
+                    }
 
-                    Row.Add(new SpringRowRun
+                    if (targetState != SpringState.Unknown
+                        && targetState != newStates[index])
                     {
-                        SpringState = SpringState.Operational,
-                        Length = 1
-                    });
-                    CurrentLength += 1;
+                        newRow = null;
+                        return false;
+                    }
                 }
 
-                Row.Last().Length = 0;
-                CurrentLength -= 1;
+                newRow = new SpringRow(Target, newStates);
+                return true;
             }
 
-            private SpringRow()
+            public IEnumerable<SpringRow> GetPossibilities(List<int> unpositionedDamagedRuns = null)
             {
+                unpositionedDamagedRuns ??= Target.DamagedRowLengths;
+                var toPosition = unpositionedDamagedRuns.FirstOrDefault();
 
-            }
-
-            public IEnumerable<SpringRow> GetPossibilities()
-            {
-                var unallocatedCount = Target.Length - CurrentLength;
-                if (unallocatedCount == 0)
+                if (toPosition == default)
                 {
+                    for (var index = 0; index < CurrentStates.Length; index += 1)
+                    {
+                        if (CurrentStates[index] == SpringState.Unknown)
+                        {
+                            CurrentStates[index] = SpringState.Operational;
+                        }
+                    }
+
                     yield return this;
                     yield break;
                 }
 
-                var index = 0;
-                foreach (var rowSection in Row)
+                var remaining = unpositionedDamagedRuns.Skip(1).ToList();
+                var totalRemainingDamaged = remaining.Sum(r => r);
+                var minimumRemainingUndamaged = remaining.Count();
+
+                var firstStartIndex = CurrentStates
+                    .Select((x, i) => (x, i))
+                    .First(x => x.x == SpringState.Unknown)
+                    .i;
+
+                if (firstStartIndex > 0 && CurrentStates[firstStartIndex - 1] == SpringState.Damaged)
                 {
-                    if (rowSection.SpringState == SpringState.Operational)
+                    firstStartIndex += 1;
+                }
+
+                var lastStartIndex = Target.Length - totalRemainingDamaged - minimumRemainingUndamaged - toPosition;
+
+                for (var startIndex = firstStartIndex; startIndex <= lastStartIndex; startIndex += 1)
+                {
+                    if (TryPositionUndamaged(startIndex, toPosition, out var newRow))
                     {
-                        var expanded = Expand(index);
-                        foreach(var expandedPossibility in expanded.GetPossibilities())
+                        foreach(var possibility in newRow.GetPossibilities(remaining))
                         {
-                            yield return expandedPossibility;
+                            yield return possibility;
                         }
                     }
-
-                    index += 1;
                 }
-            }
 
-            private SpringRow Expand(int index)
-            {
-                var newRow = Row.ToList();
-                newRow[index] = new SpringRowRun
-                {
-                    Length = Row[index].Length + 1,
-                    SpringState = Row[index].SpringState
-                };
-
-                var result = new SpringRow()
-                {
-                    Target = Target,
-                    Row = newRow,
-                    CurrentLength = CurrentLength + 1
-                };
-
-                return result;
             }
 
             public bool MatchesTarget()
             {
-                var rowRunIndex = Row[0].Length == 0 ? 1 : 0;
-                var rowRunCount = 0;
                 for (var targetIndex = 0; targetIndex < Target.Length; targetIndex += 1)
                 {
                     var target = Target.SpringStates[targetIndex];
-                    var row = Row[rowRunIndex];
-                    var actual = row.SpringState;
+                    var actual = CurrentStates[targetIndex];
 
                     if (target != SpringState.Unknown && actual != target)
                     {
                         return false;
-                    }
-
-                    rowRunCount += 1;
-                    if (rowRunCount >= row.Length)
-                    {
-                        rowRunIndex += 1;
-                        rowRunCount = 0;
                     }
                 }
 
@@ -233,28 +231,17 @@ namespace AdventOfCode._2023.Day12
 
             public override string ToString()
             {
-                return string.Join("", Row.Select(x => x.ToString()));
+                return string.Join("", CurrentStates.Select(GetChar));
             }
         }
 
-        private class SpringRowRun
+        private static char GetChar(SpringState state)
         {
-            public SpringState SpringState { get; set; }
-            public int Length { get; set; }
-
-            public override string ToString()
+            switch (state)
             {
-                return new string(GetChar(SpringState), Length);
-            }
-
-            private char GetChar(SpringState state)
-            {
-                switch (state)
-                {
-                    case SpringState.Operational: return '.';
-                    case SpringState.Damaged: return '#';
-                    default: return '?';
-                }
+                case SpringState.Operational: return '.';
+                case SpringState.Damaged: return '#';
+                default: return '?';
             }
         }
 
