@@ -22,7 +22,7 @@ namespace AdventOfCode._2023.Day12
 
         public override string Part2()
         {
-            return GetPossibilities(5).ToString();
+            return string.Empty; GetPossibilities(5).ToString();
         }
 
         private long GetPossibilities(int times)
@@ -32,6 +32,23 @@ namespace AdventOfCode._2023.Day12
                 .Select(l => new TargetSpringRow(l))
                 .ToList();
 
+            long sum = 0;
+            var row = 1;
+            foreach (var target in targets)
+            {
+                var possibilities = target.GetPossibilities();
+                sum += possibilities;
+
+                TraceLine($"RESULT {row}: {target.Description} = {possibilities}");
+                row += 1;
+            }
+            /*
+            var possibilities = targets
+                .Select(t => t.GetPossibilities())
+                .ToList();
+
+            var sum = possibilities.Sum();
+            
             long sum = 0;
             var rowNumber = 1;
             foreach (var target in targets)
@@ -44,7 +61,7 @@ namespace AdventOfCode._2023.Day12
                 foreach (var possibility in possibilities)
                 {
                     var matches = possibility.MatchesTarget();
-                    // TraceLine($"{possibility}: {matches}");
+                    TraceLine($"{possibility}: {matches}");
                     if (matches)
                     {
                         count += 1;
@@ -59,7 +76,7 @@ namespace AdventOfCode._2023.Day12
                 sum += count;
                 rowNumber += 1;
             }
-
+            */
             return sum;
         }
 
@@ -87,6 +104,8 @@ namespace AdventOfCode._2023.Day12
 
             public int Length => SpringStates.Length;
 
+            private static Dictionary<string, long> _possibilityCache = new Dictionary<string, long>();
+
             public TargetSpringRow(string description)
             {
                 var split = description.Split(' ');
@@ -103,6 +122,118 @@ namespace AdventOfCode._2023.Day12
                 Description = description;
             }
 
+            public TargetSpringRow(
+                SpringState[] springStates,
+                List<int> damagedRowLengths)
+            {
+                SpringStates = springStates;
+                DamagedRowLengths = damagedRowLengths;
+                DamagedRowLengthString = string.Join(",", damagedRowLengths);
+
+                var springStateDescription = string.Join("", springStates.Select(GetChar));
+                Description = $"{springStateDescription} {DamagedRowLengthString}";
+            }
+
+            public long GetPossibilities()
+            {
+                if (!_possibilityCache.ContainsKey(Description))
+                {
+                    // Console.WriteLine($"Calculating {Description}");
+                    var result = GetPossibilitiesUncached();
+
+                    // Console.WriteLine($"{Description} = {result}");
+                    _possibilityCache.Add(Description, result);
+                    return result;
+                }
+
+                return _possibilityCache[Description];
+            }
+
+            private long GetPossibilitiesUncached()
+            {
+                if (!DamagedRowLengths.Any())
+                {
+                    return 1;
+                }
+
+                if (!SpringStates.Any(x => x != SpringState.Operational))
+                {
+                    return 0;
+                }
+
+                var firstStartIndex = SpringStates
+                    .Select((x, i) => (x, i))
+                    .First(x => x.x != SpringState.Operational)
+                    .i;
+
+
+                var toPosition = DamagedRowLengths.FirstOrDefault();
+                var remainingRowLengths = DamagedRowLengths.Skip(1).ToList();
+                var totalRemainingDamaged = remainingRowLengths.Sum();
+                var minimumRemainingUndamaged = remainingRowLengths.Count();
+
+                var lastStartIndex = SpringStates.Length - totalRemainingDamaged - minimumRemainingUndamaged - toPosition;
+
+                if (SpringStates.Any(x => x == SpringState.Damaged))
+                {
+                    var firstDamaged = SpringStates
+                    .Select((x, i) => (x, i))
+                    .First(x => x.x == SpringState.Damaged)
+                    .i;
+
+                    if (firstDamaged < lastStartIndex)
+                    {
+                        lastStartIndex = firstDamaged;
+                    }
+                }
+
+                long totalPossibilities = 0;
+                for (var startIndex = firstStartIndex; startIndex <= lastStartIndex; startIndex += 1)
+                {
+                    if (CanPositionUndamaged(startIndex, toPosition))
+                    {
+                        if (!remainingRowLengths.Any())
+                        {
+                            totalPossibilities += 1;
+                        }
+                        else
+                        {
+                            var remainingStatesStartIndex = startIndex + toPosition + 1;
+                            var remainingStates = SpringStates.AsSpan().Slice(remainingStatesStartIndex).ToArray();
+                            var remaining = new TargetSpringRow(remainingStates, remainingRowLengths);
+
+                            var remainingPossibilities = remaining.GetPossibilities();
+                            totalPossibilities += remainingPossibilities;
+                        }
+                    }
+                }
+                return totalPossibilities;
+            }
+
+            private bool CanPositionUndamaged(int startIndex, int runLength)
+            {
+                var previous = startIndex - 1;
+                var next = startIndex + runLength;
+                if (previous >= 0 && SpringStates[previous] == SpringState.Damaged)
+                {
+                    return false;
+                }
+
+                if (next < SpringStates.Length && SpringStates[next] == SpringState.Damaged)
+                {
+                    return false;
+                }
+
+                for (var index = startIndex; index < startIndex + runLength; index += 1)
+                {
+                    if (SpringStates[index] == SpringState.Operational)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
 
             private SpringState Parse(char c)
             {
@@ -118,6 +249,8 @@ namespace AdventOfCode._2023.Day12
 
         private class SpringRow
         {
+            private static Dictionary<string, List<SpringRow>> _cache = new Dictionary<string, List<SpringRow>>();
+
             public SpringState[] CurrentStates { get; set; }
             public TargetSpringRow Target { get; set; }
 
@@ -165,9 +298,11 @@ namespace AdventOfCode._2023.Day12
                 return true;
             }
 
-            public IEnumerable<SpringRow> GetPossibilities(List<int> unpositionedDamagedRuns = null)
+            public List<SpringRow> GetPossibilities(List<int> unpositionedDamagedRuns = null)
             {
                 unpositionedDamagedRuns ??= Target.DamagedRowLengths;
+
+
                 var toPosition = unpositionedDamagedRuns.FirstOrDefault();
 
                 if (toPosition == default)
@@ -180,19 +315,45 @@ namespace AdventOfCode._2023.Day12
                         }
                     }
 
-                    yield return this;
-                    yield break;
+                    var thisResult = new List<SpringRow> { this };
+                    // _cache.Add(cacheKey, thisResult);
+                    return thisResult;
                 }
+
+
+
+                var unPositionedCsv = string.Join(",", unpositionedDamagedRuns);
+                var firstUnknown = CurrentStates
+                    .Select((x, i) => (x, i))
+                    .First(x => x.x == SpringState.Unknown)
+                    .i;
+
+                var targetString = $"{string.Join("", Target.SpringStates.Select(GetChar))}";
+                var targetCacheKey = targetString.Substring(firstUnknown);
+                if (firstUnknown > 0)
+                {
+                    targetCacheKey = $"{GetChar(CurrentStates[firstUnknown - 1])}{targetCacheKey}";
+                }
+                else
+                {
+                    targetCacheKey = $"S{targetCacheKey}";
+                }
+                var cacheKey = $"{targetCacheKey}:{unPositionedCsv}";
+
+                if (_cache.ContainsKey(cacheKey))
+                {
+                    var cachedResult = _cache[cacheKey];
+                    return cachedResult;
+                }
+
+
 
                 var remaining = unpositionedDamagedRuns.Skip(1).ToList();
                 var totalRemainingDamaged = remaining.Sum(r => r);
                 var minimumRemainingUndamaged = remaining.Count();
 
-                var firstStartIndex = CurrentStates
-                    .Select((x, i) => (x, i))
-                    .First(x => x.x == SpringState.Unknown)
-                    .i;
 
+                var firstStartIndex = firstUnknown;
                 if (firstStartIndex > 0 && CurrentStates[firstStartIndex - 1] == SpringState.Damaged)
                 {
                     firstStartIndex += 1;
@@ -200,17 +361,18 @@ namespace AdventOfCode._2023.Day12
 
                 var lastStartIndex = Target.Length - totalRemainingDamaged - minimumRemainingUndamaged - toPosition;
 
+                var results = new List<SpringRow>();
                 for (var startIndex = firstStartIndex; startIndex <= lastStartIndex; startIndex += 1)
                 {
                     if (TryPositionUndamaged(startIndex, toPosition, out var newRow))
                     {
-                        foreach(var possibility in newRow.GetPossibilities(remaining))
-                        {
-                            yield return possibility;
-                        }
+                        var currentResults = newRow.GetPossibilities(remaining);
+                        results.AddRange(currentResults);
                     }
                 }
 
+                _cache.Add(cacheKey, results);
+                return results;
             }
 
             public bool MatchesTarget()
