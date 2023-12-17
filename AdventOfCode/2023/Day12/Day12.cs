@@ -5,7 +5,7 @@ namespace AdventOfCode._2023.Day12
 {
     public class Day12 : Day
     {
-        public Day12() : base(2023, 12, "Day12/input_2023_12.txt", "7402", "", true)
+        public Day12() : base(2023, 12, "Day12/input_2023_12.txt", "7402", "3384337640277", false)
         {
 
         }
@@ -22,7 +22,7 @@ namespace AdventOfCode._2023.Day12
 
         public override string Part2()
         {
-            return string.Empty; GetPossibilities(5).ToString();
+            return GetPossibilities(5).ToString();
         }
 
         private long GetPossibilities(int times)
@@ -194,7 +194,11 @@ namespace AdventOfCode._2023.Day12
                     {
                         if (!remainingRowLengths.Any())
                         {
-                            totalPossibilities += 1;
+                            var toSkip = startIndex + toPosition;
+                            if (!SpringStates.Skip(toSkip).Any(x => x == SpringState.Damaged))
+                            {
+                                totalPossibilities += 1;
+                            }
                         }
                         else
                         {
