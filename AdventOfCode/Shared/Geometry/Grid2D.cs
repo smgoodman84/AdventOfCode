@@ -112,11 +112,12 @@ namespace AdventOfCode.Shared.Geometry
             }
         }
 
+        public IEnumerable<Coordinate2D> AllCoordinates() => FindCoordinates(_ => true);
         public IEnumerable<Coordinate2D> FindCoordinates(Func<T, bool> predicate)
         {
             foreach (var y in YIndexes())
             {
-                for (var x = MinX; x <= MaxX; x++)
+                foreach (var x in XIndexes())
                 {
                     if (predicate(Read(x, y)))
                     {
