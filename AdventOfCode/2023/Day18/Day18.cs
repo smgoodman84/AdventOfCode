@@ -20,39 +20,27 @@ namespace AdventOfCode._2023.Day18
 
         public override string Part1()
         {
-            var current = Coordinate2D.Origin;
+            var result = CalculateArea(ParseLineSegmentPart1);
 
-            var lineSegments = new List<LineSegment>();
-            var lineArea = 0;
-            foreach (var instruction in _instructions)
-            {
-                (var lineSegment, var lineDistance) = ParseLineSegmentPart1(current, instruction);
-                lineSegments.Add(lineSegment);
-                lineArea += lineDistance;
-                current = lineSegment.End;
-            }
-
-            var polygon = new Polygon(lineSegments);
-
-            var area = polygon.CalculateArea();
-            var longArea = (long)area;
-
-            var totalArea = longArea + (lineArea / 2) + 1;
-
-            // 147839462116154 - too low (longArea)
-            // 147839678470596 - too high (longArea + lineArea)
-            return totalArea.ToString();
+            return result.ToString();
         }
 
         public override string Part2()
         {
+            var result = CalculateArea(ParseLineSegmentPart2);
+
+            return result.ToString();
+        }
+
+        private long CalculateArea(Func<Coordinate2D, Instruction, (LineSegment LineSegment, int Distance)> parseLineSegment)
+        {
             var current = Coordinate2D.Origin;
 
             var lineSegments = new List<LineSegment>();
-            var lineArea = 0;
+            long lineArea = 0;
             foreach (var instruction in _instructions)
             {
-                (var lineSegment, var lineDistance) = ParseLineSegmentPart2(current, instruction);
+                (var lineSegment, var lineDistance) = parseLineSegment(current, instruction);
                 lineSegments.Add(lineSegment);
                 lineArea += lineDistance;
                 current = lineSegment.End;
@@ -65,9 +53,7 @@ namespace AdventOfCode._2023.Day18
 
             var totalArea = longArea + (lineArea / 2) + 1;
 
-            // 147839462116154 - too low (longArea)
-            // 147839678470596 - too high (longArea + lineArea)
-            return totalArea.ToString();
+            return totalArea;
         }
 
         private (LineSegment LineSegment, int Distance) ParseLineSegmentPart1(Coordinate2D start, Instruction instruction)
@@ -141,12 +127,6 @@ namespace AdventOfCode._2023.Day18
             }
 
             throw new Exception($"{input} is not a valid hex character");
-        }
-
-        private class Location
-        {
-            public bool IsDug { get; set; }
-            public string Colour { get; set; }
         }
 
         private class Instruction
