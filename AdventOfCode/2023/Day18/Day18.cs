@@ -5,7 +5,7 @@ namespace AdventOfCode._2023.Day18
 {
     public class Day18 : Day
     {
-        public Day18() : base(2023, 18, "Day18/input_2023_18.txt", "", "", true)
+        public Day18() : base(2023, 18, "Day18/input_2023_18.txt", "47045", "147839570293376", true)
         {
 
         }
@@ -20,197 +20,127 @@ namespace AdventOfCode._2023.Day18
 
         public override string Part1()
         {
-            var grid = new InfiniteGrid2D<Location>(new Location
-            {
-                IsDug = false,
-                Colour = "#000000"
-            });
+            var current = Coordinate2D.Origin;
 
-            var currentCoordinate = Coordinate2D.Origin;
-            grid.Write(currentCoordinate, new Location
-            {
-                IsDug = true,
-                Colour = "#ffffff"
-            });
-
+            var lineSegments = new List<LineSegment>();
+            var lineArea = 0;
             foreach (var instruction in _instructions)
             {
-                for (var i = 0; i < instruction.Distance; i += 1)
-                {
-                    currentCoordinate = currentCoordinate.Neighbour(instruction.Direction);
-
-                    grid.Write(currentCoordinate, new Location
-                    {
-                        IsDug = true,
-                        Colour = instruction.Colour
-                    });
-                }
+                (var lineSegment, var lineDistance) = ParseLineSegmentPart1(current, instruction);
+                lineSegments.Add(lineSegment);
+                lineArea += lineDistance;
+                current = lineSegment.End;
             }
 
-            Draw(grid, "pre-dig.txt");
+            var polygon = new Polygon(lineSegments);
 
-            var firstInstruction = _instructions.First();
-            var fillStart = Coordinate2D.Origin.Neighbour(OppositeDirection(firstInstruction.Direction));
+            var area = polygon.CalculateArea();
+            var longArea = (long)area;
 
-            DigOut(grid, fillStart);
+            var totalArea = longArea + (lineArea / 2) + 1;
 
-            TraceLine();
-            Draw(grid, "post-dig.txt");
-
-            var dugCount = CountDug(grid);
-
-            return dugCount.ToString();
-        }
-
-        private static void DigOut(InfiniteGrid2D<Location> grid, Coordinate2D location)
-        {
-            var neighbours = location.Neighbours();
-            foreach (var neighbour in neighbours)
-            {
-                var current = grid.Read(neighbour);
-                if (!current.IsDug)
-                {
-                    grid.Write(neighbour, new Location
-                    {
-                        IsDug = true,
-                        Colour = "#000000"
-                    });
-
-                    DigOut(grid, neighbour);
-                }
-            }
-        }
-
-        private static void DigOut1(InfiniteGrid2D<Location> grid)
-        {
-            foreach (var y in grid.YIndexes())
-            {
-                var inside = false;
-                var onEdge = false;
-                foreach (var x in grid.XIndexes())
-                {
-                    var current = grid.Read(x, y);
-                    if (inside)
-                    {
-                        if (onEdge)
-                        {
-                            if (!current.IsDug)
-                            {
-                                onEdge = false;
-                                inside = false;
-                            }
-                        }
-                        else
-                        {
-                            if (current.IsDug)
-                            {
-                                onEdge = true;
-                            }
-                            else
-                            {
-                                grid.Write(x, y, new Location
-                                {
-                                    IsDug = true,
-                                    Colour = "#000000"
-                                });
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (onEdge)
-                        {
-                            if (!current.IsDug)
-                            {
-                                onEdge = false;
-                                inside = true;
-
-                                grid.Write(x, y, new Location
-                                {
-                                    IsDug = true,
-                                    Colour = "#000000"
-                                });
-                            }
-                        }
-                        else
-                        {
-                            if (current.IsDug)
-                            {
-                                onEdge = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private static int CountDug(InfiniteGrid2D<Location> grid)
-        {
-            var dug = 0;
-            foreach (var y in grid.YIndexes())
-            {
-                foreach (var x in grid.XIndexes())
-                {
-                    var current = grid.Read(x, y);
-                    if (current.IsDug)
-                    {
-                        dug += 1;
-                    }
-                }
-            }
-
-            return dug;
+            // 147839462116154 - too low (longArea)
+            // 147839678470596 - too high (longArea + lineArea)
+            return totalArea.ToString();
         }
 
         public override string Part2()
         {
-            return string.Empty;
-        }
+            var current = Coordinate2D.Origin;
 
-        private void Draw(InfiniteGrid2D<Location> grid)
-        {
-            foreach (var y in grid.YIndexes().OrderByDescending(y => y))
+            var lineSegments = new List<LineSegment>();
+            var lineArea = 0;
+            foreach (var instruction in _instructions)
             {
-                foreach (var x in grid.XIndexes())
-                {
-                    var current = grid.Read(x, y);
-                    var isStart = x == 0 && y == 0;
-                    var toDraw = isStart ? 'S' : (current.IsDug ? '#' : '.');
-                    Trace(toDraw);
-                }
-                TraceLine();
-            }
-        }
-        private void Draw(InfiniteGrid2D<Location> grid, string filename)
-        {
-            var lines = new List<string>();
-            foreach (var y in grid.YIndexes().OrderByDescending(y => y))
-            {
-                var currentLine = "";
-                foreach (var x in grid.XIndexes())
-                {
-                    var current = grid.Read(x, y);
-                    var isStart = x == 0 && y == 0;
-                    var toDraw = isStart ? 'S' : (current.IsDug ? '#' : '.');
-                    currentLine = $"{currentLine}{toDraw}";
-                }
-                lines.Add(currentLine);
+                (var lineSegment, var lineDistance) = ParseLineSegmentPart2(current, instruction);
+                lineSegments.Add(lineSegment);
+                lineArea += lineDistance;
+                current = lineSegment.End;
             }
 
-            File.WriteAllLines(filename, lines);
+            var polygon = new Polygon(lineSegments);
+
+            var area = polygon.CalculateArea();
+            var longArea = (long)area;
+
+            var totalArea = longArea + (lineArea / 2) + 1;
+
+            // 147839462116154 - too low (longArea)
+            // 147839678470596 - too high (longArea + lineArea)
+            return totalArea.ToString();
         }
 
-        private Direction OppositeDirection(Direction direction)
+        private (LineSegment LineSegment, int Distance) ParseLineSegmentPart1(Coordinate2D start, Instruction instruction)
         {
+            var distance = instruction.Distance;
+            var direction = instruction.Direction;
+
             switch (direction)
             {
-                case Direction.Up: return Direction.Down;
-                case Direction.Down: return Direction.Up;
-                case Direction.Left: return Direction.Right;
-                case Direction.Right: return Direction.Left;
+                case Direction.Right: // Right
+                    return (new LineSegment(start, new Coordinate2D(start.X + distance, start.Y)), distance);
+                case Direction.Down: // Down
+                    return (new LineSegment(start, new Coordinate2D(start.X, start.Y - distance)), distance);
+                case Direction.Left: // Left
+                    return (new LineSegment(start, new Coordinate2D(start.X - distance, start.Y)), distance);
+                case Direction.Up: // Up
+                    return (new LineSegment(start, new Coordinate2D(start.X, start.Y + distance)), distance);
             }
 
-            throw new Exception($"Unrecognised direction: {direction}");
+            throw new Exception($"Unexpected direction {direction}");
+        }
+
+        private (LineSegment LineSegment, int Distance) ParseLineSegmentPart2(Coordinate2D start, Instruction instruction)
+        {
+            var hexDistance = instruction.Colour.Substring(1, 5);
+            var distance = ParseHex(hexDistance);
+            var direction = instruction.Colour[6];
+
+            switch (direction)
+            {
+                case '0': // Right
+                    return (new LineSegment(start, new Coordinate2D(start.X + distance, start.Y)), distance);
+                case '1': // Down
+                    return (new LineSegment(start, new Coordinate2D(start.X, start.Y - distance)), distance);
+                case '2': // Left
+                    return (new LineSegment(start, new Coordinate2D(start.X - distance, start.Y)), distance);
+                case '3': // Up
+                    return (new LineSegment(start, new Coordinate2D(start.X, start.Y + distance)), distance);
+            }
+
+            throw new Exception($"Unexpected direction {direction}");
+        }
+
+        private int ParseHex(string input)
+        {
+            var result = 0;
+            foreach(var c in input)
+            {
+                result *= 16;
+                result += ParseHex(c);
+            }
+
+            return result;
+        }
+
+        private int ParseHex(char input)
+        {
+            if (input >= '0' && input <= '9')
+            {
+                return input - '0';
+            }
+
+            if (input >= 'a' && input <= 'f')
+            {
+                return input - 'a' + 10;
+            }
+
+            if (input >= 'A' && input <= 'F')
+            {
+                return input - 'A' + 10;
+            }
+
+            throw new Exception($"{input} is not a valid hex character");
         }
 
         private class Location
