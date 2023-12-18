@@ -95,6 +95,22 @@ namespace AdventOfCode.Shared.Geometry
             }
         }
 
+        public IEnumerable<long> YIndexes()
+        {
+            for (var y = MinY; y <= MaxY; y++)
+            {
+                yield return y;
+            }
+        }
+
+        public IEnumerable<long> XIndexes()
+        {
+            for (var x = MinX; x <= MaxX; x++)
+            {
+                yield return x;
+            }
+        }
+
         public IEnumerable<T> ReadAll()
         {
             for (var y = MinY; y < Height; y++)

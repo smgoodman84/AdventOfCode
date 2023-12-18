@@ -106,9 +106,9 @@ namespace AdventOfCode.Shared.Geometry
 
         public IEnumerable<long> XIndexes()
         {
-            for (var y = MinX; y <= MaxX; y++)
+            for (var x = MinX; x <= MaxX; x++)
             {
-                yield return y;
+                yield return x;
             }
         }
 
