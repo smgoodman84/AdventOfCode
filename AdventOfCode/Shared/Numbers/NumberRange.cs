@@ -7,6 +7,11 @@ namespace AdventOfCode.Shared.Numbers
     {
         public NumberRange(long start, long end)
         {
+            if (start > end)
+            {
+                throw new Exception("Invalid Range");
+            }
+
             Start = start;
             End = end;
             Length = End - Start + 1;
@@ -95,6 +100,40 @@ namespace AdventOfCode.Shared.Numbers
             }
 
             throw new Exception("Cannot Subtract Range");
+        }
+
+        public NumberRange LessThanOrEqual(long lessThanOrEqual) => LessThan(lessThanOrEqual + 1);
+        public NumberRange LessThan(long lessThan)
+        {
+            var newEnd = lessThan - 1;
+            if (newEnd >= End)
+            {
+                return this;
+            }
+
+            if (newEnd < Start)
+            {
+                throw new Exception($"Nothing less than {lessThan}");
+            }
+
+            return new NumberRange(Start, newEnd);
+        }
+
+        public NumberRange GreaterThanOrEqual(long greaterThanOrEqual) => GreaterThan(greaterThanOrEqual - 1);
+        public NumberRange GreaterThan(long greaterThan)
+        {
+            var newStart = greaterThan + 1;
+            if (newStart <= Start)
+            {
+                return this;
+            }
+
+            if (newStart > End)
+            {
+                throw new Exception($"Nothing greater than {greaterThan}");
+            }
+
+            return new NumberRange(newStart, End);
         }
 
 

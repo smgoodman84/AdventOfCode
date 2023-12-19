@@ -33,8 +33,10 @@ namespace AdventOfCode._2023.Day19
             var result = 0;
             foreach (var part in _parts)
             {
-                var accepted = inWorkflow.IsAccepted(part);
-                if (accepted)
+                var ranges = part.Ratings.ToDictionary(kvp => kvp.Key, kvp => new NumberRange(kvp.Value, kvp.Value));
+
+                long sum = GetAcceptedCount(ranges);
+                if (sum > 0)
                 {
                     result += part.RatingSum();
                 }
@@ -45,26 +47,28 @@ namespace AdventOfCode._2023.Day19
 
         public override string Part2()
         {
+            var ranges = "xmas".ToDictionary(c => c.ToString(), kvp => new NumberRange(1, 4000));
+
+            long sum = GetAcceptedCount(ranges);
+
+            return sum.ToString();
+        }
+
+        private static long GetAcceptedCount(Dictionary<string, NumberRange> ranges)
+        {
             var inWorkflow = Workflow.Workflows["in"];
 
-            var ranges = new Dictionary<string, NumberRange>
-            {
-                { "x", new NumberRange(1, 4000) },
-                { "m", new NumberRange(1, 4000) },
-                { "a", new NumberRange(1, 4000) },
-                { "s", new NumberRange(1, 4000) },
-            };
-            var partCollection = new PartCollection(ranges, State.Continue);
+            var partCollection = new PartRanges(ranges, State.Continue);
             var results = inWorkflow.ProcessPart(partCollection);
 
             long sum = 0;
-            foreach(var result in results)
+            foreach (var result in results)
             {
                 var acceptedCount = result.GetAcceptedCount();
                 sum += acceptedCount;
             }
 
-            return sum.ToString();
+            return sum;
         }
 
         private class Workflow
@@ -72,19 +76,19 @@ namespace AdventOfCode._2023.Day19
             public static Dictionary<string, Workflow> Workflows = new Dictionary<string, Workflow>();
             public string Name { get; set; }
 
-            private List<Func<Part, State>> _predicates = new List<Func<Part, State>>();
-            private List<Func<PartCollection, List<PartCollection>>> _collectionPredicates = new List<Func<PartCollection, List<PartCollection>>>();
+            private List<Func<PartRanges, List<PartRanges>>> _predicates;
             private Workflow(string description)
             {
                 var nameSplit = description.Split("{");
                 Name = nameSplit[0];
 
-                var predicates = nameSplit[1].Replace("}", "").Split(",");
-                foreach (var predicate in predicates)
-                {
-                    _predicates.Add(ParsePredicate(predicate));
-                    _collectionPredicates.Add(ParsePredicateCollection(predicate));
-                }
+                var predicates = nameSplit[1]
+                    .Replace("}", "")
+                    .Split(",");
+
+                _predicates = predicates
+                    .Select(ParsePredicate)
+                    .ToList();
             }
 
             public static void AddWorkflow(string description)
@@ -93,101 +97,46 @@ namespace AdventOfCode._2023.Day19
                 Workflows.Add(workflow.Name, workflow);
             }
 
-            private Func<Part, State> GetDestinationProcess(string destinationName)
+
+            private Func<PartRanges, List<PartRanges>> SetState(State state)
             {
-                if (destinationName == "A")
-                {
-                    return p => State.Accept;
-                }
-
-                if (destinationName == "R")
-                {
-                    return p => State.Reject;
-                }
-
-                return p =>
-                {
-                    return Workflows[destinationName].ProcessPart(p);
+                return p => {
+                    p.State = state;
+                    return new List<PartRanges>
+                        {
+                            p
+                        };
                 };
             }
-
-            private Func<PartCollection, List<PartCollection>> GetDestinationProcessCollection(string destinationName)
+            private Func<PartRanges, List<PartRanges>> RunWorkflow(string workflow)
             {
-                if (destinationName == "A")
+                if (workflow == "A")
                 {
-                    return p => {
-                        p.State = State.Accept;
-                        Console.WriteLine($"Accepted {p}");
-                        return new List<PartCollection>
-                        {
-                            p
-                        };
-                    };
+                    return SetState(State.Accept);
                 }
 
-                if (destinationName == "R")
+                if (workflow == "R")
                 {
-                    return p => {
-                        p.State = State.Reject;
-                        Console.WriteLine($"Rejected {p}");
-                        return new List<PartCollection>
-                        {
-                            p
-                        };
-                    };
+                    return SetState(State.Reject);
                 }
 
                 return p =>
                 {
                     // Console.WriteLine($"Processing with workflow {destinationName}");
-                    return Workflows[destinationName].ProcessPart(p);
+                    return Workflows[workflow].ProcessPart(p);
                 };
             }
 
-            private Func<Part, State> ParsePredicate(string predicate)
+            private Func<PartRanges, List<PartRanges>> ParsePredicate(string predicate)
             {
                 if (!predicate.Contains(":"))
                 {
-                    return GetDestinationProcess(predicate);
+                    return RunWorkflow(predicate);
                 }
 
                 var split = predicate.Split(":");
-                var trueDestinationName = split[1];
-                var trueDestination = GetDestinationProcess(trueDestinationName);
-
-                var condition = split[0];
-                if (condition.Contains("<"))
-                {
-                    var ltSplit = condition.Split("<");
-                    var ltProperty = ltSplit[0];
-                    var ltValue = int.Parse(ltSplit[1]);
-                    return p => LessThan(p, ltProperty, ltValue, trueDestination);
-                }
-
-
-                if (condition.Contains(">"))
-                {
-                    var gtSplit = condition.Split(">");
-                    var gtProperty = gtSplit[0];
-                    var gtValue = int.Parse(gtSplit[1]);
-                    return p => GreaterThan(p, gtProperty, gtValue, trueDestination);
-                }
-
-                return p => State.Unknown;
-            }
-
-
-
-            private Func<PartCollection, List<PartCollection>> ParsePredicateCollection(string predicate)
-            {
-                if (!predicate.Contains(":"))
-                {
-                    return GetDestinationProcessCollection(predicate);
-                }
-
-                var split = predicate.Split(":");
-                var trueDestinationName = split[1];
-                var trueDestination = GetDestinationProcessCollection(trueDestinationName);
+                var trueWorkflowName = split[1];
+                var trueWorkflow = RunWorkflow(trueWorkflowName);
 
                 var condition = split[0];
                 if (condition.Contains("<"))
@@ -197,18 +146,19 @@ namespace AdventOfCode._2023.Day19
                     var ltValue = int.Parse(ltSplit[1]);
                     return p =>
                     {
-                        Console.WriteLine($"Splitting {ltProperty} Less Than {ltValue}");
-                        var split = p.SplitLessThan(ltProperty, ltValue);
-                        var splitCollections = new List<PartCollection>();
+                        // Console.WriteLine($"Splitting {ltProperty} Less Than {ltValue}");
+                        var splitCollections = new List<PartRanges>();
 
-                        if (split.LessThan != null)
+                        var lessThan = p.LessThan(ltProperty, ltValue);
+                        if (lessThan != null)
                         {
-                            splitCollections.AddRange(trueDestination(split.LessThan));
+                            splitCollections.AddRange(trueWorkflow(lessThan));
                         }
 
-                        if (split.GreaterThanOrEqual != null)
+                        var greaterThanOrEqual = p.GreaterThanOrEqual(ltProperty, ltValue);
+                        if (greaterThanOrEqual != null)
                         {
-                            splitCollections.Add(split.GreaterThanOrEqual);
+                            splitCollections.Add(greaterThanOrEqual);
                         }
 
                         return splitCollections;
@@ -223,79 +173,41 @@ namespace AdventOfCode._2023.Day19
                     var gtValue = int.Parse(gtSplit[1]);
                     return p =>
                     {
-                        Console.WriteLine($"Splitting {gtProperty} Greater Than {gtValue}");
-                        var split = p.SplitGreaterThan(gtProperty, gtValue);
-                        var splitCollections = new List<PartCollection>();
+                        // Console.WriteLine($"Splitting {gtProperty} Greater Than {gtValue}");
+                        var splitCollections = new List<PartRanges>();
 
-                        if (split.LessThanOrEqual != null)
+                        var lessThanOrEqual = p.LessThanOrEqual(gtProperty, gtValue);
+                        if (lessThanOrEqual != null)
                         {
-                            splitCollections.Add(split.LessThanOrEqual);
+                            splitCollections.Add(lessThanOrEqual);
                         }
 
-                        if (split.GreaterThan != null)
+                        var greaterThan = p.GreaterThan(gtProperty, gtValue);
+                        if (greaterThan != null)
                         {
-                            splitCollections.AddRange(trueDestination(split.GreaterThan));
+                            splitCollections.AddRange(trueWorkflow(greaterThan));
                         }
 
                         return splitCollections;
                     };
                 }
 
-                return p => {
-                    p.State = State.Unknown;
-                    return new List<PartCollection>
-                        {
-                            p
-                        };
-                };
+                return SetState(State.Unknown);
             }
 
-            private State LessThan(Part part, string property, int value, Func<Part, State> trueDestination)
+            public List<PartRanges> ProcessPart(PartRanges part)
             {
-                if (part.Ratings[property] < value)
-                {
-                    return trueDestination(part);
-                }
-
-                return State.Continue;
-            }
-
-            private State GreaterThan(Part part, string property, int value, Func<Part, State> trueDestination)
-            {
-                if (part.Ratings[property] > value)
-                {
-                    return trueDestination(part);
-                }
-
-                return State.Continue;
-            }
-
-            private State ProcessPart(Part part)
-            {
-                foreach (var predicate in _predicates)
-                {
-                    var predicateResult = predicate(part);
-                    if (predicateResult != State.Continue)
-                    {
-                        return predicateResult;
-                    }
-                }
-
-                return State.Unknown;
-            }
-
-            public List<PartCollection> ProcessPart(PartCollection part)
-            {
-                var incomplete = new List<PartCollection>()
+                var incomplete = new List<PartRanges>()
                 {
                     part
                 };
-                Console.WriteLine($"Processing {part} with workflow {Name}");
-                var complete = new List<PartCollection>();
 
-                foreach (var predicate in _collectionPredicates)
+                // Console.WriteLine($"Processing {part} with workflow {Name}");
+                var complete = new List<PartRanges>();
+
+                foreach (var predicate in _predicates)
                 {
-                    var newIncomplete = new List<PartCollection>();
+                    var newIncomplete = new List<PartRanges>();
                     foreach(var currentPart in incomplete)
                     {
                         var predicateResults = predicate(currentPart);
@@ -315,12 +227,6 @@ namespace AdventOfCode._2023.Day19
                 }
 
                 return complete;
-            }
-
-            public bool IsAccepted(Part part)
-            {
-                var result = ProcessPart(part);
-                return result == State.Accept;
             }
         }
 
@@ -352,12 +258,12 @@ namespace AdventOfCode._2023.Day19
             }
         }
 
-        private class PartCollection
+        private class PartRanges
         {
             public Dictionary<string, NumberRange> RatingRanges;
             public State State { get; set; }
 
-            public PartCollection(Dictionary<string, NumberRange> ratingRanges, State state)
+            public PartRanges(Dictionary<string, NumberRange> ratingRanges, State state)
             {
                 RatingRanges = ratingRanges;
                 State = state;
@@ -378,54 +284,60 @@ namespace AdventOfCode._2023.Day19
                 return product;
             }
 
-            public (PartCollection? LessThan, PartCollection? GreaterThanOrEqual) SplitLessThan(string ratingName, int lessThan)
+            public PartRanges? LessThan(string ratingName, int lessThan)
             {
                 var range = RatingRanges[ratingName];
-
-                if (range.End < lessThan)
+                if (range.Start >= lessThan)
                 {
-                    return (this, null);
+                    return null;
                 }
 
-                if (range.Start > lessThan)
-                {
-                    return (null, this);
-                }
+                var newRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                newRanges[ratingName] = range.LessThan(lessThan);
 
-                var lessThanRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                lessThanRanges[ratingName] = new NumberRange(range.Start, lessThan - 1);
-
-
-                var greaterThanOrEqualRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                greaterThanOrEqualRanges[ratingName] = new NumberRange(lessThan, range.End);
-
-                return (new PartCollection(lessThanRanges, State), new PartCollection(greaterThanOrEqualRanges, State));
+                return new PartRanges(newRanges, State);
             }
 
-
-
-            public (PartCollection? LessThanOrEqual, PartCollection? GreaterThan) SplitGreaterThan(string ratingName, int greaterThan)
+            public PartRanges? GreaterThanOrEqual(string ratingName, int greaterThanOrEqual)
             {
                 var range = RatingRanges[ratingName];
-
-                if (range.End < greaterThan)
+                if (range.End < greaterThanOrEqual)
                 {
-                    return (this, null);
+                    return null;
                 }
 
-                if (range.Start > greaterThan)
+                var newRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                newRanges[ratingName] = range.GreaterThanOrEqual(greaterThanOrEqual);
+
+                return new PartRanges(newRanges, State);
+            }
+
+            public PartRanges? GreaterThan(string ratingName, int greaterThan)
+            {
+                var range = RatingRanges[ratingName];
+                if (range.End <= greaterThan)
                 {
-                    return (null, this);
+                    return null;
                 }
 
-                var lessThanOrEqualRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                lessThanOrEqualRanges[ratingName] = new NumberRange(range.Start, greaterThan);
+                var newRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                newRanges[ratingName] = range.GreaterThan(greaterThan);
 
+                return new PartRanges(newRanges, State);
+            }
 
-                var greaterThanRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                greaterThanRanges[ratingName] = new NumberRange(greaterThan + 1, range.End);
+            public PartRanges? LessThanOrEqual(string ratingName, int lessThanOrEqual)
+            {
+                var range = RatingRanges[ratingName];
+                if (range.Start > lessThanOrEqual)
+                {
+                    return null;
+                }
 
-                return (new PartCollection(lessThanOrEqualRanges, State), new PartCollection(greaterThanRanges, State));
+                var newRanges = RatingRanges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                newRanges[ratingName] = range.LessThanOrEqual(lessThanOrEqual);
+
+                return new PartRanges(newRanges, State);
             }
 
             public override string ToString()
