@@ -9,6 +9,7 @@ namespace AdventOfCode.Shared.Numbers
         {
             Start = start;
             End = end;
+            Length = End - Start + 1;
         }
 
         public static NumberRange FromLength(long start, long length)
@@ -18,6 +19,7 @@ namespace AdventOfCode.Shared.Numbers
 
         public long Start { get; }
         public long End { get; }
+        public long Length { get; }
 
         public bool Contains(long value)
         {
@@ -164,7 +166,7 @@ namespace AdventOfCode.Shared.Numbers
 
         public override string ToString()
         {
-            return $"{Start}..{End} ({End - Start})";
+            return $"{Start}..{End} ({Length})";
         }
     }
 }
