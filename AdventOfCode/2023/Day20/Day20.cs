@@ -37,6 +37,42 @@ namespace AdventOfCode._2023.Day20
 
         public override string Part2()
         {
+            Initialise();
+            var pushCount = 0;
+
+            while (true)
+            {
+                pushCount += 1;
+
+                var pulseQueue = new Queue<Pulse>();
+                pulseQueue.Enqueue(new Pulse
+                {
+                    Source = "button",
+                    Destination = "broadcaster",
+                    Type = PulseType.Low
+                });
+
+                while (pulseQueue.Any())
+                {
+                    var currentPulse = pulseQueue.Dequeue();
+                    if (currentPulse.Destination == "rx" && currentPulse.Type == PulseType.Low)
+                    {
+                        return pushCount.ToString();
+                    }
+
+                    if (_modules.ContainsKey(currentPulse.Destination))
+                    {
+                        var module = _modules[currentPulse.Destination];
+                        var resultingPulses = module.ProcessPulse(currentPulse);
+
+                        foreach (var pulse in resultingPulses)
+                        {
+                            pulseQueue.Enqueue(pulse);
+                        }
+                    }
+                }
+            }
+
             return string.Empty;
         }
 
