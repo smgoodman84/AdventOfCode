@@ -88,6 +88,20 @@ namespace AdventOfCode.Shared.Geometry
             }
         }
 
+        public IEnumerable<Coordinate3D> GetAllCoordinates()
+        {
+            foreach (var y in AllY())
+            {
+                foreach (var x in AllX())
+                {
+                    foreach (var z in AllZ())
+                    {
+                        yield return new Coordinate3D(x, y, z);
+                    }
+                }
+            }
+        }
+
         public IEnumerable<int> AllX()
         {
             return Enumerable.Range(MinX, Width);
