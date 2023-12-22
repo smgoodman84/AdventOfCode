@@ -5,7 +5,7 @@ namespace AdventOfCode._2023.Day22
 {
     public class Day22 : Day
     {
-        public Day22() : base(2023, 22, "Day22/input_2023_22.txt", "401", "", true)
+        public Day22() : base(2023, 22, "Day22/input_2023_22.txt", "401", "63491", false)
         {
 
         }
@@ -49,7 +49,7 @@ namespace AdventOfCode._2023.Day22
             foreach (var block in _blocks)
             {
                 var canDisintegrate = CanDisintegrateSafely(block);
-                TraceLine($"Can Disintegrate = {canDisintegrate}: {block}");
+                // TraceLine($"Can Disintegrate = {canDisintegrate}: {block}");
                 if (canDisintegrate)
                 {
                     count += 1;
@@ -61,7 +61,107 @@ namespace AdventOfCode._2023.Day22
 
         public override string Part2()
         {
-            return string.Empty;
+            long totalFallers = 0;
+            foreach (var block in _blocks)
+            {
+                TraceLine($"Getting Fallers - {block}");
+                var fallCount = GetCountThatWillFall(block, new HashSet<int>());
+                TraceLine($"Fallers - {fallCount} - {block}");
+                totalFallers += fallCount;
+            }
+            return totalFallers.ToString();
+        }
+        /*
+        private Dictionary<int, int> _fallCountCache = new Dictionary<int, int>();
+        private int GetCountThatWillFall(SandBlock sandBlock)
+        {
+            if (!_fallCountCache.ContainsKey(sandBlock.BlockNumber))
+            {
+                _fallCountCache[sandBlock.BlockNumber] = GetCountThatWillFallUncached(sandBlock);
+            }
+
+            return _fallCountCache[sandBlock.BlockNumber];
+        }*/
+
+        private int GetCountThatWillFall(SandBlock sandBlock, HashSet<int> theFallen)
+        {
+            var fallers = new List<SandBlock>()
+            {
+                sandBlock
+            };
+            theFallen.Add(sandBlock.BlockNumber);
+
+            var somethingFell = true;
+            while (somethingFell)
+            {
+                somethingFell = false;
+                var newFallers = fallers.ToList();
+                foreach (var faller in fallers)
+                {
+                    var nextFallers = GetImmediateFallers(faller, theFallen);
+                    if (nextFallers.Any())
+                    {
+                        somethingFell = true;
+                        newFallers.AddRange(nextFallers);
+                        foreach (var nextFaller in nextFallers)
+                        {
+                            TraceLine($"{nextFaller.BlockNumber} Fell");
+                            theFallen.Add(nextFaller.BlockNumber);
+                        }
+                    }
+                }
+                fallers = newFallers;
+            }
+
+            var fallCount = fallers.Count();
+            return fallCount - 1;
+        }
+        /*
+        private int GetCountThatWillFallOld(SandBlock sandBlock, List<int> theFallen)
+        {
+            var theFallenString = string.Join(", ", theFallen);
+            TraceLine($"Getting Fallers - {sandBlock} - {theFallenString}");
+
+            var immediateFallers = GetImmediateFallers(sandBlock, theFallen);
+            var immediateFallerBlockNumbers = immediateFallers.Select(b => b.BlockNumber).ToList();
+
+
+            var immediateFallenString = string.Join(", ", immediateFallerBlockNumbers);
+            TraceLine($"Immediate Fallers - {sandBlock} - {immediateFallenString}");
+
+            var totalFallers = 0;
+            foreach (var faller in immediateFallers)
+            {
+                totalFallers += 1;
+
+                var newFallen = theFallen.Concat(immediateFallerBlockNumbers).Distinct().ToList();
+                totalFallers += GetCountThatWillFall(faller, newFallen);
+            }
+            return totalFallers;
+        }
+        */
+        private List<SandBlock> GetImmediateFallers(SandBlock sandBlock, HashSet<int> theFallen)
+        {
+            var willFall = new List<SandBlock>();
+            var supporting = GetSupporting(sandBlock);
+            var supportingButNotFallen = supporting.Where(x => !theFallen.Contains(x.BlockNumber)).ToList();
+            foreach (var block in supportingButNotFallen)
+            {
+                var supportedBySomethingElse = false;
+                foreach (var supportedBy in GetSupportedBy(block))
+                {
+                    if (supportedBy != sandBlock && !theFallen.Contains(supportedBy.BlockNumber))
+                    {
+                        supportedBySomethingElse = true;
+                    }
+                }
+
+                if (!supportedBySomethingElse)
+                {
+                    willFall.Add(block);
+                }
+            }
+            return willFall;
         }
 
         private bool CanDisintegrateSafely(SandBlock sandBlock)
@@ -152,7 +252,7 @@ namespace AdventOfCode._2023.Day22
 
                     if (allBelowEmpty)
                     {
-                        TraceLine($"Settling {block}");
+                        // TraceLine($"Settling {block}");
                         anythingMoved = true;
                         foreach(var coordinate in block.GetAllCoordinates())
                         {
@@ -167,7 +267,7 @@ namespace AdventOfCode._2023.Day22
                         {
                             _map.Write(coordinate, block);
                         }
-                        TraceLine($"Settled {block}");
+                        // TraceLine($"Settled {block}");
                     }
                 }
             }
