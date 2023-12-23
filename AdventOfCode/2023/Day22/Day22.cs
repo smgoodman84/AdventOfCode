@@ -16,15 +16,9 @@ namespace AdventOfCode._2023.Day22
         {
             _blocks = InputLines.Select((l, i) => new SandBlock(l, i + 1)).ToList();
 
-            // var minX = _blocks.Min(b => Math.Min(b.Start.X, b.End.X));
             var maxX = _blocks.Max(b => Math.Max(b.Start.X, b.End.X));
-
-            // var minY = _blocks.Min(b => Math.Min(b.Start.Y, b.End.Y));
             var maxY = _blocks.Max(b => Math.Max(b.Start.Y, b.End.Y));
-
-            // var minZ = _blocks.Min(b => Math.Min(b.Start.Z, b.End.Z));
             var maxZ = _blocks.Max(b => Math.Max(b.Start.Z, b.End.Z));
-
 
             _map = new Grid3D<Space>((int)maxX + 1, (int)maxY + 1, (int)maxZ + 1);
             foreach(var coordinate in _map.GetAllCoordinates())
@@ -71,17 +65,6 @@ namespace AdventOfCode._2023.Day22
             }
             return totalFallers.ToString();
         }
-        /*
-        private Dictionary<int, int> _fallCountCache = new Dictionary<int, int>();
-        private int GetCountThatWillFall(SandBlock sandBlock)
-        {
-            if (!_fallCountCache.ContainsKey(sandBlock.BlockNumber))
-            {
-                _fallCountCache[sandBlock.BlockNumber] = GetCountThatWillFallUncached(sandBlock);
-            }
-
-            return _fallCountCache[sandBlock.BlockNumber];
-        }*/
 
         private int GetCountThatWillFall(SandBlock sandBlock, HashSet<int> theFallen)
         {
@@ -116,30 +99,7 @@ namespace AdventOfCode._2023.Day22
             var fallCount = fallers.Count();
             return fallCount - 1;
         }
-        /*
-        private int GetCountThatWillFallOld(SandBlock sandBlock, List<int> theFallen)
-        {
-            var theFallenString = string.Join(", ", theFallen);
-            TraceLine($"Getting Fallers - {sandBlock} - {theFallenString}");
 
-            var immediateFallers = GetImmediateFallers(sandBlock, theFallen);
-            var immediateFallerBlockNumbers = immediateFallers.Select(b => b.BlockNumber).ToList();
-
-
-            var immediateFallenString = string.Join(", ", immediateFallerBlockNumbers);
-            TraceLine($"Immediate Fallers - {sandBlock} - {immediateFallenString}");
-
-            var totalFallers = 0;
-            foreach (var faller in immediateFallers)
-            {
-                totalFallers += 1;
-
-                var newFallen = theFallen.Concat(immediateFallerBlockNumbers).Distinct().ToList();
-                totalFallers += GetCountThatWillFall(faller, newFallen);
-            }
-            return totalFallers;
-        }
-        */
         private List<SandBlock> GetImmediateFallers(SandBlock sandBlock, HashSet<int> theFallen)
         {
             var willFall = new List<SandBlock>();
