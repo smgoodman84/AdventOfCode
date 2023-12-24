@@ -17,7 +17,7 @@ namespace AdventOfCode.Shared.Geometry
 
         public Coordinate3D(string coordinate)
         {
-            var split = coordinate.Split(",");
+            var split = coordinate.Split(",", System.StringSplitOptions.TrimEntries);
             X = long.Parse(split[0]);
             Y = long.Parse(split[1]);
             Z = long.Parse(split[2]);
