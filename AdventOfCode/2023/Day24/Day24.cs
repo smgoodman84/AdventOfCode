@@ -67,6 +67,38 @@ namespace AdventOfCode._2023.Day24
 
         public override string Part2()
         {
+            /*
+             * xta = x0a + t * dxa;
+             * yta = y0a + t * dya;
+             * zta = z0a + t * dza;
+             * 
+             * xt? = x0? + t * dx?;
+             * yt? = y0? + t * dy?;
+             * zt? = z0? + t * dz?;
+             * 
+             * xt? = xta
+             * yt? = yta
+             * zt? = zta
+             * 
+             * x0? + t * dx? = x0a + t * dxa;
+             * x0? = x0a + t * dxa - t * dx?;
+             * x0? = x0a + t * (dxa - dx?);
+             * (x0? - x0a) = t * (dxa - dx?);
+             * (x0? - x0a) / (dxa - dx?) = t;
+             * 
+             * (x0? - x0a) / (dxa - dx?) = t;
+             * (x0? - x0b) / (dxb - dx?) = t;
+             * 
+             * (x0? - x0a) / (dxa - dx?) = (x0? - x0b) / (dxb - dx?)
+             * (x0? - x0a) * (dxb - dx?) = (x0? - x0b) * (dxa - dx?)
+             * 
+             * (x0? * dxb) - (x0? * dx?) - (x0a * dxb) + (x0a * dx?) = (x0? * dxa) - (x0? * dx?) - (x0b * dxa) + (x0b * dx?) 
+             * (x0? * dxb) - (x0a * dxb) + (x0a * dx?) = (x0? * dxa) - (x0b * dxa) + (x0b * dx?) 
+             * 
+             * xtb = x0b + t * dxb;
+             * ytb = y0b + t * dyb;
+             * ztb = z0b + t * dzb;
+            */
             return string.Empty;
         }
 
