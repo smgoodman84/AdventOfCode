@@ -7,44 +7,31 @@ namespace AdventOfCode._2023.Day23
 {
     public class Day23 : Day
     {
-        public Day23() : base(2023, 23, "Day23/input_2023_23.txt", "2354", "6686", true)
+        public Day23() : base(2023, 23, "Day23/input_2023_23.txt", "2354", "6686", false)
         {
 
         }
 
         private Grid2D<char> _map;
-        private Dictionary<Coordinate2D, Path> _paths;
         private Coordinate2D _start;
         private Coordinate2D _end;
-        private int _pathIndex;
 
         private Graph<NodeData> _graph;
+
         public override void Initialise()
         {
             _map = GridReader.LoadGrid(InputLines, (c, _) => c);
             _start = new Coordinate2D(1, _map.MaxY);
             _end = new Coordinate2D(_map.MaxX - 1, 0);
-            _paths = new Dictionary<Coordinate2D, Path>();
-            _pathIndex = 0;
         }
 
-        public override string Part1()
+        public override string Part1() => GetLongestPath(NeighboursConsideringOneWay);
+        public override string Part2() => GetLongestPath(NeighboursIgnoringOneWay);
+
+        private string GetLongestPath(Func<Coordinate2D, List<Coordinate2D>> getNeighbours)
         {
-            // return string.Empty;
-            LoadPaths(_start, new HashSet<string>(), CanMoveTo);
-            // DrawPaths();
-            // DrawPathsTogether();
+            LoadGraph(getNeighbours);
 
-            var firstPath = _paths[_start];
-            var result = GetLongestPath(firstPath) - 1;
-            return result.ToString();
-        }
-
-        public override string Part2()
-        {
-            Initialise();
-
-            LoadGraph();
             _graph.TryGetNode(_start.ToString(), out var startNode);
             _graph.TryGetNode(_end.ToString(), out var endNode);
 
@@ -55,19 +42,15 @@ namespace AdventOfCode._2023.Day23
                 Previous = null
             };
 
-            var longest = Search(startNode, endNode, startContext);
-            /*
-            //var longestPath = _graph.GetLongestPath(startNode, endNode,(int)MaxDistance());
+            var longest = FindLongestPath(startNode, endNode, startContext);
 
-            var maxDistance = MaxDistance();
-            TraceLine($"Max Distance: {maxDistance}");
-            TraceLine($"Longest Path: {longestPath}");
-            var result = maxDistance - longestPath;
-            */
             return longest.DistanceTraveled.ToString();
         }
 
-        private Context Search(GraphNode<NodeData> current, GraphNode<NodeData> end, Context context)
+        private Context FindLongestPath(
+            GraphNode<NodeData> current,
+            GraphNode<NodeData> end,
+            Context context)
         {
             if (current.Data.Location.Equals(end.Data.Location))
             {
@@ -91,7 +74,7 @@ namespace AdventOfCode._2023.Day23
                     DistanceTraveled = context.DistanceTraveled + neighbour.Distance
                 };
 
-                var nextPath = Search(neighbour.Destination, end, nextContext);
+                var nextPath = FindLongestPath(neighbour.Destination, end, nextContext);
                 if (nextPath != null)
                 {
                     paths.Add(nextPath);
@@ -99,6 +82,7 @@ namespace AdventOfCode._2023.Day23
             }
 
             var bestPath = paths.OrderByDescending(p => p.DistanceTraveled).FirstOrDefault();
+
             return bestPath;
         }
 
@@ -124,12 +108,7 @@ namespace AdventOfCode._2023.Day23
             return Visited(context.Previous, coordinate);
         }
 
-        private long MaxDistance()
-        {
-            return _map.Width * _map.Height;
-        }
-
-        private void LoadGraph()
+        private void LoadGraph(Func<Coordinate2D, List<Coordinate2D>> getNeighbours)
         {
             _graph = new Graph<NodeData>();
             TraceLine($"Adding node at {_start}");
@@ -144,7 +123,7 @@ namespace AdventOfCode._2023.Day23
                     var coordinate = new Coordinate2D(x, y);
                     if (_map.Read(coordinate) != '#')
                     {
-                        var neighbours = Neighbours(coordinate);
+                        var neighbours = NeighboursIgnoringOneWay(coordinate);
                         if (neighbours.Count > 2)
                         {
                             TraceLine($"Adding node at {coordinate}");
@@ -156,14 +135,14 @@ namespace AdventOfCode._2023.Day23
 
             foreach(var node in _graph.AllNodes())
             {
-                LoadEdges(node);
+                LoadEdges(node, getNeighbours);
             }
         }
 
-        private void LoadEdges(GraphNode<NodeData> node)
+        private void LoadEdges(GraphNode<NodeData> node, Func<Coordinate2D, List<Coordinate2D>> getNeighbours)
         {
             var start = node.Data.Location;
-            var neighbours = Neighbours(start);
+            var neighbours = getNeighbours(start);
             foreach(var neighbour in neighbours)
             {
                 var current = neighbour;
@@ -175,7 +154,7 @@ namespace AdventOfCode._2023.Day23
                 {
                     var next = current
                         .Neighbours()
-                        .Where(n => _map.IsInGrid(n))
+                        .Where(_map.IsInGrid)
                         .Where(n => !n.Equals(previous))
                         .Where(n => _map.Read(n) != '#')
                         .Single();
@@ -185,8 +164,6 @@ namespace AdventOfCode._2023.Day23
                     distance += 1;
                 }
 
-                int savedDistance = (int)MaxDistance() - distance;
-                ///TraceLine($"Adding edge from {node} to {end} with distance {savedDistance} ({distance})");
                 TraceLine($"Adding edge from {node} to {end} with distance {distance}");
                 _graph.AddEdge(new GraphEdge<NodeData>
                 {
@@ -217,7 +194,49 @@ namespace AdventOfCode._2023.Day23
             }
         }
 
-        private List<Coordinate2D> Neighbours(Coordinate2D coordinate)
+        private List<Coordinate2D> NeighboursConsideringOneWay(Coordinate2D coordinate)
+        {
+            var result = new List<Coordinate2D>();
+            foreach (var direction in Enum.GetValues<Direction>())
+            {
+                var neighbourCoordinate = coordinate.Neighbour(direction);
+                if (!_map.IsInGrid(neighbourCoordinate))
+                {
+                    continue;
+                }
+
+                var neighbourValue = _map.Read(neighbourCoordinate);
+                bool canMoveToNeighbour = false;
+                switch (neighbourValue)
+                {
+                    case '>': canMoveToNeighbour = direction == Direction.Right; break;
+                    case '<': canMoveToNeighbour = direction == Direction.Left; break;
+                    case '^': canMoveToNeighbour = direction == Direction.Up; break;
+                    case 'v': canMoveToNeighbour = direction == Direction.Down; break;
+                    case '.': canMoveToNeighbour = true; break;
+                }
+
+                var hereValue = _map.Read(coordinate);
+                bool canMoveFromHere = false;
+                switch (hereValue)
+                {
+                    case '>': canMoveFromHere = direction == Direction.Right; break;
+                    case '<': canMoveFromHere = direction == Direction.Left; break;
+                    case '^': canMoveFromHere = direction == Direction.Up; break;
+                    case 'v': canMoveFromHere = direction == Direction.Down; break;
+                    case '.': canMoveFromHere = true; break;
+                }
+
+                if (canMoveToNeighbour && canMoveFromHere)
+                {
+                    result.Add(neighbourCoordinate);
+                }
+            }
+
+            return result;
+        }
+
+        private List<Coordinate2D> NeighboursIgnoringOneWay(Coordinate2D coordinate)
         {
             var neighbours = coordinate
                 .Neighbours()
@@ -234,247 +253,6 @@ namespace AdventOfCode._2023.Day23
             }
 
             return result;
-        }
-
-        private int GetLongestPath(Path path)
-        {
-            var longestChild = 0;
-            foreach(var childPath in path.NextPaths)
-            {
-                var childLength = GetLongestPath(childPath);
-                if (childLength > longestChild)
-                {
-                    longestChild = childLength;
-                }
-            }
-
-            var totalLongest = longestChild + path.Length;
-
-            // TraceLine($"Path {path.PathIndex} Longest = {totalLongest} ({path.Length} + {longestChild})");
-            return totalLongest;
-        }
-
-        private void DrawPaths()
-        {
-            foreach(var path in _paths.Values.OrderBy(p => p.PathIndex))
-            {
-                TraceLine($"Path {path.PathIndex}: {path.Start} -> {path.End} ({path.Length})");
-                foreach (var y in _map.YIndexes().OrderByDescending(y => y))
-                {
-                    foreach (var x in _map.XIndexes())
-                    {
-                        if (path.AllSteps.Contains(new Coordinate2D(x, y)))
-                        {
-                            Trace("O");
-                        }
-                        else
-                        {
-                            Trace('.');
-                        }
-                    }
-                    TraceLine();
-                }
-            }
-        }
-
-        private void DrawPathsTogether()
-        {
-            foreach (var y in _map.YIndexes().OrderByDescending(y => y))
-            {
-                foreach (var x in _map.XIndexes())
-                {
-                    var path = _paths.Values.FirstOrDefault(p => p.AllSteps.Contains(new Coordinate2D(x, y)));
-                    if (path == null)
-                    {
-                        Trace(" ");
-                    }
-                    else
-                    {
-                        Trace((path.PathIndex % 10).ToString());
-                    }
-                }
-                TraceLine();
-            }
-        }
-
-        private void LoadPaths(
-            Coordinate2D start,
-            HashSet<string> visited,
-            Func<Coordinate2D, Coordinate2D, HashSet<string>, bool> canMoveTo,
-            Coordinate2D? previousEnd = null)
-        {
-            // TraceLine($"Loading paths from {start} with previousEnd {previousEnd}");
-            var allSteps = new List<Coordinate2D>()
-            {
-                start
-            };
-            visited.Add(start.ToString());
-            var length = 1;
-
-            var current = start;
-            var previous = previousEnd;
-            while (true)
-            {
-                var nextSteps = GetNextSteps(current, visited, previous, canMoveTo);
-                if (nextSteps.Count > 1)
-                {
-                    if (!_paths.Values.Any(p => p.Start == start && p.End == current))
-                    {
-                        var path = new Path
-                        {
-                            Start = start,
-                            End = current,
-                            Length = length,
-                            AllSteps = allSteps,
-                            NextPaths = new List<Path>(),
-                            PathIndex = _pathIndex++
-                        };
-
-                        // TraceLine($"Got path from {start} to {current}");
-                        foreach (var nextStep in nextSteps)
-                        {
-                            var duplicateVisited = visited.ToHashSet<string>();
-                            LoadPaths(nextStep, duplicateVisited, canMoveTo, current);
-                            if (_paths.ContainsKey(nextStep))
-                            {
-                                path.NextPaths.Add(_paths[nextStep]);
-                            }
-                        }
-
-                        _paths.Add(path.Start, path);
-                    }
-                    return;
-                }
-
-                if (!nextSteps.Any())
-                {
-                    return;
-                }
-
-                var next = nextSteps.Single();
-                allSteps.Add(next);
-                visited.Add(next.ToString());
-                length += 1;
-
-                previous = current;
-                current = next;
-
-                if (current.Equals(_end))
-                {
-                    if (!_paths.Values.Any(p => p.Start == start && p.End == current))
-                    {
-                        var path = new Path
-                        {
-                            Start = start,
-                            End = current,
-                            Length = length,
-                            AllSteps = allSteps,
-                            NextPaths = new List<Path>(),
-                            PathIndex = _pathIndex++
-                        };
-
-                        _paths.Add(path.Start, path);
-                    }
-                    return;
-                }
-            }
-        }
-
-        private List<Coordinate2D> GetNextSteps(
-            Coordinate2D start,
-            HashSet<string> visited,
-            Coordinate2D? previous,
-            Func<Coordinate2D, Coordinate2D, HashSet<string>, bool> canMoveTo)
-        {
-            var result = new List<Coordinate2D>();
-
-            var neighbours = start.Neighbours();
-            foreach (var neighbour in neighbours)
-            {
-                if (!_map.IsInGrid(neighbour))
-                {
-                    continue;
-                }
-
-                if (previous != null && neighbour.Equals(previous))
-                {
-                    continue;
-                }
-
-                if (canMoveTo(start, neighbour, visited))
-                {
-                    result.Add(neighbour);
-                    // TraceLine($"Next step {neighbour}");
-                }
-            }
-
-            return result;
-        }
-
-        private bool CanMoveTo(Coordinate2D from, Coordinate2D to, HashSet<string> visited)
-        {
-            var toValue = _map.Read(to);
-            var fromValue = _map.Read(from);
-
-            if (toValue == '#')
-            {
-                return false;
-            }
-
-            if (fromValue == '.' && toValue == '.')
-            {
-                return true;
-            }
-
-            switch (fromValue)
-            {
-                case '<': return to.Equals(from.Left());
-                case '>': return to.Equals(from.Right());
-                case '^': return to.Equals(from.Up());
-                case 'v': return to.Equals(from.Down());
-            }
-
-            switch (toValue)
-            {
-                case '<': return to.Equals(from.Left());
-                case '>': return to.Equals(from.Right());
-                case '^': return to.Equals(from.Up());
-                case 'v': return to.Equals(from.Down());
-            }
-
-            return toValue == '.';
-        }
-
-        private bool CanMoveToPart2(Coordinate2D from, Coordinate2D to, HashSet<string> visited)
-        {
-            if (from.X == 3L && from.Y == 19L)
-            {
-                var stop = true;
-            }
-
-            var toValue = _map.Read(to);
-
-            if (toValue == '#')
-            {
-                return false;
-            }
-
-            if (visited.Contains(to.ToString()))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private class Path
-        {
-            public int PathIndex { get; set; }
-            public Coordinate2D Start { get; set; }
-            public Coordinate2D End { get; set; }
-            public int Length { get; set; }
-            public List<Coordinate2D> AllSteps { get; set; }
-            public List<Path> NextPaths { get; set; }
         }
     }
 }
