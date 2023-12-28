@@ -6,7 +6,7 @@ namespace AdventOfCode._2023.Day17
 {
     public class Day17 : Day
     {
-        public Day17() : base(2023, 17, "Day17/input_2023_17.txt", "698", "", true)
+        public Day17() : base(2023, 17, "Day17/input_2023_17.txt", "698", "825", true)
         {
 
         }
@@ -35,8 +35,10 @@ namespace AdventOfCode._2023.Day17
                 _map.Write(coordinate, location);
             }
         }
+        public override string Part1() => GetMinimumHeatloss(1, 3);
+        public override string Part2() => GetMinimumHeatloss(4, 10);
 
-        public override string Part1()
+        public string GetMinimumHeatloss(int minDistance, int maxDistance)
         {
             var graph = new Graph<NodeData>();
             foreach (var coordinate in _map.AllCoordinates())
@@ -55,12 +57,14 @@ namespace AdventOfCode._2023.Day17
                     AddEdges(graph,
                         enteredFromUp,
                         Direction.Right,
-                        Coordinate2D.XRange((int)coordinate.X - 1, (int)coordinate.X - 3, coordinate.Y));
+                        Coordinate2D.XRange((int)coordinate.X, (int)coordinate.X - minDistance + 1, coordinate.Y).Skip(1),
+                        Coordinate2D.XRange((int)coordinate.X - minDistance, (int)coordinate.X - maxDistance, coordinate.Y));
 
                     AddEdges(graph,
                         enteredFromUp,
                         Direction.Left,
-                        Coordinate2D.XRange((int)coordinate.X + 1, (int)coordinate.X + 3, coordinate.Y));
+                        Coordinate2D.XRange((int)coordinate.X, (int)coordinate.X + minDistance - 1, coordinate.Y).Skip(1),
+                        Coordinate2D.XRange((int)coordinate.X + minDistance, (int)coordinate.X + maxDistance, coordinate.Y));
                 }
 
                 if (graph.TryGetNode(NodeData.GetIdentifier(coordinate, Direction.Down), out var enteredFromDown))
@@ -68,12 +72,14 @@ namespace AdventOfCode._2023.Day17
                     AddEdges(graph,
                         enteredFromDown,
                         Direction.Right,
-                        Coordinate2D.XRange((int)coordinate.X - 1, (int)coordinate.X - 3, coordinate.Y));
+                        Coordinate2D.XRange((int)coordinate.X, (int)coordinate.X - minDistance + 1, coordinate.Y).Skip(1),
+                        Coordinate2D.XRange((int)coordinate.X - minDistance, (int)coordinate.X - maxDistance, coordinate.Y));
 
                     AddEdges(graph,
                         enteredFromDown,
                         Direction.Left,
-                        Coordinate2D.XRange((int)coordinate.X + 1, (int)coordinate.X + 3, coordinate.Y));
+                        Coordinate2D.XRange((int)coordinate.X, (int)coordinate.X + minDistance - 1, coordinate.Y).Skip(1),
+                        Coordinate2D.XRange((int)coordinate.X + minDistance, (int)coordinate.X + maxDistance, coordinate.Y));
                 }
 
 
@@ -82,12 +88,14 @@ namespace AdventOfCode._2023.Day17
                     AddEdges(graph,
                         enteredFromLeft,
                         Direction.Up,
-                        Coordinate2D.YRange((int)coordinate.Y - 1, (int)coordinate.Y - 3, coordinate.X));
+                        Coordinate2D.YRange((int)coordinate.Y, (int)coordinate.Y - minDistance + 1, coordinate.X).Skip(1),
+                        Coordinate2D.YRange((int)coordinate.Y - minDistance, (int)coordinate.Y - maxDistance, coordinate.X));
 
                     AddEdges(graph,
                         enteredFromLeft,
                         Direction.Down,
-                        Coordinate2D.YRange((int)coordinate.Y + 1, (int)coordinate.Y + 3, coordinate.X));
+                        Coordinate2D.YRange((int)coordinate.Y, (int)coordinate.Y + minDistance - 1, coordinate.X).Skip(1),
+                        Coordinate2D.YRange((int)coordinate.Y + minDistance, (int)coordinate.Y + maxDistance, coordinate.X));
                 }
 
                 if (graph.TryGetNode(NodeData.GetIdentifier(coordinate, Direction.Right), out var enteredFromRight))
@@ -95,12 +103,14 @@ namespace AdventOfCode._2023.Day17
                     AddEdges(graph,
                         enteredFromRight,
                         Direction.Up,
-                        Coordinate2D.YRange((int)coordinate.Y - 1, (int)coordinate.Y - 3, coordinate.X));
+                        Coordinate2D.YRange((int)coordinate.Y, (int)coordinate.Y - minDistance + 1, coordinate.X).Skip(1),
+                        Coordinate2D.YRange((int)coordinate.Y - minDistance, (int)coordinate.Y - maxDistance, coordinate.X));
 
                     AddEdges(graph,
                         enteredFromRight,
                         Direction.Down,
-                        Coordinate2D.YRange((int)coordinate.Y + 1, (int)coordinate.Y + 3, coordinate.X));
+                        Coordinate2D.YRange((int)coordinate.Y, (int)coordinate.Y + minDistance - 1, coordinate.X).Skip(1),
+                        Coordinate2D.YRange((int)coordinate.Y + minDistance, (int)coordinate.Y + maxDistance, coordinate.X));
                 }
             }
 
@@ -134,9 +144,18 @@ namespace AdventOfCode._2023.Day17
             Graph<NodeData> graph,
             GraphNode<NodeData> startNode,
             Direction enteringNodesFrom,
+            IEnumerable<Coordinate2D> startPath,
             IEnumerable<Coordinate2D> path)
         {
             var heatloss = 0;
+            foreach (var destinationCoordinate in startPath)
+            {
+                if (_map.IsInGrid(destinationCoordinate))
+                {
+                    heatloss += _map.Read(destinationCoordinate).HeatLoss;
+                }
+            }
+
             foreach (var destinationCoordinate in path)
             {
                 if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, enteringNodesFrom), out var destinationNode))
@@ -187,11 +206,6 @@ namespace AdventOfCode._2023.Day17
             {
                 return GetIdentifier(Coordinate, EnteringFrom);
             }
-        }
-
-        public override string Part2()
-        {
-            return string.Empty;
         }
 
         private class Location
