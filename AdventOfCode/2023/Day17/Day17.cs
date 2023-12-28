@@ -52,143 +52,55 @@ namespace AdventOfCode._2023.Day17
             {
                 if (graph.TryGetNode(NodeData.GetIdentifier(coordinate, Direction.Up), out var enteredFromUp))
                 {
-                    var heatloss = 0;
-                    for (var x = coordinate.X - 1; x >= coordinate.X - 3; x -= 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(x, coordinate.Y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Right), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromUp,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromUp,
+                        Direction.Right,
+                        Coordinate2D.XRange((int)coordinate.X - 1, (int)coordinate.X - 3, coordinate.Y));
 
-                    heatloss = 0;
-                    for (var x = coordinate.X + 1; x <= coordinate.X + 3; x += 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(x, coordinate.Y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Left), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromUp,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromUp,
+                        Direction.Left,
+                        Coordinate2D.XRange((int)coordinate.X + 1, (int)coordinate.X + 3, coordinate.Y));
                 }
 
                 if (graph.TryGetNode(NodeData.GetIdentifier(coordinate, Direction.Down), out var enteredFromDown))
                 {
-                    var heatloss = 0;
-                    for (var x = coordinate.X - 1; x >= coordinate.X - 3; x -= 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(x, coordinate.Y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Right), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromDown,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromDown,
+                        Direction.Right,
+                        Coordinate2D.XRange((int)coordinate.X - 1, (int)coordinate.X - 3, coordinate.Y));
 
-                    heatloss = 0;
-                    for (var x = coordinate.X + 1; x <= coordinate.X + 3; x += 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(x, coordinate.Y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Left), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromDown,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromDown,
+                        Direction.Left,
+                        Coordinate2D.XRange((int)coordinate.X + 1, (int)coordinate.X + 3, coordinate.Y));
                 }
 
 
                 if (graph.TryGetNode(NodeData.GetIdentifier(coordinate, Direction.Left), out var enteredFromLeft))
                 {
-                    var heatloss = 0;
-                    for (var y = coordinate.Y - 1; y >= coordinate.Y - 3; y -= 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(coordinate.X, y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Up), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromLeft,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromLeft,
+                        Direction.Up,
+                        Coordinate2D.YRange((int)coordinate.Y - 1, (int)coordinate.Y - 3, coordinate.X));
 
-                    heatloss = 0;
-                    for (var y = coordinate.Y + 1; y <= coordinate.Y + 3; y += 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(coordinate.X, y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Down), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromLeft,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromLeft,
+                        Direction.Down,
+                        Coordinate2D.YRange((int)coordinate.Y + 1, (int)coordinate.Y + 3, coordinate.X));
                 }
 
                 if (graph.TryGetNode(NodeData.GetIdentifier(coordinate, Direction.Right), out var enteredFromRight))
                 {
-                    var heatloss = 0;
-                    for (var y = coordinate.Y - 1; y >= coordinate.Y - 3; y -= 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(coordinate.X, y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Up), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromRight,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromRight,
+                        Direction.Up,
+                        Coordinate2D.YRange((int)coordinate.Y - 1, (int)coordinate.Y - 3, coordinate.X));
 
-                    heatloss = 0;
-                    for (var y = coordinate.Y + 1; y <= coordinate.Y + 3; y += 1)
-                    {
-                        var destinationCoordinate = new Coordinate2D(coordinate.X, y);
-                        if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, Direction.Down), out var destinationNode))
-                        {
-                            heatloss += _map.Read(destinationCoordinate).HeatLoss;
-                            graph.AddEdge(new GraphEdge<NodeData>
-                            {
-                                Source = enteredFromRight,
-                                Destination = destinationNode,
-                                Distance = heatloss
-                            });
-                        }
-                    }
+                    AddEdges(graph,
+                        enteredFromRight,
+                        Direction.Down,
+                        Coordinate2D.YRange((int)coordinate.Y + 1, (int)coordinate.Y + 3, coordinate.X));
                 }
             }
 
@@ -216,6 +128,28 @@ namespace AdventOfCode._2023.Day17
             }
 
             return shortestPath.ToString();
+        }
+
+        private void AddEdges(
+            Graph<NodeData> graph,
+            GraphNode<NodeData> startNode,
+            Direction enteringNodesFrom,
+            IEnumerable<Coordinate2D> path)
+        {
+            var heatloss = 0;
+            foreach (var destinationCoordinate in path)
+            {
+                if (graph.TryGetNode(NodeData.GetIdentifier(destinationCoordinate, enteringNodesFrom), out var destinationNode))
+                {
+                    heatloss += _map.Read(destinationCoordinate).HeatLoss;
+                    graph.AddEdge(new GraphEdge<NodeData>
+                    {
+                        Source = startNode,
+                        Destination = destinationNode,
+                        Distance = heatloss
+                    });
+                }
+            }
         }
 
         private void AddNode(

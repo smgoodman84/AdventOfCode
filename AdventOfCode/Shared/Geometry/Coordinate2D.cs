@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AdventOfCode.Shared.Geometry
 {
@@ -104,6 +105,28 @@ namespace AdventOfCode.Shared.Geometry
         }
 
         public static readonly Coordinate2D Origin = new Coordinate2D(0, 0);
+
+        public static IEnumerable<Coordinate2D> XRange(int xStart, int xEnd, long y)
+        {
+            if (xEnd < xStart)
+            {
+                return XRange(xEnd, xStart, y).OrderByDescending(c => c.X);
+            }
+
+            return Enumerable.Range(xStart, xEnd - xStart + 1)
+                .Select(x => new Coordinate2D(x, y));
+        }
+
+        public static IEnumerable<Coordinate2D> YRange(int yStart, int yEnd, long x)
+        {
+            if (yEnd < yStart)
+            {
+                return YRange(yEnd, yStart, x).OrderByDescending(c => c.Y);
+            }
+
+            return Enumerable.Range(yStart, yEnd - yStart + 1)
+                .Select(y => new Coordinate2D(x, y));
+        }
 
         public override bool Equals(object obj)
         {
