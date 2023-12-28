@@ -2,12 +2,13 @@
 using System.Linq;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.Geometry;
+using AdventOfCode.Shared.Graphs;
 
 namespace AdventOfCode._2021.Day15
 {
     public class Day15 : Day
     {
-        public Day15() : base(2021, 15, "Day15/input_2021_15.txt", "361", "2838")
+        public Day15() : base(2021, 15, "Day15/input_2021_15.txt", "361", "2838", false)
         {
 
         }
@@ -18,15 +19,17 @@ namespace AdventOfCode._2021.Day15
         public string FindShortestPath(int tileWidth, int tileHeight)
         {
             var fileNodes = InputLines
-                .SelectMany((l, y) => l.Select((d, x) => new Node(x, y, int.Parse(d.ToString()))).ToArray())
-                .ToDictionary(n => n.Identifier, n => n);
+                .SelectMany((l, y) => l.Select((d, x) => new NodeData(x, y, int.Parse(d.ToString()))).ToArray())
+                .ToDictionary(n => n.GetIdentifier(), n => n);
 
             var fileNodeWidth = fileNodes.Values.Max(n => n.Coordinate.X) + 1;
             var fileNodeHeight = fileNodes.Values.Max(n => n.Coordinate.Y) + 1;
 
-            var nodes = new Dictionary<string, Node>();
+            var totalWidth = (int)fileNodeWidth * tileWidth;
+            var totalHeight = (int)fileNodeHeight * tileHeight;
 
-            for(var tileX = 0; tileX < tileWidth; tileX++)
+            var graph = new Graph<NodeData>();
+            for (var tileX = 0; tileX < tileWidth; tileX++)
             {
                 for (var tileY = 0; tileY < tileHeight; tileY++)
                 {
@@ -36,51 +39,70 @@ namespace AdventOfCode._2021.Day15
                         var x = tileX * fileNodeWidth + node.Coordinate.X;
                         var y = tileY * fileNodeHeight + node.Coordinate.Y;
 
-                        var newNode = new Node(x, y, distance);
-                        nodes.Add(newNode.Identifier, newNode);
+                        var graphNode = new GraphNode<NodeData>(new NodeData(x, y, distance));
+                        graph.AddNode(graphNode);
                     }
                 }
             }
 
-            foreach (var node in nodes.Values)
+            for (var x = 0; x < totalWidth; x += 1)
             {
-                var coordinate = node.Coordinate;
-                var leftKey = coordinate.Left().ToString();
-                var rightKey = coordinate.Right().ToString();
-                var upKey = coordinate.Down().ToString(); // Inverse coordinate system
-                var downKey = coordinate.Up().ToString(); // Inverse coordinate system
+                for (var y = 0; y < totalHeight; y += 1)
+                {
+                    graph.TryGetNode(new Coordinate2D(x, y).ToString(), out var thisNode);
+                    var distanceToEnterNode = thisNode.Data.Distance;
 
-                if (nodes.ContainsKey(leftKey))
-                {
-                    node.Neighbours.Add(nodes[leftKey]);
-                }
-                if (nodes.ContainsKey(rightKey))
-                {
-                    node.Neighbours.Add(nodes[rightKey]);
-                }
-                if (nodes.ContainsKey(upKey))
-                {
-                    node.Neighbours.Add(nodes[upKey]);
-                }
-                if (nodes.ContainsKey(downKey))
-                {
-                    node.Neighbours.Add(nodes[downKey]);
+                    if (graph.TryGetNode(new Coordinate2D(x - 1, y).ToString(), out var leftNode))
+                    {
+                        graph.AddEdge(new GraphEdge<NodeData>
+                        {
+                            Source = leftNode,
+                            Destination = thisNode,
+                            Distance = distanceToEnterNode
+                        });
+                    }
+
+                    if (graph.TryGetNode(new Coordinate2D(x + 1, y).ToString(), out var rightNode))
+                    {
+                        graph.AddEdge(new GraphEdge<NodeData>
+                        {
+                            Source = rightNode,
+                            Destination = thisNode,
+                            Distance = distanceToEnterNode
+                        });
+                    }
+
+                    if (graph.TryGetNode(new Coordinate2D(x, y - 1).ToString(), out var upNode))
+                    {
+                        graph.AddEdge(new GraphEdge<NodeData>
+                        {
+                            Source = upNode,
+                            Destination = thisNode,
+                            Distance = distanceToEnterNode
+                        });
+                    }
+
+                    if (graph.TryGetNode(new Coordinate2D(x, y + 1).ToString(), out var downNode))
+                    {
+                        graph.AddEdge(new GraphEdge<NodeData>
+                        {
+                            Source = downNode,
+                            Destination = thisNode,
+                            Distance = distanceToEnterNode
+                        });
+                    }
                 }
             }
 
-            var shortestPaths = new ShortestPaths(nodes.Values.ToList());
+            var startCoordinate = new Coordinate2D(0, 0);
+            var endCoordinate = new Coordinate2D(totalWidth - 1, totalHeight - 1);
 
-            var startX = nodes.Values.Min(n => n.Coordinate.X);
-            var startY = nodes.Values.Min(n => n.Coordinate.Y);
-            var endX = nodes.Values.Max(n => n.Coordinate.X);
-            var endY = nodes.Values.Max(n => n.Coordinate.Y);
+            graph.TryGetNode(startCoordinate.ToString(), out var startNode);
+            graph.TryGetNode(endCoordinate.ToString(), out var endNode);
 
-            var start = nodes[new Coordinate2D(startX, startY).ToString()];
-            var end = nodes[new Coordinate2D(endX, endY).ToString()];
+            var result = graph.GetShortestPathNodesAndDistance(startNode, endNode, 5000);
 
-            var result = shortestPaths.GetShortestPath(start, end, 5000);
-
-            return result.ToString();
+            return result.Distance.ToString();
         }
 
         private int WrapRisk(int risk)
@@ -93,118 +115,18 @@ namespace AdventOfCode._2021.Day15
             return risk;
         }
 
-
-        private class SimplePriorityQueue
+        private class NodeData : IGraphNodeData
         {
-            private List<string>[] _items;
-            private Dictionary<string, int> _itemValues = new Dictionary<string, int>();
-
-            public SimplePriorityQueue(int maxPriority)
-            {
-                _items = Enumerable.Range(0, maxPriority + 1)
-                    .Select(x => new List<string>())
-                    .ToArray();
-            }
-
-            public void SetPriority(string key, int value)
-            {
-                if (_itemValues.ContainsKey(key))
-                {
-                    Remove(key);
-                }
-
-                _itemValues.Add(key, value);
-                _items[value].Add(key);
-            }
-
-            public void Remove(string key)
-            {
-                var value = _itemValues[key];
-                _itemValues.Remove(key);
-                _items[value].Remove(key);
-            }
-
-            public string Pop()
-            {
-                foreach(var itemList in _items)
-                {
-                    if (itemList.Any())
-                    {
-                        var result = itemList.First();
-                        Remove(result);
-                        return result;
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        private class ShortestPaths
-        {
-            public ShortestPaths(List<Node> nodes)
-            {
-                _allNodes = nodes.ToDictionary(n => n.Identifier, n => n);
-            }
-
-            public int GetShortestPath(Node start, Node end, int maxDistance)
-            {
-                var queue = new SimplePriorityQueue(maxDistance);
-                foreach (var node in _allNodes)
-                {
-                    queue.SetPriority(node.Key, maxDistance);
-                }
-
-                _incompleteNodes = _allNodes.ToDictionary(n => n.Key, n => n.Value);
-                _previousNodes = _allNodes.ToDictionary(n => n.Key, n => (Node)null);
-                _distances = _allNodes.ToDictionary(n => n.Key, n => maxDistance);
-
-                _distances[start.Identifier] = 0;
-                queue.SetPriority(start.Identifier, 0);
-
-                while (_incompleteNodes.Any())
-                {
-                    var minimumIncompleteKey = queue.Pop();
-                    _incompleteNodes.Remove(minimumIncompleteKey);
-
-                    var minimumIncomplete = _allNodes[minimumIncompleteKey];
-                    
-                    foreach (var neighbour in minimumIncomplete.Neighbours)
-                    {
-                        if (_incompleteNodes.ContainsKey(neighbour.Identifier))
-                        {
-                            var alt = _distances[minimumIncompleteKey] + neighbour.Distance;
-                            if (alt < _distances[neighbour.Identifier])
-                            {
-                                queue.SetPriority(neighbour.Identifier, alt);
-                                _distances[neighbour.Identifier] = alt;
-                                _previousNodes[neighbour.Identifier] = minimumIncomplete;
-                            }
-                        }
-                    }
-                }
-
-                return _distances[end.Identifier];
-            }
-
-            private Dictionary<string, Node> _allNodes;
-            private Dictionary<string, Node> _incompleteNodes;
-            private Dictionary<string, Node> _previousNodes;
-            private Dictionary<string, int> _distances;
-        }
-
-        private class Node
-        {
-            public Node(long x, long y, int distance)
+            public NodeData(long x, long y, int distance)
             {
                 Coordinate = new Coordinate2D(x, y);
                 Distance = distance;
             }
 
-            public List<Node> Neighbours { get; } = new List<Node>();
+            public List<NodeData> Neighbours { get; } = new List<NodeData>();
             public int Distance { get; set; }
             public Coordinate2D Coordinate { get; set; }
-            public string Identifier => Coordinate.ToString();
+            public string GetIdentifier() => Coordinate.ToString();
 
             public override string ToString()
             {

@@ -7,8 +7,10 @@
 
   <ItemGroup>
     <None Remove="Mathematics\" />
+    <None Remove="Graphs\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Mathematics\" />
+    <Folder Include="Graphs\" />
   </ItemGroup>
 </Project>
