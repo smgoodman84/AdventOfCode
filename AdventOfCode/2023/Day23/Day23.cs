@@ -1,5 +1,4 @@
-﻿using System.Xml.Linq;
-using AdventOfCode.Shared;
+﻿using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
 using AdventOfCode.Shared.Geometry;
 using AdventOfCode.Shared.Graphs;
@@ -8,7 +7,7 @@ namespace AdventOfCode._2023.Day23
 {
     public class Day23 : Day
     {
-        public Day23() : base(2023, 23, "Day23/input_2023_23.txt", "2354", "", true)
+        public Day23() : base(2023, 23, "Day23/input_2023_23.txt", "2354", "6686", true)
         {
 
         }
@@ -48,13 +47,81 @@ namespace AdventOfCode._2023.Day23
             LoadGraph();
             _graph.TryGetNode(_start.ToString(), out var startNode);
             _graph.TryGetNode(_end.ToString(), out var endNode);
-            var longestPath = _graph.GetLongestPath(startNode, endNode,(int)MaxDistance());
+
+            var startContext = new Context
+            {
+                DistanceTraveled = 0,
+                Node = startNode,
+                Previous = null
+            };
+
+            var longest = Search(startNode, endNode, startContext);
+            /*
+            //var longestPath = _graph.GetLongestPath(startNode, endNode,(int)MaxDistance());
 
             var maxDistance = MaxDistance();
             TraceLine($"Max Distance: {maxDistance}");
             TraceLine($"Longest Path: {longestPath}");
             var result = maxDistance - longestPath;
-            return longestPath.ToString();
+            */
+            return longest.DistanceTraveled.ToString();
+        }
+
+        private Context Search(GraphNode<NodeData> current, GraphNode<NodeData> end, Context context)
+        {
+            if (current.Data.Location.Equals(end.Data.Location))
+            {
+                TraceLine($"Found path {context.DistanceTraveled}");
+                return context;
+            }
+
+            var paths = new List<Context>();
+            var neighbours = _graph.GetNeighbours(current);
+            foreach(var neighbour in neighbours)
+            {
+                if (Visited(context, neighbour.Destination.Data.Location))
+                {
+                    continue;
+                }
+
+                var nextContext = new Context
+                {
+                    Previous = context,
+                    Node = neighbour.Destination,
+                    DistanceTraveled = context.DistanceTraveled + neighbour.Distance
+                };
+
+                var nextPath = Search(neighbour.Destination, end, nextContext);
+                if (nextPath != null)
+                {
+                    paths.Add(nextPath);
+                }
+            }
+
+            var bestPath = paths.OrderByDescending(p => p.DistanceTraveled).FirstOrDefault();
+            return bestPath;
+        }
+
+        private class Context
+        {
+            public Context Previous { get; set; }
+            public GraphNode<NodeData> Node { get; set; }
+            public int DistanceTraveled { get; set; }
+        }
+
+        private bool Visited(Context context, Coordinate2D coordinate)
+        {
+            if (context.Node.Data.Location.Equals(coordinate))
+            {
+                return true;
+            }
+
+            if (context.Previous == null)
+            {
+                return false;
+            }
+
+            return Visited(context.Previous, coordinate);
         }
 
         private long MaxDistance()

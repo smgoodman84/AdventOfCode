@@ -175,14 +175,19 @@ namespace AdventOfCode.Shared.Graphs
             return (_distances[endIdentifier], nodes);
         }
 
-        private List<GraphEdge<TNode>> GetNeighbours(string minimumIncompleteKey)
+        public List<GraphEdge<TNode>> GetNeighbours(GraphNode<TNode> node)
         {
-            if (!_neighbours.ContainsKey(minimumIncompleteKey))
+            return GetNeighbours(node.Data.GetIdentifier());
+        }
+
+        public List<GraphEdge<TNode>> GetNeighbours(string nodeKey)
+        {
+            if (!_neighbours.ContainsKey(nodeKey))
             {
                 return new List<GraphEdge<TNode>>();
             }
 
-            return _neighbours[minimumIncompleteKey];
+            return _neighbours[nodeKey];
         }
     }
 }
