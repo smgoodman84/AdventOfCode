@@ -3,60 +3,59 @@ using System.Linq;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.Geometry;
 
-namespace AdventOfCode._2015.Day02
+namespace AdventOfCode._2015.Day02;
+
+public class Day02 : Day
 {
-    public class Day02 : Day
+    public Day02() : base(2015, 2, "Day02/input_2015_02.txt", "1586300", "3737498")
     {
-        public Day02() : base(2015, 2, "Day02/input_2015_02.txt", "1586300", "3737498")
+    }
+
+    private List<Present> _presents;
+    public override void Initialise()
+    {
+        _presents = InputLines
+            .Select(Present.Parse)
+            .ToList();
+    }
+
+    private class Present : RectangularCuboid
+    {
+        public Present(long width, long height, long length)
+            : base(width, height, length)
         {
         }
 
-        private List<Present> _presents;
-        public override void Initialise()
+        public static Present Parse(string dimensions)
         {
-            _presents = InputLines
-                .Select(Present.Parse)
-                .ToList();
+            var dims = dimensions
+                .Split('x')
+                .Select(long.Parse)
+                .OrderBy(x => x)
+                .ToArray();
+
+            return new Present(dims[0], dims[1], dims[2]);
         }
 
-        private class Present : RectangularCuboid
-        {
-            public Present(long width, long height, long length)
-                : base(width, height, length)
-            {
-            }
+        public long WrappingPaperRequired => SurfaceArea + SmallArea;
 
-            public static Present Parse(string dimensions)
-            {
-                var dims = dimensions
-                    .Split('x')
-                    .Select(long.Parse)
-                    .OrderBy(x => x)
-                    .ToArray();
+        public long RibbonRequired =>
+            2 * SmallDimension +
+            2 * MiddleDimension +
+            Volume;
+    }
 
-                return new Present(dims[0], dims[1], dims[2]);
-            }
+    public override string Part1()
+    {
+        var result = _presents.Sum(x => x.WrappingPaperRequired);
 
-            public long WrappingPaperRequired => SurfaceArea + SmallArea;
+        return result.ToString();
+    }
 
-            public long RibbonRequired =>
-                2 * SmallDimension +
-                2 * MiddleDimension +
-                Volume;
-        }
+    public override string Part2()
+    {
+        var result = _presents.Sum(x => x.RibbonRequired);
 
-        public override string Part1()
-        {
-            var result = _presents.Sum(x => x.WrappingPaperRequired);
-
-            return result.ToString();
-        }
-
-        public override string Part2()
-        {
-            var result = _presents.Sum(x => x.RibbonRequired);
-
-            return result.ToString();
-        }
+        return result.ToString();
     }
 }

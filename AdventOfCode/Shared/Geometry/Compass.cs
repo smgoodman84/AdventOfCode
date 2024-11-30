@@ -1,14 +1,13 @@
-﻿namespace AdventOfCode.Shared.Geometry
+﻿namespace AdventOfCode.Shared.Geometry;
+
+public enum Compass
 {
-    public enum Compass
-    {
-        North,
-        NorthEast,
-        East,
-        SouthEast,
-        South,
-        SouthWest,
-        West,
-        NorthWest
-    }
+    North,
+    NorthEast,
+    East,
+    SouthEast,
+    South,
+    SouthWest,
+    West,
+    NorthWest
 }

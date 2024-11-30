@@ -2,100 +2,99 @@
 using System.Linq;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2020.Day15
+namespace AdventOfCode._2020.Day15;
+
+public class Day15 : Day
 {
-    public class Day15 : Day
+    public Day15() : base(2020, 15, "Day15/input_2020_15.txt", "249", "41687")
     {
-        public Day15() : base(2020, 15, "Day15/input_2020_15.txt", "249", "41687")
-        {
 
+    }
+
+    private List<int> _startingNumbers;
+    public override void Initialise()
+    {
+        _startingNumbers = InputLines
+            .Single()
+            .Split(",")
+            .Select(int.Parse)
+            .ToList();
+    }
+
+    public override string Part1() => FindNthSpoken(2020).ToString();
+    public override string Part2() => FindNthSpoken(30000000).ToString();
+
+    private int FindNthSpoken(int n)
+    {
+        var count = n;
+        var history = new History();
+        foreach (var startingNumber in _startingNumbers)
+        {
+            history.Spoken(startingNumber);
+            count -= 1;
         }
 
-        private List<int> _startingNumbers;
-        public override void Initialise()
+        while (count > 0)
         {
-            _startingNumbers = InputLines
-                .Single()
-                .Split(",")
-                .Select(int.Parse)
-                .ToList();
+            var number = history.GetNextNumber();
+            history.Spoken(number);
+            count -= 1;
         }
 
-        public override string Part1() => FindNthSpoken(2020).ToString();
-        public override string Part2() => FindNthSpoken(30000000).ToString();
+        return history.LastSpoken.Value;
+    }
 
-        private int FindNthSpoken(int n)
+    private class History
+    {
+        public int? LastSpoken { get; private set; }
+
+        private int _timeStamp = 1;
+        private Dictionary<int, NumberHistory> _history = new Dictionary<int, NumberHistory>();
+
+        public void Spoken(int number)
         {
-            var count = n;
-            var history = new History();
-            foreach (var startingNumber in _startingNumbers)
+            // Trace($"{_timeStamp}: {number}");
+            if (!_history.ContainsKey(number))
             {
-                history.Spoken(startingNumber);
-                count -= 1;
+                _history[number] = new NumberHistory(_timeStamp);
+            }
+            else
+            {
+                _history[number].Spoken(_timeStamp);
             }
 
-            while (count > 0)
-            {
-                var number = history.GetNextNumber();
-                history.Spoken(number);
-                count -= 1;
-            }
+            LastSpoken = number;
 
-            return history.LastSpoken.Value;
+            _timeStamp += 1;
         }
 
-        private class History
+        public int GetNextNumber()
         {
-            public int? LastSpoken { get; private set; }
+            var numberHistory = _history[LastSpoken.Value];
 
-            private int _timeStamp = 1;
-            private Dictionary<int, NumberHistory> _history = new Dictionary<int, NumberHistory>();
-
-            public void Spoken(int number)
+            if (numberHistory.LastSpoken2 == null)
             {
-                // Trace($"{_timeStamp}: {number}");
-                if (!_history.ContainsKey(number))
-                {
-                    _history[number] = new NumberHistory(_timeStamp);
-                }
-                else
-                {
-                    _history[number].Spoken(_timeStamp);
-                }
-
-                LastSpoken = number;
-
-                _timeStamp += 1;
+                return 0;
             }
 
-            public int GetNextNumber()
-            {
-                var numberHistory = _history[LastSpoken.Value];
+            return numberHistory.LastSpoken - numberHistory.LastSpoken2.Value;
+        }
+    }
 
-                if (numberHistory.LastSpoken2 == null)
-                {
-                    return 0;
-                }
+    private class NumberHistory
+    {
+        public int LastSpoken { get; private set; }
+        public int? LastSpoken2 { get; private set; }
 
-                return numberHistory.LastSpoken - numberHistory.LastSpoken2.Value;
-            }
+        public NumberHistory(int timeStamp)
+        {
+            LastSpoken = timeStamp;
         }
 
-        private class NumberHistory
+        public void Spoken(int timeStamp)
         {
-            public int LastSpoken { get; private set; }
-            public int? LastSpoken2 { get; private set; }
-
-            public NumberHistory(int timeStamp)
-            {
-                LastSpoken = timeStamp;
-            }
-
-            public void Spoken(int timeStamp)
-            {
-                LastSpoken2 = LastSpoken;
-                LastSpoken = timeStamp;
-            }
+            LastSpoken2 = LastSpoken;
+            LastSpoken = timeStamp;
         }
     }
 }

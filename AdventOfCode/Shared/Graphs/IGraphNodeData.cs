@@ -1,8 +1,6 @@
-﻿namespace AdventOfCode.Shared.Graphs
-{
-    public interface IGraphNodeData
-	{
-		string GetIdentifier();
-	}
-}
+﻿namespace AdventOfCode.Shared.Graphs;
 
+public interface IGraphNodeData
+{
+	string GetIdentifier();
+}

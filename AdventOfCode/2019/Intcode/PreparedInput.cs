@@ -1,24 +1,23 @@
 ﻿using System.Threading.Tasks;
 
-namespace AdventOfCode._2019.Intcode
+namespace AdventOfCode._2019.Intcode;
+
+public class PreparedInput : IInput
 {
-    public class PreparedInput : IInput
+    private long[] _inputs;
+    private int index = 0;
+
+    public PreparedInput(params long[] inputs)
     {
-        private long[] _inputs;
-        private int index = 0;
+        _inputs = inputs;
+    }
 
-        public PreparedInput(params long[] inputs)
-        {
-            _inputs = inputs;
-        }
+    public Task<long> ReadInput()
+    {
+        var result = _inputs[index];
 
-        public Task<long> ReadInput()
-        {
-            var result = _inputs[index];
+        index += 1;
 
-            index += 1;
-
-            return Task.FromResult(result);
-        }
+        return Task.FromResult(result);
     }
 }

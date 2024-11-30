@@ -5,354 +5,353 @@ using System.Text.RegularExpressions;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.Geometry;
 
-namespace AdventOfCode._2022.Day21
+namespace AdventOfCode._2022.Day21;
+
+public class Day21 : Day
 {
-    public class Day21 : Day
+    public Day21() : base(2022, 21, "Day21/input_2022_21.txt", "85616733059734", "3560324848168")
     {
-        public Day21() : base(2022, 21, "Day21/input_2022_21.txt", "85616733059734", "3560324848168")
-        {
 
+    }
+
+    private Dictionary<string, IExpression> _lookup;
+    public override void Initialise()
+    {
+        _lookup = new Dictionary<string, IExpression>();
+        foreach (var line in InputLines)
+        {
+            var nameSplit = line.Split(": ");
+            var name = nameSplit[0];
+            var expression = nameSplit[1];
+            _lookup.Add(name, CreateExpression(name, expression));
+        }
+    }
+
+    public override string Part1()
+    {
+        return _lookup["root"].Evaluate().ToString();
+    }
+
+    public override string Part2()
+    {
+        var root = _lookup["root"] as Root;
+        var humanNeedsToSay = root.FindHumanValueToProduce(0);
+        return humanNeedsToSay.ToString();
+    }
+
+    private interface IExpression
+    {
+        public string Name { get; }
+
+        public long Evaluate();
+
+        public bool ReliesOnHuman();
+
+        public long FindHumanValueToProduce(long needToProduce);
+    }
+
+    private IExpression CreateExpression(string name, string expression)
+    {
+
+        if (long.TryParse(expression, out var constant))
+        {
+            return new Constant(name, constant);
         }
 
-        private Dictionary<string, IExpression> _lookup;
-        public override void Initialise()
+        var split = expression.Split(" ");
+        var left = new ExpressionWrapper(split[0], _lookup);
+        var right = new ExpressionWrapper(split[2], _lookup);
+
+        if (name == "root")
         {
-            _lookup = new Dictionary<string, IExpression>();
-            foreach (var line in InputLines)
-            {
-                var nameSplit = line.Split(": ");
-                var name = nameSplit[0];
-                var expression = nameSplit[1];
-                _lookup.Add(name, CreateExpression(name, expression));
-            }
+            return new Root("root", left, right);
         }
 
-        public override string Part1()
+        switch (split[1])
         {
-            return _lookup["root"].Evaluate().ToString();
+            case "+": return new Add(name, left, right);
+            case "-": return new Subtract(name, left, right);
+            case "*": return new Multiply(name, left, right);
+            case "/": return new Divide(name, left, right);
         }
 
-        public override string Part2()
+        throw new Exception($"Failed to create expression {expression}");
+    }
+
+    private class Root : IExpression
+    {
+        private readonly IExpression _left;
+        private readonly IExpression _right;
+
+        public string Name { get; }
+
+        public Root(string name, IExpression left, IExpression right)
         {
-            var root = _lookup["root"] as Root;
-            var humanNeedsToSay = root.FindHumanValueToProduce(0);
-            return humanNeedsToSay.ToString();
+            Name = name;
+            _left = left;
+            _right = right;
         }
 
-        private interface IExpression
+        public long Evaluate()
         {
-            public string Name { get; }
-
-            public long Evaluate();
-
-            public bool ReliesOnHuman();
-
-            public long FindHumanValueToProduce(long needToProduce);
+            return _left.Evaluate() + _right.Evaluate();
         }
 
-        private IExpression CreateExpression(string name, string expression)
+        public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+
+        public long FindHumanValueToProduce(long needToProduce)
         {
-
-            if (long.TryParse(expression, out var constant))
+            if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
             {
-                return new Constant(name, constant);
+                throw new Exception("Hmmmmm");
             }
 
-            var split = expression.Split(" ");
-            var left = new ExpressionWrapper(split[0], _lookup);
-            var right = new ExpressionWrapper(split[2], _lookup);
-
-            if (name == "root")
+            if (_left.ReliesOnHuman())
             {
-                return new Root("root", left, right);
+                var leftNeedsToEqual = _right.Evaluate();
+                return _left.FindHumanValueToProduce(leftNeedsToEqual);
             }
 
-            switch (split[1])
-            {
-                case "+": return new Add(name, left, right);
-                case "-": return new Subtract(name, left, right);
-                case "*": return new Multiply(name, left, right);
-                case "/": return new Divide(name, left, right);
-            }
+            var rightNeedsToEqual = _left.Evaluate();
+            return _right.FindHumanValueToProduce(rightNeedsToEqual);
+        }
+    }
 
-            throw new Exception($"Failed to create expression {expression}");
+    private class ExpressionWrapper : IExpression
+    {
+        private readonly Dictionary<string, IExpression> _lookup;
+        private bool _evaluated;
+        private long _value;
+        private bool _evaluatedReliesOnHuman;
+        private bool _reliesOnHumanValue;
+        private bool _evaluatedNeedToProduce;
+        private long _needToProduceValue;
+
+        public ExpressionWrapper(string name, Dictionary<string, IExpression> lookup)
+        {
+            Name = name;
+            _lookup = lookup;
         }
 
-        private class Root : IExpression
+        public string Name { get; }
+
+        public long Evaluate()
         {
-            private readonly IExpression _left;
-            private readonly IExpression _right;
-
-            public string Name { get; }
-
-            public Root(string name, IExpression left, IExpression right)
+            if (!_evaluated)
             {
-                Name = name;
-                _left = left;
-                _right = right;
+                _value = _lookup[Name].Evaluate();
+                _evaluated = true;
             }
 
-            public long Evaluate()
-            {
-                return _left.Evaluate() + _right.Evaluate();
-            }
-
-            public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
-
-            public long FindHumanValueToProduce(long needToProduce)
-            {
-                if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
-                {
-                    throw new Exception("Hmmmmm");
-                }
-
-                if (_left.ReliesOnHuman())
-                {
-                    var leftNeedsToEqual = _right.Evaluate();
-                    return _left.FindHumanValueToProduce(leftNeedsToEqual);
-                }
-
-                var rightNeedsToEqual = _left.Evaluate();
-                return _right.FindHumanValueToProduce(rightNeedsToEqual);
-            }
+            return _value;
         }
 
-        private class ExpressionWrapper : IExpression
+        public bool ReliesOnHuman()
         {
-            private readonly Dictionary<string, IExpression> _lookup;
-            private bool _evaluated;
-            private long _value;
-            private bool _evaluatedReliesOnHuman;
-            private bool _reliesOnHumanValue;
-            private bool _evaluatedNeedToProduce;
-            private long _needToProduceValue;
-
-            public ExpressionWrapper(string name, Dictionary<string, IExpression> lookup)
+            if (!_evaluatedReliesOnHuman)
             {
-                Name = name;
-                _lookup = lookup;
+                _reliesOnHumanValue = _lookup[Name].ReliesOnHuman();
+                _evaluatedReliesOnHuman = true;
             }
 
-            public string Name { get; }
-
-            public long Evaluate()
-            {
-                if (!_evaluated)
-                {
-                    _value = _lookup[Name].Evaluate();
-                    _evaluated = true;
-                }
-
-                return _value;
-            }
-
-            public bool ReliesOnHuman()
-            {
-                if (!_evaluatedReliesOnHuman)
-                {
-                    _reliesOnHumanValue = _lookup[Name].ReliesOnHuman();
-                    _evaluatedReliesOnHuman = true;
-                }
-
-                return _reliesOnHumanValue;
-            }
-
-            public long FindHumanValueToProduce(long needToProduce)
-            {
-                if (!_evaluatedNeedToProduce)
-                {
-                    _needToProduceValue = _lookup[Name].FindHumanValueToProduce(needToProduce);
-                    _evaluatedNeedToProduce = true;
-                }
-
-                return _needToProduceValue;
-            }
+            return _reliesOnHumanValue;
         }
 
-        private class Constant : IExpression
+        public long FindHumanValueToProduce(long needToProduce)
         {
-            private readonly long _value;
-
-            public string Name { get; }
-
-            public Constant(string name, long value)
+            if (!_evaluatedNeedToProduce)
             {
-                Name = name;
-                _value = value;
+                _needToProduceValue = _lookup[Name].FindHumanValueToProduce(needToProduce);
+                _evaluatedNeedToProduce = true;
             }
 
-            public long Evaluate()
-            {
-                return _value;
-            }
+            return _needToProduceValue;
+        }
+    }
 
-            public bool ReliesOnHuman() => Name == "humn";
+    private class Constant : IExpression
+    {
+        private readonly long _value;
 
-            public long FindHumanValueToProduce(long needToProduce)
-            {
-                if (Name != "humn")
-                {
-                    throw new Exception("Hmmmmm, should be humn");
-                }
+        public string Name { get; }
 
-                return needToProduce;
-            }
+        public Constant(string name, long value)
+        {
+            Name = name;
+            _value = value;
         }
 
-        private class Add : IExpression
+        public long Evaluate()
         {
-            private readonly IExpression _left;
-            private readonly IExpression _right;
-
-            public string Name { get; }
-
-            public Add(string name, IExpression left, IExpression right)
-            {
-                Name = name;
-                _left = left;
-                _right = right;
-            }
-
-            public long Evaluate()
-            {
-                return _left.Evaluate() + _right.Evaluate();
-            }
-
-            public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
-
-            public long FindHumanValueToProduce(long needToProduce)
-            {
-                if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
-                {
-                    throw new Exception("Hmmmmm");
-                }
-
-                if (_left.ReliesOnHuman())
-                {
-                    var leftNeedsToEqual = needToProduce - _right.Evaluate();
-                    return _left.FindHumanValueToProduce(leftNeedsToEqual);
-                }
-
-                var rightNeedsToEqual = needToProduce - _left.Evaluate();
-                return _right.FindHumanValueToProduce(rightNeedsToEqual);
-            }
+            return _value;
         }
 
-        private class Subtract : IExpression
+        public bool ReliesOnHuman() => Name == "humn";
+
+        public long FindHumanValueToProduce(long needToProduce)
         {
-            private readonly IExpression _left;
-            private readonly IExpression _right;
-
-            public string Name { get; }
-
-            public Subtract(string name, IExpression left, IExpression right)
+            if (Name != "humn")
             {
-                Name = name;
-                _left = left;
-                _right = right;
+                throw new Exception("Hmmmmm, should be humn");
             }
 
-            public long Evaluate()
-            {
-                return _left.Evaluate() - _right.Evaluate();
-            }
+            return needToProduce;
+        }
+    }
 
-            public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+    private class Add : IExpression
+    {
+        private readonly IExpression _left;
+        private readonly IExpression _right;
 
-            public long FindHumanValueToProduce(long needToProduce)
-            {
-                if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
-                {
-                    throw new Exception("Hmmmmm");
-                }
+        public string Name { get; }
 
-                if (_left.ReliesOnHuman())
-                {
-                    var leftNeedsToEqual = needToProduce + _right.Evaluate();
-                    return _left.FindHumanValueToProduce(leftNeedsToEqual);
-                }
-
-                var rightNeedsToEqual = _left.Evaluate() - needToProduce;
-                return _right.FindHumanValueToProduce(rightNeedsToEqual);
-            }
+        public Add(string name, IExpression left, IExpression right)
+        {
+            Name = name;
+            _left = left;
+            _right = right;
         }
 
-        private class Multiply : IExpression
+        public long Evaluate()
         {
-            private readonly IExpression _left;
-            private readonly IExpression _right;
-
-            public string Name { get; }
-
-            public Multiply(string name, IExpression left, IExpression right)
-            {
-                Name = name;
-                _left = left;
-                _right = right;
-            }
-
-            public long Evaluate()
-            {
-                return _left.Evaluate() * _right.Evaluate();
-            }
-
-            public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
-
-            public long FindHumanValueToProduce(long needToProduce)
-            {
-                if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
-                {
-                    throw new Exception("Hmmmmm");
-                }
-
-                if (_left.ReliesOnHuman())
-                {
-                    var leftNeedsToEqual = needToProduce / _right.Evaluate();
-                    return _left.FindHumanValueToProduce(leftNeedsToEqual);
-                }
-
-                var rightNeedsToEqual = needToProduce / _left.Evaluate();
-                return _right.FindHumanValueToProduce(rightNeedsToEqual);
-            }
+            return _left.Evaluate() + _right.Evaluate();
         }
 
-        private class Divide : IExpression
+        public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+
+        public long FindHumanValueToProduce(long needToProduce)
         {
-            private readonly IExpression _left;
-            private readonly IExpression _right;
-
-            public string Name { get; }
-
-            public Divide(string name, IExpression left, IExpression right)
+            if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
             {
-                Name = name;
-                _left = left;
-                _right = right;
+                throw new Exception("Hmmmmm");
             }
 
-            public long Evaluate()
+            if (_left.ReliesOnHuman())
             {
-                return _left.Evaluate() / _right.Evaluate();
+                var leftNeedsToEqual = needToProduce - _right.Evaluate();
+                return _left.FindHumanValueToProduce(leftNeedsToEqual);
             }
 
-            public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+            var rightNeedsToEqual = needToProduce - _left.Evaluate();
+            return _right.FindHumanValueToProduce(rightNeedsToEqual);
+        }
+    }
 
-            public long FindHumanValueToProduce(long needToProduce)
+    private class Subtract : IExpression
+    {
+        private readonly IExpression _left;
+        private readonly IExpression _right;
+
+        public string Name { get; }
+
+        public Subtract(string name, IExpression left, IExpression right)
+        {
+            Name = name;
+            _left = left;
+            _right = right;
+        }
+
+        public long Evaluate()
+        {
+            return _left.Evaluate() - _right.Evaluate();
+        }
+
+        public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+
+        public long FindHumanValueToProduce(long needToProduce)
+        {
+            if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
             {
-                if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
-                {
-                    throw new Exception("Hmmmmm");
-                }
-
-                if (_left.ReliesOnHuman())
-                {
-                    var leftNeedsToEqual = needToProduce * _right.Evaluate();
-                    return _left.FindHumanValueToProduce(leftNeedsToEqual);
-                }
-
-                var rightNeedsToEqual = _left.Evaluate() / needToProduce;
-                return _right.FindHumanValueToProduce(rightNeedsToEqual);
+                throw new Exception("Hmmmmm");
             }
+
+            if (_left.ReliesOnHuman())
+            {
+                var leftNeedsToEqual = needToProduce + _right.Evaluate();
+                return _left.FindHumanValueToProduce(leftNeedsToEqual);
+            }
+
+            var rightNeedsToEqual = _left.Evaluate() - needToProduce;
+            return _right.FindHumanValueToProduce(rightNeedsToEqual);
+        }
+    }
+
+    private class Multiply : IExpression
+    {
+        private readonly IExpression _left;
+        private readonly IExpression _right;
+
+        public string Name { get; }
+
+        public Multiply(string name, IExpression left, IExpression right)
+        {
+            Name = name;
+            _left = left;
+            _right = right;
+        }
+
+        public long Evaluate()
+        {
+            return _left.Evaluate() * _right.Evaluate();
+        }
+
+        public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+
+        public long FindHumanValueToProduce(long needToProduce)
+        {
+            if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
+            {
+                throw new Exception("Hmmmmm");
+            }
+
+            if (_left.ReliesOnHuman())
+            {
+                var leftNeedsToEqual = needToProduce / _right.Evaluate();
+                return _left.FindHumanValueToProduce(leftNeedsToEqual);
+            }
+
+            var rightNeedsToEqual = needToProduce / _left.Evaluate();
+            return _right.FindHumanValueToProduce(rightNeedsToEqual);
+        }
+    }
+
+    private class Divide : IExpression
+    {
+        private readonly IExpression _left;
+        private readonly IExpression _right;
+
+        public string Name { get; }
+
+        public Divide(string name, IExpression left, IExpression right)
+        {
+            Name = name;
+            _left = left;
+            _right = right;
+        }
+
+        public long Evaluate()
+        {
+            return _left.Evaluate() / _right.Evaluate();
+        }
+
+        public bool ReliesOnHuman() => _left.ReliesOnHuman() || _right.ReliesOnHuman();
+
+        public long FindHumanValueToProduce(long needToProduce)
+        {
+            if (_left.ReliesOnHuman() && _right.ReliesOnHuman())
+            {
+                throw new Exception("Hmmmmm");
+            }
+
+            if (_left.ReliesOnHuman())
+            {
+                var leftNeedsToEqual = needToProduce * _right.Evaluate();
+                return _left.FindHumanValueToProduce(leftNeedsToEqual);
+            }
+
+            var rightNeedsToEqual = _left.Evaluate() / needToProduce;
+            return _right.FindHumanValueToProduce(rightNeedsToEqual);
         }
     }
 }

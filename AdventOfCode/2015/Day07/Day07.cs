@@ -2,381 +2,380 @@
 using System.Collections.Generic;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2015.Day07
+namespace AdventOfCode._2015.Day07;
+
+public class Day07 : Day
 {
-    public class Day07 : Day
+    public Day07() : base(2015, 7, "Day07/input_2015_07.txt", "16076", "2797")
     {
-        public Day07() : base(2015, 7, "Day07/input_2015_07.txt", "16076", "2797")
+    }
+
+    private readonly Dictionary<string, ISignal> _signals = new Dictionary<string, ISignal>();
+
+    public override void Initialise()
+    {
+        foreach (var inputLine in InputLines)
         {
+            var split = inputLine.Split(" -> ");
+            var output = split[1];
+            var input = CreateGate(split[0], output);
+            _signals[output] = new SignalCache(input);
+        }
+    }
+
+    public override string Part1()
+    {
+        return _signals["a"].Output().ToString();
+    }
+
+    public override string Part2()
+    {
+        var inputB = new Constant(_signals["a"].Output());
+
+        _signals.Clear();
+        foreach (var inputLine in InputLines)
+        {
+            var split = inputLine.Split(" -> ");
+            var output = split[1];
+            var input = CreateGate(split[0], output);
+            _signals[output] = new SignalCache(input);
         }
 
-        private readonly Dictionary<string, ISignal> _signals = new Dictionary<string, ISignal>();
+        _signals["b"] = inputB;
 
-        public override void Initialise()
+        var result = _signals["a"].Output().ToString();
+        return result;
+    }
+
+    private ISignal CreateGate(string gate, string output)
+    {
+        if (gate.Contains(" AND "))
         {
-            foreach (var inputLine in InputLines)
+            var split = gate.Split(" AND ");
+            var input1 = GetInput(split[0]);
+            var input2 = GetInput(split[1]);
+
+            return new AndGate(input1, input2, output);
+        }
+
+        if (gate.Contains(" OR "))
+        {
+            var split = gate.Split(" OR ");
+            var input1 = GetInput(split[0]);
+            var input2 = GetInput(split[1]);
+
+            return new OrGate(input1, input2, output);
+        }
+
+        if (gate.Contains(" LSHIFT "))
+        {
+            var split = gate.Split(" LSHIFT ");
+            var input1 = GetInput(split[0]);
+            var input2 = GetInput(split[1]);
+
+            return new LeftShiftGate(input1, input2, output);
+        }
+
+        if (gate.Contains(" RSHIFT "))
+        {
+            var split = gate.Split(" RSHIFT ");
+            var input1 = GetInput(split[0]);
+            var input2 = GetInput(split[1]);
+
+            return new RightShiftGate(input1, input2, output);
+        }
+
+        if (gate.StartsWith("NOT "))
+        {
+            var input = GetInput(gate.Substring(4));
+
+            return new NotGate(input, output);
+        }
+
+        return new NoopGate(GetInput(gate), output);
+    }
+
+    private ISignal GetInput(string input)
+    {
+        return new SignalCache(GetUncachedInput(input));
+    }
+
+    private ISignal GetUncachedInput(string input)
+    {
+        if (ushort.TryParse(input, out var constant))
+        {
+            return new Constant(constant);
+        }
+
+        return new DeferredSignal(_signals, input);
+    }
+
+    private interface ISignal
+    {
+        string OutputName { get; }
+        ushort Output();
+    }
+
+    private class DeferredSignal : ISignal
+    {
+        private readonly Dictionary<string, ISignal> _signalLookup;
+        private readonly string _input;
+
+        public DeferredSignal(Dictionary<string, ISignal> signalLookup, string input)
+        {
+            _signalLookup = signalLookup;
+            _input = input;
+        }
+
+        public string OutputName => FindSignal().OutputName;
+
+        public ushort Output() => FindSignal().Output();
+
+        private ISignal FindSignal()
+        {
+            if (_signalLookup.TryGetValue(_input, out var signal))
             {
-                var split = inputLine.Split(" -> ");
-                var output = split[1];
-                var input = CreateGate(split[0], output);
-                _signals[output] = new SignalCache(input);
+                return signal;
             }
+
+            return new NoInputGate(_input);
         }
 
-        public override string Part1()
+        public override string ToString()
         {
-            return _signals["a"].Output().ToString();
+            return $"Deferred {_input}";
+        }
+    }
+
+    private class SignalCache : ISignal
+    {
+        private readonly ISignal _signal;
+
+        public SignalCache(ISignal signal)
+        {
+            _signal = signal;
         }
 
-        public override string Part2()
-        {
-            var inputB = new Constant(_signals["a"].Output());
+        public string OutputName => _signal.OutputName;
 
-            _signals.Clear();
-            foreach (var inputLine in InputLines)
+        private bool _gotOutput = false;
+        private ushort _output = 0;
+        public ushort Output()
+        {
+            if (!_gotOutput)
             {
-                var split = inputLine.Split(" -> ");
-                var output = split[1];
-                var input = CreateGate(split[0], output);
-                _signals[output] = new SignalCache(input);
+                _output = _signal.Output();
+                _gotOutput = true;
             }
 
-            _signals["b"] = inputB;
+            return _output;
+        }
 
-            var result = _signals["a"].Output().ToString();
+        public override string ToString()
+        {
+            if (_gotOutput)
+            {
+                return $"Cached {_signal} = {_output}";
+            }
+
+            return $"Cached {_signal}";
+        }
+    }
+
+    private class Constant : ISignal
+    {
+        private readonly ushort _value;
+        public string OutputName => _value.ToString();
+
+        public Constant(ushort value)
+        {
+            _value = value;
+        }
+
+        public ushort Output() => _value;
+
+        public override string ToString()
+        {
+            return $"{_value}";
+        }
+    }
+
+    private class AndGate : ISignal
+    {
+        public string OutputName { get; }
+        private ISignal Input1 { get; }
+        private ISignal Input2 { get; }
+
+        public AndGate(ISignal input1, ISignal input2, string outputName)
+        {
+            OutputName = outputName;
+            Input1 = input1;
+            Input2 = input2;
+        }
+
+        public ushort Output()
+        {
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            var result = (ushort)(Input1.Output() & Input2.Output());
+            // Console.WriteLine($"{OutputName} := {result}");
             return result;
         }
 
-        private ISignal CreateGate(string gate, string output)
+        public override string ToString()
         {
-            if (gate.Contains(" AND "))
-            {
-                var split = gate.Split(" AND ");
-                var input1 = GetInput(split[0]);
-                var input2 = GetInput(split[1]);
+            return $"{Input1.OutputName} AND {Input2.OutputName}";
+        }
+    }
 
-                return new AndGate(input1, input2, output);
-            }
+    private class OrGate : ISignal
+    {
+        public string OutputName { get; }
+        private ISignal Input1 { get; }
+        private ISignal Input2 { get; }
 
-            if (gate.Contains(" OR "))
-            {
-                var split = gate.Split(" OR ");
-                var input1 = GetInput(split[0]);
-                var input2 = GetInput(split[1]);
-
-                return new OrGate(input1, input2, output);
-            }
-
-            if (gate.Contains(" LSHIFT "))
-            {
-                var split = gate.Split(" LSHIFT ");
-                var input1 = GetInput(split[0]);
-                var input2 = GetInput(split[1]);
-
-                return new LeftShiftGate(input1, input2, output);
-            }
-
-            if (gate.Contains(" RSHIFT "))
-            {
-                var split = gate.Split(" RSHIFT ");
-                var input1 = GetInput(split[0]);
-                var input2 = GetInput(split[1]);
-
-                return new RightShiftGate(input1, input2, output);
-            }
-
-            if (gate.StartsWith("NOT "))
-            {
-                var input = GetInput(gate.Substring(4));
-
-                return new NotGate(input, output);
-            }
-
-            return new NoopGate(GetInput(gate), output);
+        public OrGate(ISignal input1, ISignal input2, string outputName)
+        {
+            OutputName = outputName;
+            Input1 = input1;
+            Input2 = input2;
         }
 
-        private ISignal GetInput(string input)
+        public ushort Output()
         {
-            return new SignalCache(GetUncachedInput(input));
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            var result = (ushort)(Input1.Output() | Input2.Output());
+            // Console.WriteLine($"{OutputName} := {result}");
+            return result;
         }
 
-        private ISignal GetUncachedInput(string input)
+        public override string ToString()
         {
-            if (ushort.TryParse(input, out var constant))
-            {
-                return new Constant(constant);
-            }
+            return $"{Input1.OutputName} OR {Input2.OutputName}";
+        }
+    }
 
-            return new DeferredSignal(_signals, input);
+    private class LeftShiftGate : ISignal
+    {
+        public string OutputName { get; }
+        private ISignal Input1 { get; }
+        private ISignal Input2 { get; }
+
+        public LeftShiftGate(ISignal input1, ISignal input2, string outputName)
+        {
+            OutputName = outputName;
+            Input1 = input1;
+            Input2 = input2;
         }
 
-        private interface ISignal
+        public ushort Output()
         {
-            string OutputName { get; }
-            ushort Output();
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            var result = (ushort)(Input1.Output() << Input2.Output());
+            // Console.WriteLine($"{OutputName} := {result}");
+            return result;
         }
 
-        private class DeferredSignal : ISignal
+        public override string ToString()
         {
-            private readonly Dictionary<string, ISignal> _signalLookup;
-            private readonly string _input;
+            return $"{Input1.OutputName} LSHIFT {Input2.OutputName}";
+        }
+    }
 
-            public DeferredSignal(Dictionary<string, ISignal> signalLookup, string input)
-            {
-                _signalLookup = signalLookup;
-                _input = input;
-            }
+    private class RightShiftGate : ISignal
+    {
+        public string OutputName { get; }
+        private ISignal Input1 { get; }
+        private ISignal Input2 { get; }
 
-            public string OutputName => FindSignal().OutputName;
-
-            public ushort Output() => FindSignal().Output();
-
-            private ISignal FindSignal()
-            {
-                if (_signalLookup.TryGetValue(_input, out var signal))
-                {
-                    return signal;
-                }
-
-                return new NoInputGate(_input);
-            }
-
-            public override string ToString()
-            {
-                return $"Deferred {_input}";
-            }
+        public RightShiftGate(ISignal input1, ISignal input2, string outputName)
+        {
+            OutputName = outputName;
+            Input1 = input1;
+            Input2 = input2;
         }
 
-        private class SignalCache : ISignal
+        public ushort Output()
         {
-            private readonly ISignal _signal;
-
-            public SignalCache(ISignal signal)
-            {
-                _signal = signal;
-            }
-
-            public string OutputName => _signal.OutputName;
-
-            private bool _gotOutput = false;
-            private ushort _output = 0;
-            public ushort Output()
-            {
-                if (!_gotOutput)
-                {
-                    _output = _signal.Output();
-                    _gotOutput = true;
-                }
-
-                return _output;
-            }
-
-            public override string ToString()
-            {
-                if (_gotOutput)
-                {
-                    return $"Cached {_signal} = {_output}";
-                }
-
-                return $"Cached {_signal}";
-            }
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            var result = (ushort)(Input1.Output() >> Input2.Output());
+            // Console.WriteLine($"{OutputName} := {result}");
+            return result;
         }
 
-        private class Constant : ISignal
+        public override string ToString()
         {
-            private readonly ushort _value;
-            public string OutputName => _value.ToString();
+            return $"{Input1.OutputName} RSHIFT {Input2.OutputName}";
+        }
+    }
 
-            public Constant(ushort value)
-            {
-                _value = value;
-            }
+    private class NotGate : ISignal
+    {
+        public string OutputName { get; }
+        private ISignal Input { get; }
 
-            public ushort Output() => _value;
-
-            public override string ToString()
-            {
-                return $"{_value}";
-            }
+        public NotGate(ISignal input, string outputName)
+        {
+            OutputName = outputName;
+            Input = input;
         }
 
-        private class AndGate : ISignal
+        public ushort Output()
         {
-            public string OutputName { get; }
-            private ISignal Input1 { get; }
-            private ISignal Input2 { get; }
-
-            public AndGate(ISignal input1, ISignal input2, string outputName)
-            {
-                OutputName = outputName;
-                Input1 = input1;
-                Input2 = input2;
-            }
-
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                var result = (ushort)(Input1.Output() & Input2.Output());
-                // Console.WriteLine($"{OutputName} := {result}");
-                return result;
-            }
-
-            public override string ToString()
-            {
-                return $"{Input1.OutputName} AND {Input2.OutputName}";
-            }
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            var result = (ushort)(~Input.Output());
+            // Console.WriteLine($"{OutputName} := {result}");
+            return result;
         }
 
-        private class OrGate : ISignal
+        public override string ToString()
         {
-            public string OutputName { get; }
-            private ISignal Input1 { get; }
-            private ISignal Input2 { get; }
+            return $"NOT {Input.OutputName}";
+        }
+    }
 
-            public OrGate(ISignal input1, ISignal input2, string outputName)
-            {
-                OutputName = outputName;
-                Input1 = input1;
-                Input2 = input2;
-            }
+    private class NoopGate : ISignal
+    {
+        public string OutputName { get; }
+        private ISignal Input { get; }
 
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                var result = (ushort)(Input1.Output() | Input2.Output());
-                // Console.WriteLine($"{OutputName} := {result}");
-                return result;
-            }
-
-            public override string ToString()
-            {
-                return $"{Input1.OutputName} OR {Input2.OutputName}";
-            }
+        public NoopGate(ISignal input, string outputName)
+        {
+            OutputName = outputName;
+            Input = input;
         }
 
-        private class LeftShiftGate : ISignal
+        public ushort Output()
         {
-            public string OutputName { get; }
-            private ISignal Input1 { get; }
-            private ISignal Input2 { get; }
-
-            public LeftShiftGate(ISignal input1, ISignal input2, string outputName)
-            {
-                OutputName = outputName;
-                Input1 = input1;
-                Input2 = input2;
-            }
-
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                var result = (ushort)(Input1.Output() << Input2.Output());
-                // Console.WriteLine($"{OutputName} := {result}");
-                return result;
-            }
-
-            public override string ToString()
-            {
-                return $"{Input1.OutputName} LSHIFT {Input2.OutputName}";
-            }
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            var result = Input.Output();
+            // Console.WriteLine($"{OutputName} := {result}");
+            return result;
         }
 
-        private class RightShiftGate : ISignal
+        public override string ToString()
         {
-            public string OutputName { get; }
-            private ISignal Input1 { get; }
-            private ISignal Input2 { get; }
+            return $"NOOP {Input.OutputName}";
+        }
+    }
 
-            public RightShiftGate(ISignal input1, ISignal input2, string outputName)
-            {
-                OutputName = outputName;
-                Input1 = input1;
-                Input2 = input2;
-            }
+    private class NoInputGate : ISignal
+    {
+        public string OutputName { get; }
 
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                var result = (ushort)(Input1.Output() >> Input2.Output());
-                // Console.WriteLine($"{OutputName} := {result}");
-                return result;
-            }
-
-            public override string ToString()
-            {
-                return $"{Input1.OutputName} RSHIFT {Input2.OutputName}";
-            }
+        public NoInputGate(string outputName)
+        {
+            OutputName = outputName;
         }
 
-        private class NotGate : ISignal
+        public ushort Output()
         {
-            public string OutputName { get; }
-            private ISignal Input { get; }
-
-            public NotGate(ISignal input, string outputName)
-            {
-                OutputName = outputName;
-                Input = input;
-            }
-
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                var result = (ushort)(~Input.Output());
-                // Console.WriteLine($"{OutputName} := {result}");
-                return result;
-            }
-
-            public override string ToString()
-            {
-                return $"NOT {Input.OutputName}";
-            }
+            // Console.WriteLine($"{OutputName} = {ToString()}");
+            throw new Exception($"No input for {OutputName}");
         }
 
-        private class NoopGate : ISignal
+        public override string ToString()
         {
-            public string OutputName { get; }
-            private ISignal Input { get; }
-
-            public NoopGate(ISignal input, string outputName)
-            {
-                OutputName = outputName;
-                Input = input;
-            }
-
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                var result = Input.Output();
-                // Console.WriteLine($"{OutputName} := {result}");
-                return result;
-            }
-
-            public override string ToString()
-            {
-                return $"NOOP {Input.OutputName}";
-            }
-        }
-
-        private class NoInputGate : ISignal
-        {
-            public string OutputName { get; }
-
-            public NoInputGate(string outputName)
-            {
-                OutputName = outputName;
-            }
-
-            public ushort Output()
-            {
-                // Console.WriteLine($"{OutputName} = {ToString()}");
-                throw new Exception($"No input for {OutputName}");
-            }
-
-            public override string ToString()
-            {
-                return "NoInput";
-            }
+            return "NoInput";
         }
     }
 }

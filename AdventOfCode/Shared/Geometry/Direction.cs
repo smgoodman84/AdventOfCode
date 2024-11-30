@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace AdventOfCode.Shared.Geometry
+namespace AdventOfCode.Shared.Geometry;
+
+public enum Direction
 {
-    public enum Direction
-    {
-        Up,
-        Down,
-        Left,
-        Right
-    }
+    Up,
+    Down,
+    Left,
+    Right
 }

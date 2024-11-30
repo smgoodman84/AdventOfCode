@@ -2,226 +2,225 @@
 using System.Linq;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2021.Day14
+namespace AdventOfCode._2021.Day14;
+
+public class Day14 : Day
 {
-    public class Day14 : Day
+    private string _template;
+    private List<InsertionRule> _insertionRules;
+
+    public Day14() : base(2021, 14, "Day14/input_2021_14.txt", "3342", "3776553567525")
     {
-        private string _template;
-        private List<InsertionRule> _insertionRules;
+    }
 
-        public Day14() : base(2021, 14, "Day14/input_2021_14.txt", "3342", "3776553567525")
+    public override void Initialise()
+    {
+        _template = InputLines.First();
+
+        _insertionRules = InputLines.Skip(2)
+            .Select(l => new InsertionRule(l))
+            .ToList();
+    }
+
+    public override string Part1() => CalculateForIterations(10);
+    public override string Part2() => CalculateForIterations(40);
+
+    private string CalculateForIterations(int iterations)
+    {
+        var chemicals = _template.Select(c => Chemical.Create(c)).ToList();
+
+        var insertionDictionary = _insertionRules
+            .GroupBy(r => r.Previous)
+            .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.Next, x => x.Insertion));
+
+        var previous = chemicals.First();
+        var polymerSections = new List<PolymerSection>();
+
+        foreach (var c in chemicals.Skip(1))
         {
+            polymerSections.Add(PolymerSection.Create(previous, c, iterations, insertionDictionary));
+            previous = c;
         }
 
-        public override void Initialise()
+        var first = true;
+        var counts = new Dictionary<Chemical, long>();
+        foreach(var section in polymerSections)
         {
-            _template = InputLines.First();
-
-            _insertionRules = InputLines.Skip(2)
-                .Select(l => new InsertionRule(l))
-                .ToList();
-        }
-
-        public override string Part1() => CalculateForIterations(10);
-        public override string Part2() => CalculateForIterations(40);
-
-        private string CalculateForIterations(int iterations)
-        {
-            var chemicals = _template.Select(c => Chemical.Create(c)).ToList();
-
-            var insertionDictionary = _insertionRules
-                .GroupBy(r => r.Previous)
-                .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.Next, x => x.Insertion));
-
-            var previous = chemicals.First();
-            var polymerSections = new List<PolymerSection>();
-
-            foreach (var c in chemicals.Skip(1))
+            foreach (var count in section.ChemicalCounts)
             {
-                polymerSections.Add(PolymerSection.Create(previous, c, iterations, insertionDictionary));
-                previous = c;
+                if (!counts.ContainsKey(count.Key))
+                {
+                    counts[count.Key] = count.Value;
+                }
+                else
+                {
+                    counts[count.Key] += count.Value;
+                }
             }
 
-            var first = true;
-            var counts = new Dictionary<Chemical, long>();
-            foreach(var section in polymerSections)
+            if (!first)
             {
-                foreach (var count in section.ChemicalCounts)
+                counts[section.Previous] -= 1;
+            }
+
+            first = false;
+        }
+
+        var mostCommonCount = counts.Max(g => g.Value);
+        var leastCommonCount = counts.Min(g => g.Value);
+
+        var result = mostCommonCount - leastCommonCount;
+        return result.ToString();
+    }
+
+    private class PolymerSection
+    {
+        private static Dictionary<Chemical, Dictionary<Chemical, Dictionary<int, PolymerSection>>> _polymerSections
+            = new Dictionary<Chemical, Dictionary<Chemical, Dictionary<int, PolymerSection>>>();
+
+        public static PolymerSection Create(
+            Chemical previous,
+            Chemical next,
+            int iterations,
+            Dictionary<Chemical, Dictionary<Chemical, Chemical>> insertionRules
+        )
+        {
+            if (!_polymerSections.ContainsKey(previous))
+            {
+                _polymerSections.Add(previous, new Dictionary<Chemical, Dictionary<int, PolymerSection>>());
+            }
+
+            if (!_polymerSections[previous].ContainsKey(next))
+            {
+                _polymerSections[previous].Add(next, new Dictionary<int, PolymerSection>());
+            }
+
+            if (!_polymerSections[previous][next].ContainsKey(iterations))
+            {
+                _polymerSections[previous][next][iterations] = new PolymerSection(previous, next, iterations, insertionRules);
+            }
+
+            return _polymerSections[previous][next][iterations];
+        }
+
+        private PolymerSection(
+            Chemical previous,
+            Chemical next,
+            int iterations,
+            Dictionary<Chemical, Dictionary<Chemical, Chemical>> insertionRules)
+        {
+            Previous = previous;
+            Next = next;
+            Iterations = iterations;
+
+            if (iterations == 0)
+            {
+                Result = $"{previous}{next}";
+                if (previous == next)
                 {
-                    if (!counts.ContainsKey(count.Key))
+                    ChemicalCounts = new Dictionary<Chemical, long>
                     {
-                        counts[count.Key] = count.Value;
+                        { previous, 2 }
+                    };
+                }
+                else
+                {
+                    ChemicalCounts = new Dictionary<Chemical, long>
+                    {
+                        { previous, 1 },
+                        { next, 1 },
+                    };
+                }
+
+                return;
+            }
+
+            if (insertionRules.TryGetValue(previous, out var previousMatches))
+            {
+                if (previousMatches.TryGetValue(next, out var insertion))
+                {
+                    var section1 = PolymerSection.Create(previous, insertion, iterations - 1, insertionRules);
+                    var section2 = PolymerSection.Create(insertion, next, iterations - 1, insertionRules);
+
+                    if (iterations <= 10)
+                    {
+                        Result = $"{section1.Result}{section2.Result.Substring(1)}";
                     }
                     else
                     {
-                        counts[count.Key] += count.Value;
-                    }
-                }
-
-                if (!first)
-                {
-                    counts[section.Previous] -= 1;
-                }
-
-                first = false;
-            }
-
-            var mostCommonCount = counts.Max(g => g.Value);
-            var leastCommonCount = counts.Min(g => g.Value);
-
-            var result = mostCommonCount - leastCommonCount;
-            return result.ToString();
-        }
-
-        private class PolymerSection
-        {
-            private static Dictionary<Chemical, Dictionary<Chemical, Dictionary<int, PolymerSection>>> _polymerSections
-                = new Dictionary<Chemical, Dictionary<Chemical, Dictionary<int, PolymerSection>>>();
-
-            public static PolymerSection Create(
-                Chemical previous,
-                Chemical next,
-                int iterations,
-                Dictionary<Chemical, Dictionary<Chemical, Chemical>> insertionRules
-                )
-            {
-                if (!_polymerSections.ContainsKey(previous))
-                {
-                    _polymerSections.Add(previous, new Dictionary<Chemical, Dictionary<int, PolymerSection>>());
-                }
-
-                if (!_polymerSections[previous].ContainsKey(next))
-                {
-                    _polymerSections[previous].Add(next, new Dictionary<int, PolymerSection>());
-                }
-
-                if (!_polymerSections[previous][next].ContainsKey(iterations))
-                {
-                    _polymerSections[previous][next][iterations] = new PolymerSection(previous, next, iterations, insertionRules);
-                }
-
-                return _polymerSections[previous][next][iterations];
-            }
-
-            private PolymerSection(
-                Chemical previous,
-                Chemical next,
-                int iterations,
-                Dictionary<Chemical, Dictionary<Chemical, Chemical>> insertionRules)
-            {
-                Previous = previous;
-                Next = next;
-                Iterations = iterations;
-
-                if (iterations == 0)
-                {
-                    Result = $"{previous}{next}";
-                    if (previous == next)
-                    {
-                        ChemicalCounts = new Dictionary<Chemical, long>
-                        {
-                            { previous, 2 }
-                        };
-                    }
-                    else
-                    {
-                        ChemicalCounts = new Dictionary<Chemical, long>
-                        {
-                            { previous, 1 },
-                            { next, 1 },
-                        };
+                        Result = "LARGE";
                     }
 
-                    return;
-                }
+                    ChemicalCounts = section1.ChemicalCounts.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                if (insertionRules.TryGetValue(previous, out var previousMatches))
-                {
-                    if (previousMatches.TryGetValue(next, out var insertion))
+                    foreach(var chemicalCount in section2.ChemicalCounts)
                     {
-                        var section1 = PolymerSection.Create(previous, insertion, iterations - 1, insertionRules);
-                        var section2 = PolymerSection.Create(insertion, next, iterations - 1, insertionRules);
-
-                        if (iterations <= 10)
+                        if (!ChemicalCounts.ContainsKey(chemicalCount.Key))
                         {
-                            Result = $"{section1.Result}{section2.Result.Substring(1)}";
+                            ChemicalCounts[chemicalCount.Key] = chemicalCount.Value;
                         }
                         else
                         {
-                            Result = "LARGE";
+                            ChemicalCounts[chemicalCount.Key] += chemicalCount.Value;
                         }
-
-                        ChemicalCounts = section1.ChemicalCounts.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-                        foreach(var chemicalCount in section2.ChemicalCounts)
-                        {
-                            if (!ChemicalCounts.ContainsKey(chemicalCount.Key))
-                            {
-                                ChemicalCounts[chemicalCount.Key] = chemicalCount.Value;
-                            }
-                            else
-                            {
-                                ChemicalCounts[chemicalCount.Key] += chemicalCount.Value;
-                            }
-                        }
-
-                        ChemicalCounts[insertion] -= 1;
                     }
+
+                    ChemicalCounts[insertion] -= 1;
                 }
-            }
-
-            public Dictionary<Chemical, long> ChemicalCounts;
-            public Chemical Previous;
-            public Chemical Next;
-            public int Iterations;
-            public string Result;
-
-            public override string ToString()
-            {
-                return $"{Previous}{Next}*{Iterations}={Result}";
             }
         }
 
-        private class Chemical
+        public Dictionary<Chemical, long> ChemicalCounts;
+        public Chemical Previous;
+        public Chemical Next;
+        public int Iterations;
+        public string Result;
+
+        public override string ToString()
         {
-            private static Dictionary<char, Chemical> _chemicals = new Dictionary<char, Chemical>();
+            return $"{Previous}{Next}*{Iterations}={Result}";
+        }
+    }
 
-            public char Symbol { get; private set; }
+    private class Chemical
+    {
+        private static Dictionary<char, Chemical> _chemicals = new Dictionary<char, Chemical>();
 
-            private Chemical(char symbol)
-            {
-                Symbol = symbol;
-            }
+        public char Symbol { get; private set; }
 
-            public static Chemical Create(char symbol)
-            {
-                if (!_chemicals.ContainsKey(symbol))
-                {
-                    _chemicals.Add(symbol, new Chemical(symbol));
-                }
-
-                return _chemicals[symbol];
-            }
-
-            public override string ToString()
-            {
-                return Symbol.ToString();
-            }
+        private Chemical(char symbol)
+        {
+            Symbol = symbol;
         }
 
-        private class InsertionRule
+        public static Chemical Create(char symbol)
         {
-            public Chemical Previous;
-            public Chemical Next;
-            public Chemical Insertion;
-
-            public InsertionRule(string insertionRule)
+            if (!_chemicals.ContainsKey(symbol))
             {
-                var split = insertionRule.Split(" -> ");
-                Previous = Chemical.Create(split[0][0]);
-                Next = Chemical.Create(split[0][1]);
-                Insertion = Chemical.Create(split[1].First());
+                _chemicals.Add(symbol, new Chemical(symbol));
             }
+
+            return _chemicals[symbol];
+        }
+
+        public override string ToString()
+        {
+            return Symbol.ToString();
+        }
+    }
+
+    private class InsertionRule
+    {
+        public Chemical Previous;
+        public Chemical Next;
+        public Chemical Insertion;
+
+        public InsertionRule(string insertionRule)
+        {
+            var split = insertionRule.Split(" -> ");
+            Previous = Chemical.Create(split[0][0]);
+            Next = Chemical.Create(split[0][1]);
+            Insertion = Chemical.Create(split[1].First());
         }
     }
 }

@@ -2,103 +2,102 @@
 using System.Linq;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2020.Day22
+namespace AdventOfCode._2020.Day22;
+
+public class Day22 : Day
 {
-    public class Day22 : Day
+    public Day22() : base(2020, 22, "Day22/input_2020_22.txt", "33680", string.Empty)
     {
-        public Day22() : base(2020, 22, "Day22/input_2020_22.txt", "33680", string.Empty)
-        {
 
+    }
+
+    private Deck _playerOne;
+    private Deck _playerTwo;
+
+    public override void Initialise()
+    {
+        var lines = InputLines.ToList();
+
+        lines.Add(string.Empty);
+
+        var decks = new List<Deck>();
+        var player = 1;
+        Deck currentDeck = null;
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("Player"))
+            {
+                currentDeck = new Deck(player);
+                player += 1;
+            }
+            else if (string.IsNullOrWhiteSpace(line))
+            {
+                decks.Add(currentDeck);
+            }
+            else
+            {
+                currentDeck.AddToBottom(int.Parse(line));
+            }
         }
 
-        private Deck _playerOne;
-        private Deck _playerTwo;
+        _playerOne = decks[0];
+        _playerTwo = decks[1];
+    }
 
-        public override void Initialise()
+    public override string Part1()
+    {
+        while (!_playerOne.IsEmpty() && !_playerTwo.IsEmpty())
         {
-            var lines = InputLines.ToList();
+            var winner = _playerOne;
+            var loser = _playerTwo;
 
-            lines.Add(string.Empty);
-
-            var decks = new List<Deck>();
-            var player = 1;
-            Deck currentDeck = null;
-            foreach (var line in lines)
+            if (_playerTwo.NextCard() > _playerOne.NextCard())
             {
-                if (line.StartsWith("Player"))
-                {
-                    currentDeck = new Deck(player);
-                    player += 1;
-                }
-                else if (string.IsNullOrWhiteSpace(line))
-                {
-                    decks.Add(currentDeck);
-                }
-                else
-                {
-                    currentDeck.AddToBottom(int.Parse(line));
-                }
+                winner = _playerTwo;
+                loser = _playerOne;
             }
 
-            _playerOne = decks[0];
-            _playerTwo = decks[1];
+            winner.AddToBottom(winner.TakeCard());
+            winner.AddToBottom(loser.TakeCard());
         }
 
-        public override string Part1()
+        var gameWinner = _playerOne.IsEmpty() ? _playerTwo : _playerOne;
+
+        return gameWinner.GetScore().ToString();
+    }
+
+    public override string Part2()
+    {
+        return string.Empty;
+    }
+
+    private class Deck
+    {
+        private Queue<int> _deck = new Queue<int>();
+        private int _player;
+        public Deck(int player)
         {
-            while (!_playerOne.IsEmpty() && !_playerTwo.IsEmpty())
-            {
-                var winner = _playerOne;
-                var loser = _playerTwo;
-
-                if (_playerTwo.NextCard() > _playerOne.NextCard())
-                {
-                    winner = _playerTwo;
-                    loser = _playerOne;
-                }
-
-                winner.AddToBottom(winner.TakeCard());
-                winner.AddToBottom(loser.TakeCard());
-            }
-
-            var gameWinner = _playerOne.IsEmpty() ? _playerTwo : _playerOne;
-
-            return gameWinner.GetScore().ToString();
+            _player = player;
         }
 
-        public override string Part2()
-        {
-            return string.Empty;
-        }
+        public void AddToBottom(int card) => _deck.Enqueue(card);
 
-        private class Deck
+        public int TakeCard() => _deck.Dequeue();
+        public int NextCard() => _deck.Peek();
+
+        public bool IsEmpty() => !_deck.Any();
+
+        public int GetScore()
         {
-            private Queue<int> _deck = new Queue<int>();
-            private int _player;
-            public Deck(int player)
+            var result = 0;
+            var multiplier = _deck.Count;
+            foreach (var card in _deck)
             {
-                _player = player;
+                result += card * multiplier;
+                multiplier -= 1;
             }
 
-            public void AddToBottom(int card) => _deck.Enqueue(card);
-
-            public int TakeCard() => _deck.Dequeue();
-            public int NextCard() => _deck.Peek();
-
-            public bool IsEmpty() => !_deck.Any();
-
-            public int GetScore()
-            {
-                var result = 0;
-                var multiplier = _deck.Count;
-                foreach (var card in _deck)
-                {
-                    result += card * multiplier;
-                    multiplier -= 1;
-                }
-
-                return result;
-            }
+            return result;
         }
     }
 }

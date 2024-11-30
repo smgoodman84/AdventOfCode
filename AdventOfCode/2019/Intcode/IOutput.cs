@@ -1,7 +1,6 @@
-﻿namespace AdventOfCode._2019.Intcode
+﻿namespace AdventOfCode._2019.Intcode;
+
+public interface IOutput
 {
-    public interface IOutput
-    {
-        void Output(long output);
-    }
+    void Output(long output);
 }

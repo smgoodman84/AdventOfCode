@@ -2,67 +2,66 @@
 using System.Text;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2015.Day10
+namespace AdventOfCode._2015.Day10;
+
+public class Day10 : Day
 {
-    public class Day10 : Day
+    public Day10() : base(2015, 10, "Day10/input_2015_10.txt", "492982", "6989950")
     {
-        public Day10() : base(2015, 10, "Day10/input_2015_10.txt", "492982", "6989950")
+    }
+
+    public override string Part1()
+    {
+        var input = InputLines.Single();
+        var output = Iterate(input, 40);
+
+        return output.Length.ToString();
+    }
+
+    public override string Part2()
+    {
+        var input = InputLines.Single();
+        var output = Iterate(input, 50);
+
+        return output.Length.ToString();
+    }
+
+    private string Iterate(string value, int count)
+    {
+        for (var i = 0; i < count; i++)
         {
+            value = Iterate(value);
+            // Console.WriteLine(value);
         }
 
-        public override string Part1()
+        return value;
+    }
+
+    private string Iterate(string value)
+    {
+        var currentChar = ' ';
+        int runLength = 0;
+        var output = new StringBuilder();
+
+        foreach (var c in value)
         {
-            var input = InputLines.Single();
-            var output = Iterate(input, 40);
-
-            return output.Length.ToString();
-        }
-
-        public override string Part2()
-        {
-            var input = InputLines.Single();
-            var output = Iterate(input, 50);
-
-            return output.Length.ToString();
-        }
-
-        private string Iterate(string value, int count)
-        {
-            for (var i = 0; i < count; i++)
+            if (c == currentChar)
             {
-                value = Iterate(value);
-                // Console.WriteLine(value);
+                runLength += 1;
             }
-
-            return value;
-        }
-
-        private string Iterate(string value)
-        {
-            var currentChar = ' ';
-            int runLength = 0;
-            var output = new StringBuilder();
-
-            foreach (var c in value)
+            else
             {
-                if (c == currentChar)
+                if (currentChar != ' ')
                 {
-                    runLength += 1;
+                    output.Append($"{runLength}{currentChar}");
                 }
-                else
-                {
-                    if (currentChar != ' ')
-                    {
-                        output.Append($"{runLength}{currentChar}");
-                    }
 
-                    currentChar = c;
-                    runLength = 1;
-                }
+                currentChar = c;
+                runLength = 1;
             }
-
-            output.Append($"{runLength}{currentChar}");
-            return output.ToString();
         }
+
+        output.Append($"{runLength}{currentChar}");
+        return output.ToString();
     }
 }

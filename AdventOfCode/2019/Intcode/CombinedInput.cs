@@ -1,24 +1,23 @@
 ﻿using System.Threading.Tasks;
 
-namespace AdventOfCode._2019.Intcode
+namespace AdventOfCode._2019.Intcode;
+
+public class CombinedInput : IInput
 {
-    public class CombinedInput : IInput
+    private IInput[] _inputs;
+    private int index = 0;
+
+    public CombinedInput(params IInput[] inputs)
     {
-        private IInput[] _inputs;
-        private int index = 0;
+        _inputs = inputs;
+    }
 
-        public CombinedInput(params IInput[] inputs)
-        {
-            _inputs = inputs;
-        }
+    public Task<long> ReadInput()
+    {
+        var result = _inputs[index].ReadInput();
 
-        public Task<long> ReadInput()
-        {
-            var result = _inputs[index].ReadInput();
+        index += 1;
 
-            index += 1;
-
-            return result;
-        }
+        return result;
     }
 }
