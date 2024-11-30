@@ -2,7 +2,7 @@
 using System.Linq;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode2020.Day08;
+namespace AdventOfCode._2020.Day08;
 
 public class Day08 : Day
 {

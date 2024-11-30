@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode2020.Day20;
+namespace AdventOfCode._2020.Day20;
 
 public class Day20 : Day
 {

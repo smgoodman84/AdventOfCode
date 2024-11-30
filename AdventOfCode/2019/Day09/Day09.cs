@@ -2,7 +2,7 @@
 using AdventOfCode._2019.Intcode;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2019.Day02;
+namespace AdventOfCode._2019.Day09;
 
 public class Day09 : Day
 {

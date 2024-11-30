@@ -3,7 +3,7 @@ using System.Linq;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.PrimitiveExtensions;
 
-namespace AdventOfCode._2022.Day02;
+namespace AdventOfCode._2022.Day03;
 
 public class Day03 : Day
 {

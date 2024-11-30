@@ -4,7 +4,7 @@ using System.Text;
 using AdventOfCode.Shared;
 using AdventOfCode.Shared.FileProcessing;
 
-namespace AdventOfCode._2022.Day02;
+namespace AdventOfCode._2022.Day05;
 
 public class Day05 : Day
 {

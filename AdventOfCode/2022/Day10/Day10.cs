@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using AdventOfCode.Shared;
 
-namespace AdventOfCode._2022.Day09;
+namespace AdventOfCode._2022.Day10;
 
 public class Day10 : Day
 {
