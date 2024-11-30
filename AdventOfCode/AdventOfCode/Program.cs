@@ -26,6 +26,7 @@ namespace AdventOfCode.AdventOfCode
                 typeof(_2021.Day01.Day01).Assembly,
                 typeof(_2022.Day01.Day01).Assembly,
                 typeof(_2023.Day01.Day01).Assembly,
+                typeof(_2024.Day01.Day01).Assembly,
             };
 
             var days = assemblies
@@ -37,7 +38,7 @@ namespace AdventOfCode.AdventOfCode
                 .ToList();
 
             // var runPredicate = RunDay(2023, 5);
-            var runPredicate = RunLatestDayInYear(2023, days);
+            var runPredicate = RunLatestDayInYear(2024, days);
             // var runPredicate = RunYear(2023);
             // var runPredicate = RunAll();
 
