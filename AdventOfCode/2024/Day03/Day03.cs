@@ -1,32 +1,75 @@
-﻿using System.Text.RegularExpressions;
-using AdventOfCode.Shared;
-using Microsoft.VisualBasic;
+﻿using AdventOfCode.Shared;
 
 namespace AdventOfCode._2024.Day03;
 
 public class Day03 : Day
 {
-    public Day03() : base(2024, 3, "Day03/input_2024_03.txt", "", "")
+    public Day03() : base(2024, 3, "Day03/input_2024_03.txt", "183380722", "82733683")
     {
 
     }
 
+    private string _memory;
     public override void Initialise()
     {
+        _memory = string.Join("", InputLines);
     }
 
     public override string Part1()
     {
-        var result = InputLines.Sum(GetResult);
+        var result = GetResultOne(_memory);
 
         return result.ToString();
     }
 
-    private int GetResult(string memory)
+    public override string Part2()
     {
-        //var mulRegex = new Regex("mul\(\)");
+        var result = GetResultTwo(_memory);
 
+        return result.ToString();
+    }
+
+    private int GetResultOne(string memory)
+    {
+        var instructions = GetInstructions(memory);
+
+        return instructions
+            .Where(i => i.InstructionType == InstructionType.Multiply)
+            .Sum(i => i.Value);
+    }
+
+    private int GetResultTwo(string memory)
+    {
+        var instructions = GetInstructions(memory);
+
+        var active = true;
         var result = 0;
+        foreach(var instruction in instructions)
+        {
+            switch(instruction.InstructionType)
+            {
+                case InstructionType.Multiply:
+                    if (active)
+                    {
+                        result += instruction.Value;
+                    }
+                    break;
+                case InstructionType.Do:
+                    active = true;
+                    break;
+                case InstructionType.Dont:
+                    active = false;
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    private List<Instruction> GetInstructions(string memory)
+    {
+        var instructions = new List<Instruction>();
+
         var searchFrom = 0;
         while (true)
         {
@@ -36,22 +79,53 @@ public class Day03 : Day
                 break;
             }
 
-            if (TryReadMulResult(memory, mulIndex + "mul(".Length, out var mulResult))
+            if (TryReadMulInstruction(memory, mulIndex + "mul(".Length, out var mulInstruction))
             {
-                result += mulResult;
+                instructions.Add(mulInstruction);
             }
 
             searchFrom = mulIndex + 1;
         }
 
-        //var matches = mulRegex.Matches(_memory);
+        searchFrom = 0;
+        while (true)
+        {
+            var doIndex = memory.IndexOf("do()", searchFrom);
+            if (doIndex < 0)
+            {
+                break;
+            }
+            
+            instructions.Add(new Instruction(InstructionType.Do, doIndex));
 
-        return result;
+            searchFrom = doIndex + 1;
+        }
+
+        searchFrom = 0;
+        while (true)
+        {
+            var dontIndex = memory.IndexOf("don't()", searchFrom);
+            if (dontIndex < 0)
+            {
+                break;
+            }
+            
+            instructions.Add(new Instruction(InstructionType.Dont, dontIndex));
+
+            searchFrom = dontIndex + 1;
+        }
+
+        return instructions
+            .OrderBy(x => x.Position)
+            .ToList();
     }
 
-    private bool TryReadMulResult(string memory, int startIndex, out int mulResult)
+    private bool TryReadMulInstruction(
+        string memory,
+        int startIndex,
+        out Instruction mulInstruction)
     {
-        mulResult = 0;
+        mulInstruction = default;
 
         var aStart = startIndex;
         var aEnd = startIndex;
@@ -93,7 +167,9 @@ public class Day03 : Day
         var a = int.Parse(aString);
         var b = int.Parse(bString);
 
-        mulResult = a * b;
+        var mulResult = a * b;
+
+        mulInstruction = new Instruction(InstructionType.Multiply, startIndex, mulResult);
         return true;
     }
 
@@ -102,15 +178,24 @@ public class Day03 : Day
         return c >= '0' && c <= '9';
     }
 
-    public override string Part2()
+    private class Instruction
     {
-        return 1.ToString();
+        public InstructionType InstructionType { get; }
+        public int Position { get; }
+        public int Value { get; }
+
+        public Instruction(InstructionType instructionType, int position, int value = 0)
+        {
+            InstructionType = instructionType;
+            Position = position;
+            Value = value;
+        }
     }
 
-    private class Report
+    private enum InstructionType
     {
-        public Report(string report)
-        {
-        }
+        Multiply,
+        Do,
+        Dont
     }
 }
