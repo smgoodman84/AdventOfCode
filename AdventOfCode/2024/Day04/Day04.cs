@@ -4,7 +4,7 @@ namespace AdventOfCode._2024.Day04;
 
 public class Day04 : Day
 {
-    public Day04() : base(2024, 4, "Day04/input_2024_04.txt", "2575", "")
+    public Day04() : base(2024, 4, "Day04/input_2024_04.txt", "2575", "2041")
     {
 
     }
@@ -112,6 +112,34 @@ public class Day04 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        var count = 0;
+        for (var x=1; x < _wordsearch[0].Length - 1; x++)
+        {
+            for (var y=1; y < _wordsearch.Length - 1; y++)
+            {
+                if (_wordsearch[y][x] == 'A')
+                {
+                    var corners = string.Join("", 
+                        new []{
+                            _wordsearch[y-1][x-1],
+                            _wordsearch[y-1][x+1],
+                            _wordsearch[y+1][x-1],
+                            _wordsearch[y+1][x+1],
+                        }
+                    );
+                    
+                    TraceLine($"{y},{x} {corners}");
+                    switch (corners)
+                    {
+                        case "MMSS": count += 1; break;
+                        case "MSMS": count += 1; break;
+                        case "SSMM": count += 1; break;
+                        case "SMSM": count += 1; break;
+                    }
+                }
+            }
+        }
+
+        return count.ToString();
     }
 }
