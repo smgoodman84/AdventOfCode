@@ -4,7 +4,7 @@ namespace AdventOfCode._2024.Day04;
 
 public class Day05 : Day
 {
-    public Day05() : base(2024, 5, "Day05/input_2024_05.txt", "4957", "")
+    public Day05() : base(2024, 5, "Day05/input_2024_05.txt", "4957", "6938")
     {
 
     }
@@ -48,7 +48,17 @@ public class Day05 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        var incorrectlyOrdered = _pageOrders
+            .Where(x => !x.FollowsRules(_orderingRules))
+            .ToList();
+
+        var reordered = incorrectlyOrdered
+            .Select(x => x.ApplyOrder(_orderingRules))
+            .ToList();
+
+        var result = reordered.Sum(x => x.GetMiddlePage());
+
+        return result.ToString();
     }
 
     private class OrderingRule
@@ -56,11 +66,19 @@ public class Day05 : Day
         public int Left { get; }
         public int Right { get; }
 
+        private string _orderingRule;
+
         public OrderingRule(string orderingRule)
         {
+            _orderingRule = orderingRule;
             var pageNumbers = orderingRule.Split('|');
             Left = int.Parse(pageNumbers[0]);
             Right = int.Parse(pageNumbers[1]);
+        }
+
+        public override string ToString()
+        {
+            return _orderingRule;
         }
     }
 
@@ -68,10 +86,17 @@ public class Day05 : Day
     {
         public List<int> Order { get; }
         private string _pageOrder;
+
         public PageOrder(string pageOrder)
         {
             _pageOrder = pageOrder;
             Order = pageOrder.Split(',').Select(int.Parse).ToList();
+        }
+
+        public PageOrder(List<int> order)
+        {
+            _pageOrder = string.Join(",", order);
+            Order = order.ToList();
         }
 
         public override string ToString()
@@ -79,9 +104,42 @@ public class Day05 : Day
             return _pageOrder;
         }
 
+        public PageOrder ApplyOrder(List<OrderingRule> orderingRules)
+        {
+            var applicableRules = orderingRules
+                .Where(r => Order.Contains(r.Left))
+                .Where(r => Order.Contains(r.Right))
+                .ToList();
+
+            var distinctPages = Order.ToList();
+
+            var remainingRules = applicableRules.ToList();
+            var orderedPages = new List<int>();
+            while (distinctPages.Any())
+            {
+                var leftMostPage = distinctPages
+                    .Where(p => !remainingRules.Any(r => r.Right == p))
+                    .First();
+
+                orderedPages.Add(leftMostPage);
+
+                distinctPages.Remove(leftMostPage);
+                remainingRules.RemoveAll(r => r.Left == leftMostPage);
+            }
+
+            return new PageOrder(orderedPages);
+        }
+
+        public PageOrder ApplyOrder(List<int> pageOrder)
+        {
+            var filtered = pageOrder.Where(p => Order.Contains(p)).ToList();
+
+            return new PageOrder(filtered);
+        }
+
         public bool FollowsRules(List<OrderingRule> orderingRules)
         {
-            Console.WriteLine($"Checking {this}");
+            // Console.WriteLine($"Checking {this}");
             foreach (var rule in orderingRules)
             {
                 var leftIndex = Order.IndexOf(rule.Left);
@@ -94,7 +152,7 @@ public class Day05 : Day
 
                 if (leftIndex > rightIndex)
                 {
-                    Console.WriteLine($"{rule.Left} should be before {rule.Right}");
+                    // Console.WriteLine($"{rule.Left} should be before {rule.Right}");
                     return false;
                 }
             }
