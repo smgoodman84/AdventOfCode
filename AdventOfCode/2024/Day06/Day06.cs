@@ -1,12 +1,11 @@
-﻿using System.Data;
-using AdventOfCode.Shared;
+﻿using AdventOfCode.Shared;
 using AdventOfCode.Shared.Geometry;
 
 namespace AdventOfCode._2024.Day06;
 
 public class Day06 : Day
 {
-    public Day06() : base(2024, 6, "Day06/input_2024_06.txt", "5516", "", true)
+    public Day06() : base(2024, 6, "Day06/input_2024_06.txt", "5516", "2008", true)
     {
 
     }
