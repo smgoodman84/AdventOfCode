@@ -6,7 +6,7 @@ namespace AdventOfCode._2024.Day08;
 
 public class Day08 : Day
 {
-    public Day08() : base(2024, 8, "Day08/input_2024_08.txt", "341", "")
+    public Day08() : base(2024, 8, "Day08/input_2024_08.txt", "341", "1134")
     {
 
     }
@@ -59,20 +59,59 @@ public class Day08 : Day
             {
                 var delta1 = antennaA.Location.Subtract(antennaB.Location);
                 var coordinate1 = antennaA.Location.Add(delta1);
-                if (!antinodes.Contains(coordinate1)
-                    && coordinate1.X >= 0 && coordinate1.X < _width
-                    && coordinate1.Y >= 0 && coordinate1.Y < _height)
+                if (IsInGrid(coordinate1))
                 {
                     antinodes.Add(coordinate1);
                 }
 
                 var delta2 = antennaB.Location.Subtract(antennaA.Location);
                 var coordinate2 = antennaB.Location.Add(delta2);
-                if (!antinodes.Contains(coordinate2)
-                    && coordinate2.X >= 0 && coordinate2.X < _width
-                    && coordinate2.Y >= 0 && coordinate2.Y < _height)
+                if (IsInGrid(coordinate2))
                 {
                     antinodes.Add(coordinate2);
+                }
+            }
+
+            allAntinodes.Add(frequency, antinodes);
+        }
+        
+        var distinctAntinodes = allAntinodes
+            .SelectMany(x => x.Value)
+            .Distinct()
+            .ToList();
+
+        var antinodeCount = distinctAntinodes.Count();
+
+        return antinodeCount.ToString();
+    }
+
+    public override string Part2()
+    {
+        var allAntinodes = new Dictionary<char, List<Coordinate2D>>();
+        foreach (var frequency in _frequencies)
+        {
+            var antinodes = new List<Coordinate2D>();
+
+            var antennas = _antennas
+                .Where(a => a.Frequency == frequency)
+                .ToList();
+
+            foreach ((var antennaA, var antennaB) in antennas.AllPairs())
+            {
+                var delta1 = antennaA.Location.Subtract(antennaB.Location);
+                var coordinate1 = antennaB.Location.Add(delta1);
+                while (IsInGrid(coordinate1))
+                {
+                    antinodes.Add(coordinate1);
+                    coordinate1 = coordinate1.Add(delta1);
+                }
+
+                var delta2 = antennaB.Location.Subtract(antennaA.Location);
+                var coordinate2 = antennaA.Location.Add(delta2);
+                while (IsInGrid(coordinate2))
+                {
+                    antinodes.Add(coordinate2);
+                    coordinate2 = coordinate2.Add(delta2);
                 }
             }
 
@@ -84,19 +123,15 @@ public class Day08 : Day
             .Distinct()
             .ToList();
 
-        var orderedDistinctAntinodes = distinctAntinodes
-            .OrderBy(a => a.Y)
-            .ThenBy(a => a.X)
-            .ToList();
-
         var antinodeCount = distinctAntinodes.Count();
 
         return antinodeCount.ToString();
     }
 
-    public override string Part2()
+    private bool IsInGrid(Coordinate2D coordinate)
     {
-        return string.Empty;
+        return coordinate.X >= 0 && coordinate.X < _width
+            && coordinate.Y >= 0 && coordinate.Y < _height;
     }
 
     private class Antenna
