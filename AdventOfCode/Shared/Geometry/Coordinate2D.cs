@@ -27,6 +27,16 @@ public class Coordinate2D
         return new Coordinate2D(X + coordinate.X, Y + coordinate.Y);
     }
 
+    public Vector2D Subtract(Coordinate2D coordinate)
+    {
+        return new Vector2D(X - coordinate.X, Y - coordinate.Y);
+    }
+
+    public Coordinate2D Add(Vector2D vector)
+    {
+        return new Coordinate2D(X + vector.X, Y + vector.Y);
+    }
+
     public long ManhattanDistanceTo(Coordinate2D coordinate)
     {
         return Math.Abs(coordinate.X - X)
@@ -102,6 +112,11 @@ public class Coordinate2D
     public override string ToString()
     {
         return $"{X},{Y}";
+    }
+
+    public override int GetHashCode()
+    {
+        return ToString().GetHashCode();
     }
 
     public static readonly Coordinate2D Origin = new Coordinate2D(0, 0);

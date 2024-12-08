@@ -29,4 +29,22 @@ public static class IEnumerableExtensions
 
         return groups;
     }
+
+    public static List<(T, T)> AllPairs<T>(
+        this IEnumerable<T> items
+    )
+    {
+        var array = items.ToArray();
+        var pairs = new List<(T, T)>();
+
+        for (var a = 0; a < array.Length; a += 1)
+        {
+            for (var b = a + 1; b < array.Length; b += 1)
+            {
+                pairs.Add((array[a], array[b]));
+            }
+        }
+
+        return pairs;
+    }
 }
