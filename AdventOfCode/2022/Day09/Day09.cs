@@ -42,13 +42,13 @@ public class Day09 : Day
         private readonly Coordinate2D[] _rope;
         private readonly List<Coordinate2D> _tailVisits;
 
-        private readonly Dictionary<Direction, Coordinate2D> _directionMoves
-            = new Dictionary<Direction, Coordinate2D>
+        private readonly Dictionary<Direction, Vector2D> _directionMoves
+            = new Dictionary<Direction, Vector2D>
             {
-                { Direction.Up, new Coordinate2D(0, -1) },
-                { Direction.Down, new Coordinate2D(0, 1) },
-                { Direction.Left, new Coordinate2D(-1, 0) },
-                { Direction.Right, new Coordinate2D(1, 0) },
+                { Direction.Up, new Vector2D(0, -1) },
+                { Direction.Down, new Vector2D(0, 1) },
+                { Direction.Left, new Vector2D(-1, 0) },
+                { Direction.Right, new Vector2D(1, 0) },
             };
 
         public TailTracker(IEnumerable<Instruction> instructions, int ropeLength)
@@ -100,19 +100,19 @@ public class Day09 : Day
             {
                 if (_rope[headIndex].Y == _rope[tailIndex].Y)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, 0));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(1, 0));
                     return;
                 }
 
                 if (_rope[headIndex].Y > _rope[tailIndex].Y)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, 1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(1, 1));
                     return;
                 }
 
                 if (_rope[headIndex].Y < _rope[tailIndex].Y)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, -1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(1, -1));
                     return;
                 }
             }
@@ -122,19 +122,19 @@ public class Day09 : Day
             {
                 if (_rope[headIndex].Y == _rope[tailIndex].Y)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, 0));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(-1, 0));
                     return;
                 }
 
                 if (_rope[headIndex].Y > _rope[tailIndex].Y)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, 1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(-1, 1));
                     return;
                 }
 
                 if (_rope[headIndex].Y < _rope[tailIndex].Y)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, -1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(-1, -1));
                     return;
                 }
             }
@@ -144,19 +144,19 @@ public class Day09 : Day
             {
                 if (_rope[headIndex].X == _rope[tailIndex].X)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(0, 1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(0, 1));
                     return;
                 }
 
                 if (_rope[headIndex].X > _rope[tailIndex].X)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, 1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(1, 1));
                     return;
                 }
 
                 if (_rope[headIndex].X < _rope[tailIndex].X)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, 1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(-1, 1));
                     return;
                 }
             }
@@ -166,19 +166,19 @@ public class Day09 : Day
             {
                 if (_rope[headIndex].X == _rope[tailIndex].X)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(0, -1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(0, -1));
                     return;
                 }
 
                 if (_rope[headIndex].X > _rope[tailIndex].X)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(1, -1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(1, -1));
                     return;
                 }
 
                 if (_rope[headIndex].X < _rope[tailIndex].X)
                 {
-                    _rope[tailIndex] = _rope[tailIndex].Add(new Coordinate2D(-1, -1));
+                    _rope[tailIndex] = _rope[tailIndex].Add(new Vector2D(-1, -1));
                     return;
                 }
             }

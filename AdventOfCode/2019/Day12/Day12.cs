@@ -31,12 +31,14 @@ public class Day12 : Day
             .ToList();
     }
 
-    private string GetPositions(Func<Coordinate3D, long> pointAccessor)
+    private string GetPositions(
+        Func<Coordinate3D, long> positionAccessor,
+        Func<Vector3D, long> velocityAccessor)
     {
         var allPositions = _moons
-            .Select(m => pointAccessor(m.Position))
+            .Select(m => positionAccessor(m.Position))
             .Concat(_moons
-                .Select(m => pointAccessor(m.Velocity)));
+                .Select(m => velocityAccessor(m.Velocity)));
 
         var result = string.Join(",", allPositions);
 
@@ -60,9 +62,9 @@ public class Day12 : Day
         var time = 0;
         while (xLoopStart == null || yLoopStart == null || zLoopStart == null)
         {
-            var xKey = GetPositions(p => p.X);
-            var yKey = GetPositions(p => p.Y);
-            var zKey = GetPositions(p => p.Z);
+            var xKey = GetPositions(p => p.X, v => v.X);
+            var yKey = GetPositions(p => p.Y, v => v.Y);
+            var zKey = GetPositions(p => p.Z, v => v.Z);
 
             if (xLoopStart == null)
             {
@@ -271,7 +273,7 @@ public class Day12 : Day
     {
         public Coordinate3D Position { get; set; } = Coordinate3D.Origin;
 
-        public Coordinate3D Velocity { get; set; } = Coordinate3D.Origin;
+        public Vector3D Velocity { get; set; } = new Vector3D(0, 0, 0);
 
         public int Id { get; set; }
 
@@ -310,6 +312,11 @@ public class Day12 : Day
 
 
         public long Energy(Coordinate3D coordinate)
+        {
+            return Math.Abs(coordinate.X) + Math.Abs(coordinate.Y) + Math.Abs(coordinate.Z);
+        }
+
+        public long Energy(Vector3D coordinate)
         {
             return Math.Abs(coordinate.X) + Math.Abs(coordinate.Y) + Math.Abs(coordinate.Z);
         }

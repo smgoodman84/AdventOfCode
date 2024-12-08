@@ -266,7 +266,7 @@ public class Day17 : Day
                 {
                     if (rock.Read(x, y) == Space.Rock)
                     {
-                        var chamberLocation = rockLocation.Add(new Coordinate2D(x, y));
+                        var chamberLocation = rockLocation.Add(new Vector2D(x, y));
                         _chamber.Write(chamberLocation, Space.Rock);
                         if (chamberLocation.Y > maxHeight)
                         {
@@ -289,7 +289,7 @@ public class Day17 : Day
                 {
                     if (rock.Read(x, y) == Space.Rock)
                     {
-                        var chamberLocation = rockLocation.Add(new Coordinate2D(x, y));
+                        var chamberLocation = rockLocation.Add(new Vector2D(x, y));
                         if (!_chamber.IsInGrid(chamberLocation))
                         {
                             return false;

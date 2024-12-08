@@ -23,12 +23,12 @@ public class Coordinate3D
         Z = long.Parse(split[2]);
     }
 
-    public Coordinate3D Add(Coordinate3D coordinate)
+    public Coordinate3D Add(Vector3D vector)
     {
         return new Coordinate3D(
-            X + coordinate.X,
-            Y + coordinate.Y,
-            Z + coordinate.Z);
+            X + vector.X,
+            Y + vector.Y,
+            Z + vector.Z);
     }
 
     public Coordinate3D AddX(long x)

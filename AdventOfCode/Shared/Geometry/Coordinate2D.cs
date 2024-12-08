@@ -22,11 +22,6 @@ public class Coordinate2D
         Y = long.Parse(split[1]);
     }
 
-    public Coordinate2D Add(Coordinate2D coordinate)
-    {
-        return new Coordinate2D(X + coordinate.X, Y + coordinate.Y);
-    }
-
     public Vector2D Subtract(Coordinate2D coordinate)
     {
         return new Vector2D(X - coordinate.X, Y - coordinate.Y);
