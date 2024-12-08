@@ -64,7 +64,7 @@ public class Day23 : Day
                 var elf = currentState.Read(elfCoordinate);
                 if (elf =='L')
                 {
-                    var stop = true;
+                    // var stop = true;
                 }
                 var proposalMade = false;
                 var considerationsLeft = 4;
@@ -231,7 +231,7 @@ public class Day23 : Day
                 var elf = currentState.Read(elfCoordinate);
                 if (elf == 'L')
                 {
-                    var stop = true;
+                    // var stop = true;
                 }
                 var proposalMade = false;
                 var considerationsLeft = 4;

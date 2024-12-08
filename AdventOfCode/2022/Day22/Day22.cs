@@ -176,9 +176,9 @@ public class Day22 : Day
             }
             while (_map.Read(position) == Tile.Void);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            var stop = "here";
+            // var stop = "here";
         }
 
         return position;

@@ -132,7 +132,7 @@ public class Day05 : Day
         public string Destination { get; set; }
         public List<RangeMap> RangeMaps { get; set; }
 
-        public bool TryMapItem(Item sourceItem, out Item? destinationItem)
+        public bool TryMapItem(Item sourceItem, out Item destinationItem)
         {
             if (!sourceItem.Type.Equals(Source))
             {

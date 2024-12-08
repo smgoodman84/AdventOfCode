@@ -72,8 +72,6 @@ public class Day20 : Day
                 }
             }
         }
-
-        return string.Empty;
     }
 
     private long PushButton(int pushCount)

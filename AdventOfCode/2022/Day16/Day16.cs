@@ -390,7 +390,7 @@ public class Day16 : Day
             if (GetObjective().StartsWith("JJ,BB") && GetElephantObjective().StartsWith("DD"))
             {
                 var log = GetFullLog();
-                var stop = "here";
+                // var stop = "here";
             }
 
             var valveOverrides = new List<Valve>();
@@ -673,7 +673,7 @@ public class Day16 : Day
         {
             if (source == null)
             {
-                var stop = true;
+                // var stop = true;
             }
 
             if (_shortestPaths[source].ContainsKey(destination))

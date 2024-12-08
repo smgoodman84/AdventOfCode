@@ -284,7 +284,7 @@ public class Day19 : Day
             return product;
         }
 
-        public PartRanges? LessThan(string ratingName, int lessThan)
+        public PartRanges LessThan(string ratingName, int lessThan)
         {
             var range = RatingRanges[ratingName];
             if (range.Start >= lessThan)
@@ -298,7 +298,7 @@ public class Day19 : Day
             return new PartRanges(newRanges, State);
         }
 
-        public PartRanges? GreaterThanOrEqual(string ratingName, int greaterThanOrEqual)
+        public PartRanges GreaterThanOrEqual(string ratingName, int greaterThanOrEqual)
         {
             var range = RatingRanges[ratingName];
             if (range.End < greaterThanOrEqual)
@@ -312,7 +312,7 @@ public class Day19 : Day
             return new PartRanges(newRanges, State);
         }
 
-        public PartRanges? GreaterThan(string ratingName, int greaterThan)
+        public PartRanges GreaterThan(string ratingName, int greaterThan)
         {
             var range = RatingRanges[ratingName];
             if (range.End <= greaterThan)
@@ -326,7 +326,7 @@ public class Day19 : Day
             return new PartRanges(newRanges, State);
         }
 
-        public PartRanges? LessThanOrEqual(string ratingName, int lessThanOrEqual)
+        public PartRanges LessThanOrEqual(string ratingName, int lessThanOrEqual)
         {
             var range = RatingRanges[ratingName];
             if (range.Start > lessThanOrEqual)

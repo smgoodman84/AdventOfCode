@@ -12,13 +12,8 @@ public class Day18 : Day
 
     }
 
-    private char[][] _vault;
-
     public override void Initialise()
     {
-        _vault = InputLines
-            .Select(l => l.ToCharArray())
-            .ToArray();
     }
 
     public override string Part1()
@@ -29,17 +24,5 @@ public class Day18 : Day
     public override string Part2()
     {
         return "";
-    }
-
-    public int GetShortestPath()
-    {
-        return 0;
-    }
-
-    private class Context
-    {
-        public List<char> keys = new List<char>();
-        public Point location;
-        public Point previousLocation;
     }
 }

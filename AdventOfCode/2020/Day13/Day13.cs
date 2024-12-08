@@ -69,7 +69,7 @@ public class Day13 : Day
     public override string Part2()
     {
         return string.Empty;
-
+        /*
         var biggestBusId = _busTimes.OrderByDescending(bt => bt.BusId).First();
 
         var timestampForBiggestBus = AllTheLongs()
@@ -79,6 +79,7 @@ public class Day13 : Day
         var result = timestampForBiggestBus - biggestBusId.Time;
 
         return result.ToString();
+        */
     }
 
 

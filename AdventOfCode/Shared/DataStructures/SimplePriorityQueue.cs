@@ -24,12 +24,12 @@ public class SimplePriorityQueue
 
         if (value >= _items.Length)
         {
-            var stop = true;
+            // var stop = true;
         }
 
         if (value < 0)
         {
-            var stop = true;
+            // var stop = true;
         }
 
         _itemValues.Add(key, value);
@@ -61,6 +61,7 @@ public class SimplePriorityQueue
     public string PopReverse()
     {
         throw new System.Exception("Not sure this is useful or meaningful");
+        /*
         for (var i = _items.Length - 1; i >= 0; i -= 1)
         {
             var itemList = _items[i];
@@ -72,6 +73,6 @@ public class SimplePriorityQueue
             }
         }
 
-        return null;
+        return null;*/
     }
 }

@@ -168,7 +168,7 @@ public class Day20 : Day
                     break;
                 case "Bottom":
                     break;
-                    nextTile.FlipVertically();
+                    // nextTile.FlipVertically();
                 case "BottomReverse":
                     nextTile.FlipVertically();
                     nextTile.FlipHorizontally();

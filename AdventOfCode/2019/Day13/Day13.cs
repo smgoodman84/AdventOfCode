@@ -118,7 +118,7 @@ public class Day13 : Day
         {
             if (_gameTask.IsCompleted)
             {
-                var stop = true;
+                // var stop = true;
             }
             var x = (int)await _gameOutput.ReadInput();
             var y = (int)await _gameOutput.ReadInput();
@@ -218,6 +218,7 @@ public class Day13 : Day
                     }
                     else
                     {
+                        /*
                         var input = Console.ReadKey();
                         switch (input.Key)
                         {
@@ -230,6 +231,7 @@ public class Day13 : Day
                                 output = 1;
                                 break;
                         }
+                        */
                     }
                 }
                     

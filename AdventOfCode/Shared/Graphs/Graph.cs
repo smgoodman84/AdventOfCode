@@ -39,6 +39,7 @@ public class Graph<TNode> where TNode : IGraphNodeData
     {
         // Untested
         throw new System.Exception("Does not work");
+        /*
         var queue = new SimplePriorityQueue(maxDistance);
         foreach (var node in _nodes)
         {
@@ -95,6 +96,7 @@ public class Graph<TNode> where TNode : IGraphNodeData
         }
 
         return _distances[endIdentifier];
+        */
     }
 
     public int GetShortestPathDistance(GraphNode<TNode> start, GraphNode<TNode> end, int maxDistance)

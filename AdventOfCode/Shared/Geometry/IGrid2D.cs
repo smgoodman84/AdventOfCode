@@ -45,7 +45,7 @@ public static class IGridExtensions
 
         result.AppendLine($"Origin {minX},{minY}");
 
-        var spaceCount = 0;
+        // var spaceCount = 0;
 
         result.Append("      ");
         for (var x = minX; x <= maxX; x++)

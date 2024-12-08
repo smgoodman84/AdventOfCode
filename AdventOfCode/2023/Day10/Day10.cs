@@ -79,7 +79,7 @@ public class Day10 : Day
         return furthest.ToString();
     }
 
-    private (bool OnLoop, int? Distance) GetMaxDistance(Coordinate2D current, Coordinate2D? previous, int currentDistance)
+    private (bool OnLoop, int? Distance) GetMaxDistance(Coordinate2D current, Coordinate2D previous, int currentDistance)
     {
         var currentNode = _map.Read(current);
         if (current.Equals(_start) && previous != null)
@@ -353,9 +353,9 @@ public class Day10 : Day
         public bool Inside { get; set; } = false;
         public int? MinDistance { get; set; }
 
-        public Node? North { get; set; }
-        public Node? East { get; set; }
-        public Node? South { get; set; }
-        public Node? West { get; set; }
+        public Node North { get; set; }
+        public Node East { get; set; }
+        public Node South { get; set; }
+        public Node West { get; set; }
     }
 }

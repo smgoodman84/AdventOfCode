@@ -93,8 +93,8 @@ public class Day07 : Day
 
     public override string Part2()
     {
-        long requiredSpace = 30000000l;
-        long totalDiskSpace = 70000000l;
+        long requiredSpace = 30000000L;
+        long totalDiskSpace = 70000000L;
 
         long currentUsedSpace = _rootDirectory.GetSize();
         long currentFreeSpace = totalDiskSpace - currentUsedSpace;
