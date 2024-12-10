@@ -5,7 +5,7 @@ namespace AdventOfCode._2024.Day10;
 
 public class Day10 : Day
 {
-    public Day10() : base(2024, 10, "Day10/input_2024_10.txt", "789", "", true)
+    public Day10() : base(2024, 10, "Day10/input_2024_10.txt", "789", "1735", false)
     {
     }
 
@@ -38,25 +38,17 @@ public class Day10 : Day
         }
     }
 
-    private HashSet<Coordinate2D> GetReachableSummits(
+    private List<Coordinate2D> GetReachableSummits(
         Coordinate2D position,
         List<Coordinate2D> visited,
-        Dictionary<Coordinate2D, HashSet<Coordinate2D>> cache)
+        bool distinct)
     {
-        if (cache.TryGetValue(position, out var cachedSummits))
-        {
-            TraceLine($"{position}: Using cache value");
-            return cachedSummits;
-        }
-            
-        // TraceLine($"{position}: Calculating {position}");
-
         var newVisited = visited.ToList();
         newVisited.Add(position);
 
         var currentHeight = _heights.Read(position);
 
-        var result = new HashSet<Coordinate2D>();
+        var result = new List<Coordinate2D>();
         if (currentHeight == 9)
         {
             TraceLine($"{position}: Height is 9, adding summit.");
@@ -84,14 +76,15 @@ public class Day10 : Day
                 continue;
             }
 
-            var neighbourSummits = GetReachableSummits(neighbour, newVisited, cache);
+            var neighbourSummits = GetReachableSummits(neighbour, newVisited, distinct);
             foreach (var neighbourSummit in neighbourSummits)
             {
-                result.Add(neighbourSummit);
+                if (!distinct || ! result.Contains(neighbourSummit))
+                {
+                    result.Add(neighbourSummit);
+                }
             }
         }
-
-        // cache.Add(position, result);
 
         return result;
     }
@@ -99,7 +92,6 @@ public class Day10 : Day
     public override string Part1()
     {
         var result = 0;
-        var scoreCache = new Dictionary<Coordinate2D, HashSet<Coordinate2D>>();
 
         foreach (var trailHead in _trailheads)
         {
@@ -108,7 +100,7 @@ public class Day10 : Day
             var reachableSummits = GetReachableSummits(
                 trailHead,
                 new List<Coordinate2D>(),
-                scoreCache);
+                true);
 
             result += reachableSummits.Count;
 
@@ -120,6 +112,22 @@ public class Day10 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        var result = 0;
+
+        foreach (var trailHead in _trailheads)
+        {
+            TraceLine($"Checking Trailhead {trailHead}");
+
+            var reachableSummits = GetReachableSummits(
+                trailHead,
+                new List<Coordinate2D>(),
+                false);
+
+            result += reachableSummits.Count;
+
+            TraceLine($"Trailhead {trailHead} had {reachableSummits.Count} reachable summits");
+        }
+
+        return result.ToString();
     }
 }
