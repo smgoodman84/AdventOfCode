@@ -10,6 +10,7 @@ public class Day11 : Day
     }
     
     private List<long> _initialStones;
+    private Dictionary<string, long> _cache = new Dictionary<string, long>();
     public override void Initialise()
     {
         _initialStones = InputLines[0]
@@ -20,25 +21,29 @@ public class Day11 : Day
 
     public override string Part1()
     {
-        var cache = new Dictionary<string, int>();
-
         var count = _initialStones
-            .Sum(stone => GetStoneCountCached(stone, 25, cache));
+            .Sum(stone => GetStoneCountCached(stone, 25, _cache));
 
         return count.ToString();
     }
 
     public override string Part2()
     {
-        return string.Empty;
+        long count = 0;
+        foreach (var stone in _initialStones)
+        {
+            count += GetStoneCountCached(stone, 75, _cache);
+        }
+
+        return count.ToString();
     }
 
-    private int GetStoneCountCached(
+    private long GetStoneCountCached(
         long stone,
         int blinks, 
-        Dictionary<string, int> cache)
+        Dictionary<string, long> cache)
     {
-        int result;
+        long result;
 
         var cacheKey = $"{stone}_{blinks}";
         if (!cache.TryGetValue(cacheKey, out result)) 
@@ -50,10 +55,10 @@ public class Day11 : Day
         return result;
     }
 
-    private int GetStoneCount(
+    private long GetStoneCount(
         long stone,
         int blinks, 
-        Dictionary<string, int> cache)
+        Dictionary<string, long> cache)
     {
         if (blinks == 0)
         {
