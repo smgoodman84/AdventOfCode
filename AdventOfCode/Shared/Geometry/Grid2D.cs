@@ -35,6 +35,33 @@ public class Grid2D<T> : IGrid2D<T>
         Height = height;
     }
 
+    public static Grid2D<T> CreateWithCartesianCoordinates(
+        List<string> inputLines,
+        Func<Coordinate2D, char, T> elementMapper)
+    {
+        var height = inputLines.Count;
+        var width = inputLines[0].Length;
+
+        var grid = new Grid2D<T>(width, height);
+        
+        var y = height - 1;
+        foreach (var line in inputLines)
+        {
+            var x = 0;
+            foreach (var c in line)
+            {
+                var coordinate = new Coordinate2D(x, y);
+                var element = elementMapper(coordinate, c);
+                grid.Write(coordinate, element);
+
+                x += 1;
+            }
+            y -= 1;
+        }
+
+        return grid;
+    }
+
     public bool IsInGrid(long x, long y) => IsInGrid((int)x, (int)y);
     public bool IsInGrid(int x, int y)
     {

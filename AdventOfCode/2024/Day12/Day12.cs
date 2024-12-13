@@ -12,33 +12,19 @@ public class Day12 : Day
 
     private Grid2D<Plot> _map;
     private List<int> _regionIds = new ();
-    private List<Plot> _regionHeads = new ();
+    private Dictionary<int, Plot> _regionHeads = new ();
     private Dictionary<int, List<int>> _regionContains = new ();
 
     public override void Initialise()
     {
-        var height = InputLines.Count;
-        var width = InputLines[0].Length;
-
-        _map = new Grid2D<Plot>(width, height);
-        
-        var y = height - 1;
-        foreach (var line in InputLines)
-        {
-            var x = 0;
-            foreach (var c in line)
-            {
-                var plot = new Plot
+        _map = Grid2D<Plot>.CreateWithCartesianCoordinates(
+            InputLines,
+            (coord, c) => new Plot
                 {
-                    Location = new Coordinate2D(x, y),
+                    Location = coord,
                     PlotType = c,
-                };
-                _map.Write(x, y, plot);
-
-                x += 1;
-            }
-            y -= 1;
-        }
+                }
+        );
 
         SetRegions();
         SetFenceCounts();
@@ -47,11 +33,7 @@ public class Day12 : Day
 
     private void SetContains()
     {
-        var allRegionIds = _regionHeads
-            .Select(x => x.RegionId.Value)
-            .ToList();
-
-        _regionContains = allRegionIds
+        _regionContains = _regionIds
             .ToDictionary(
                 rid => rid,
                 rid => new List<int>());
@@ -60,7 +42,7 @@ public class Day12 : Day
             .GroupBy(p => p.RegionId.Value)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        foreach (var regionId in allRegionIds)
+        foreach (var regionId in _regionIds)
         {
             var plotsForThisRegion = plotsByRegion[regionId];
 
@@ -86,12 +68,6 @@ public class Day12 : Day
                 _regionContains[containerRegionId].Add(regionId);
             }
         }
-
-        /*
-UUUUU
-1UU3U
-111UU
-*/
     }
 
     private void SetFenceCounts()
@@ -130,10 +106,8 @@ UUUUU
             return;
         }
 
-
-        // TraceLine($"Filling from {firstUnsetPlot.Location} as Region {regionId}");
         _regionIds.Add(regionId);
-        _regionHeads.Add(firstUnsetPlot);
+        _regionHeads.Add(regionId, firstUnsetPlot);
         FillRegion(firstUnsetPlot.PlotType, firstUnsetPlot, regionId);
         SetRegions(regionId + 1);
     }
@@ -150,95 +124,48 @@ UUUUU
             return;
         }
 
-        // TraceLine($"Setting {plot.Location} as Region {regionId}");
         plot.RegionId = regionId;
 
         var neighbourLocations = plot.Location.Neighbours();
         foreach (var neighbourLocation in neighbourLocations)
         {
-            if (!_map.IsInGrid(neighbourLocation))
+            if (_map.IsInGrid(neighbourLocation))
             {
-                continue;
+                var neighbour = _map.Read(neighbourLocation);
+                FillRegion(plotType, neighbour, regionId);
             }
-
-            var neighbour = _map.Read(neighbourLocation);
-            FillRegion(plotType, neighbour, regionId);
         }
     }
 
-    private Dictionary<string, int> _edgeCountCache = new ();
-    private int CountEdges(int regionId, bool countOffGrid, List<FenceLocation> fenceLocations)
+    private int CountEdges(int regionId, List<FenceLocation> fenceLocations = null)
     {
-        var cacheKey = $"{regionId}_{countOffGrid}";
-        if (_edgeCountCache.TryGetValue(cacheKey, out var cachedResult))
-        {
-            return cachedResult;
-        }
+        fenceLocations ??= new ();
+        var regionHead = _regionHeads[regionId];
 
-        var firstPlot = _map.ReadAll()
-            .FirstOrDefault(x => x.RegionId == regionId);
+        TraceLine($"Region {regionId}: First location {regionHead.Location}");
 
-        TraceLine($"Region {regionId} {countOffGrid}: First location {firstPlot.Location}");
+        var result = CountEdges(regionId, regionHead, regionHead, Direction.Down, true, fenceLocations);
 
-        var result = CountEdges(regionId, firstPlot, firstPlot, Direction.Down, true, countOffGrid, fenceLocations);
-
-        TraceLine($"Region {regionId} {countOffGrid}: boundaryFences {result}");
+        TraceLine($"Region {regionId}: boundaryFences {result}");
 
         foreach (var containedRegionId in _regionContains[regionId])
         {
             var containedRegionFenceLocations = new List<FenceLocation>();
-            TraceLine($"Region {regionId} {countOffGrid}: Getting Inner fences for {containedRegionId}");
-            var containedFences = CountEdges(containedRegionId, false, containedRegionFenceLocations);
+            TraceLine($"Region {regionId}: Getting Inner fences for {containedRegionId}");
+            var containedFences = CountEdges(containedRegionId, containedRegionFenceLocations);
 
             if (!fenceLocations.Any(f => containedRegionFenceLocations.Any(crlf => f.Equals(crlf))))
             {
-                TraceLine($"Region {regionId} {countOffGrid}: Inner fences for {containedRegionId} - {containedFences}");
+                TraceLine($"Region {regionId}: Inner fences for {containedRegionId} - {containedFences}");
                 result += containedFences;
             }
             else
             {
-                TraceLine($"Region {regionId} {countOffGrid}: Already counted inner fences for {containedRegionId} - {containedFences}");
+                TraceLine($"Region {regionId}: Already counted inner fences for {containedRegionId} - {containedFences}");
             }
         }
-/*
-        var allOtherRegionIds = _regionHeads
-            .Select(x => x.RegionId.Value)
-            .Where(x => x != regionId)
-            .ToList();
-
-        foreach (var otherRegionId in allOtherRegionIds)
-        {
-            var contained = _map.ReadAll()
-                .Where(p => p.RegionId == otherRegionId)
-                .All(p => AllNeighboursInRegions(p, regionId, otherRegionId));
-
-            if (contained)
-            {
-                TraceLine($"Region {regionId} {countOffGrid}: Getting Inner fences for {otherRegionId}");
-                var containedFences = CountEdges(otherRegionId, false);
-                TraceLine($"Region {regionId} {countOffGrid}: Inner fences for {otherRegionId} - {containedFences}");
-                result += containedFences;
-            }
-        }
-*/
-        _edgeCountCache.Add(cacheKey, result);
+        
         return result;
-    }
-
-    private bool AllNeighboursInRegions(Plot plot, params int[] regionIds)
-    {
-        var neighbourLocations = plot.Location.Neighbours();
-
-        if (neighbourLocations.Any(l => !_map.IsInGrid(l)))
-        {
-            return false;
-        }
-
-        var neighbourPlots = neighbourLocations
-            .Select(_map.Read)
-            .ToList();
-
-        return neighbourPlots.All(p => regionIds.Any(rid => p.RegionId == rid));
     }
 
     private int CountEdges(
@@ -247,15 +174,14 @@ UUUUU
         Plot currentPlot,
         Direction currentDirection,
         bool starting,
-        bool countOffGrid,
         List<FenceLocation> fenceLocations)
     {
-        TraceLine($"> Region {regionId} {countOffGrid}: Checking {currentPlot.Location} {currentDirection}");
+        TraceLine($"> Region {regionId}: Checking {currentPlot.Location} {currentDirection}");
         if (!starting
             && currentPlot.Location == startPlot.Location
             && currentDirection == Direction.Down)
             {
-                TraceLine($"> Region {regionId} {countOffGrid}: Complete");
+                TraceLine($"> Region {regionId}: Complete");
                 return 0;
             }
         
@@ -266,16 +192,15 @@ UUUUU
 
         if (!_map.IsInGrid(nextLocation))
         {
-            TraceLine($"> Region {regionId} {countOffGrid}: Gone off grid {nextLocation}");
-            var turnCount = countOffGrid ? 1 : 1;
-            return turnCount + CountEdges(regionId, startPlot, currentPlot, nextDirection, false, countOffGrid, fenceLocations);
+            TraceLine($"> Region {regionId}: Gone off grid {nextLocation}");
+            return 1 + CountEdges(regionId, startPlot, currentPlot, nextDirection, false, fenceLocations);
         }
 
         var nextPlot = _map.Read(nextLocation);
         if (nextPlot.RegionId != regionId)
         {
-            TraceLine($"> Region {regionId} {countOffGrid}: Gone out of region {nextLocation}");
-            return 1 + CountEdges(regionId, startPlot, currentPlot, nextDirection, false, countOffGrid, fenceLocations);
+            TraceLine($"> Region {regionId}: Gone out of region {nextLocation}");
+            return 1 + CountEdges(regionId, startPlot, currentPlot, nextDirection, false, fenceLocations);
         }
 
         var innerTurnLocation = nextLocation.Neighbour(currentDirection);
@@ -285,14 +210,14 @@ UUUUU
             if (innerTurnPlot.RegionId == regionId)
             {
                 var newDirection = InnerTurnDirection(currentDirection);
-                TraceLine($"> Region {regionId} {countOffGrid}: inner turn to {innerTurnLocation}");
+                TraceLine($"> Region {regionId}: inner turn to {innerTurnLocation}");
 
-                return 1 + CountEdges(regionId, startPlot, innerTurnPlot, newDirection, false, countOffGrid, fenceLocations);
+                return 1 + CountEdges(regionId, startPlot, innerTurnPlot, newDirection, false, fenceLocations);
             }
         }
 
-        TraceLine($"> Region {regionId} {countOffGrid}: continuing to {nextLocation}");
-        return CountEdges(regionId, startPlot, nextPlot, currentDirection, false, countOffGrid, fenceLocations);
+        TraceLine($"> Region {regionId}: continuing to {nextLocation}");
+        return CountEdges(regionId, startPlot, nextPlot, currentDirection, false, fenceLocations);
     }
 
     private Direction NextDirection(Direction direction)
@@ -325,7 +250,9 @@ UUUUU
     {
         var prices = _map.ReadAll()
             .GroupBy(p => p.RegionId)
-            .ToDictionary(g => g.Key, g => g.Count() * g.Sum(p => p.FenceCount));
+            .ToDictionary(
+                g => g.Key,
+                g => g.Count() * g.Sum(p => p.FenceCount));
 
         var total = prices.Sum(p => p.Value);
 
@@ -334,20 +261,13 @@ UUUUU
 
     public override string Part2()
     {
-        // return CountEdges(1, true).ToString();
-
         var prices = _map.ReadAll()
             .GroupBy(p => p.RegionId.Value)
             .ToDictionary(
                 g => g.Key,
-                g => {
-                    var plotCount = g.Count();
-                    var fenceLocations = new List<FenceLocation>();
-                    var fenceCount = CountEdges(g.Key, true, fenceLocations);
-                    return (plotCount * fenceCount, fenceLocations);
-                });
+                g => g.Count() * CountEdges(g.Key));
 
-        var total = prices.Sum(p => p.Value.Item1);
+        var total = prices.Sum(p => p.Value);
 
         return total.ToString();
     }
@@ -405,5 +325,8 @@ UUUUU
             return CanoncialLocation.Equals(fenceLocation.CanoncialLocation)
                 && CanoncicalSide == fenceLocation.CanoncicalSide;
         }
+
+        public override int GetHashCode()
+            => ToString().GetHashCode();
     }
 }
