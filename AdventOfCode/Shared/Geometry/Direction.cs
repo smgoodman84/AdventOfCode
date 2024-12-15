@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AdventOfCode.Shared.Geometry;
+﻿namespace AdventOfCode.Shared.Geometry;
 
 public enum Direction
 {

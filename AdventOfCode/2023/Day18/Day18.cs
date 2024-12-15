@@ -34,7 +34,7 @@ public class Day18 : Day
 
     private long CalculateArea(Func<Coordinate2D, Instruction, (LineSegment LineSegment, int Distance)> parseLineSegment)
     {
-        var current = Coordinate2D.Origin;
+        var current = Coordinate2D.CartesianOrigin;
 
         var lineSegments = new List<LineSegment>();
         long lineArea = 0;

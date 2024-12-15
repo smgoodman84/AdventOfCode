@@ -19,12 +19,12 @@ public class Day03 : Day
         var visitCounts = new Dictionary<string, int>();
 
         var santas = Enumerable.Range(1, 2)
-            .Select(i => Coordinate2D.Origin)
+            .Select(i => Coordinate2D.CartesianOrigin)
             .ToArray();
 
         var santaIndex = 0;
 
-        visitCounts.Add(Coordinate2D.Origin.ToString(), numberOfSantas);
+        visitCounts.Add(Coordinate2D.CartesianOrigin.ToString(), numberOfSantas);
 
         foreach (var c in InputLines.Single())
         {

@@ -56,7 +56,7 @@ public class Day09 : Day
             _instructions = instructions.ToList();
 
             _rope = Enumerable.Range(0, ropeLength)
-                .Select(x => Coordinate2D.Origin)
+                .Select(x => Coordinate2D.CartesianOrigin)
                 .ToArray();
 
             _tailVisits = new List<Coordinate2D>()

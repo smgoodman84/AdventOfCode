@@ -9,17 +9,26 @@ public class Coordinate2D
     public long X { get; }
     public long Y { get; }
 
-    public Coordinate2D(long x, long y)
+    public CoordinateSystem CoordinateSystem { get;}
+
+    public Coordinate2D(
+        long x,
+        long y,
+        CoordinateSystem coordinateSystem = CoordinateSystem.Cartesian)
     {
         X = x;
         Y = y;
+        CoordinateSystem = coordinateSystem;
     }
 
-    public Coordinate2D(string coordinate)
+    public Coordinate2D(
+        string coordinate,
+        CoordinateSystem coordinateSystem = CoordinateSystem.Cartesian)
     {
         var split = coordinate.Split(",");
         X = long.Parse(split[0]);
         Y = long.Parse(split[1]);
+        CoordinateSystem = coordinateSystem;
     }
 
     public Vector2D Subtract(Coordinate2D coordinate)
@@ -29,7 +38,7 @@ public class Coordinate2D
 
     public Coordinate2D Add(Vector2D vector)
     {
-        return new Coordinate2D(X + vector.X, Y + vector.Y);
+        return new Coordinate2D(X + vector.X, Y + vector.Y, CoordinateSystem);
     }
 
     public long ManhattanDistanceTo(Coordinate2D coordinate)
@@ -80,7 +89,12 @@ public class Coordinate2D
     public Coordinate2D North() => Up();
     public Coordinate2D Up()
     {
-        return new Coordinate2D(X, Y + 1);
+        if (CoordinateSystem == CoordinateSystem.Screen)
+        {
+            return new Coordinate2D(X, Y - 1, CoordinateSystem);
+        }
+
+        return new Coordinate2D(X, Y + 1, CoordinateSystem);
     }
 
 
@@ -89,19 +103,24 @@ public class Coordinate2D
     public Coordinate2D South() => Down();
     public Coordinate2D Down()
     {
-        return new Coordinate2D(X, Y - 1);
+        if (CoordinateSystem == CoordinateSystem.Screen)
+        {
+            return new Coordinate2D(X, Y + 1, CoordinateSystem);
+        }
+        
+        return new Coordinate2D(X, Y - 1, CoordinateSystem);
     }
 
     public Coordinate2D West() => Left();
     public Coordinate2D Left()
     {
-        return new Coordinate2D(X - 1, Y);
+        return new Coordinate2D(X - 1, Y, CoordinateSystem);
     }
 
     public Coordinate2D East() => Right();
     public Coordinate2D Right()
     {
-        return new Coordinate2D(X + 1, Y);
+        return new Coordinate2D(X + 1, Y, CoordinateSystem);
     }
 
     public override string ToString()
@@ -114,9 +133,14 @@ public class Coordinate2D
         return ToString().GetHashCode();
     }
 
-    public static readonly Coordinate2D Origin = new Coordinate2D(0, 0);
+    public static readonly Coordinate2D CartesianOrigin = new Coordinate2D(0, 0);
+    public static readonly Coordinate2D ScreenOrigin = new Coordinate2D(0, 0);
 
-    public static IEnumerable<Coordinate2D> XRange(int xStart, int xEnd, long y)
+    public static IEnumerable<Coordinate2D> XRange(
+        int xStart,
+        int xEnd,
+        long y,
+        CoordinateSystem coordinateSystem = CoordinateSystem.Cartesian)
     {
         if (xEnd < xStart)
         {
@@ -124,10 +148,14 @@ public class Coordinate2D
         }
 
         return Enumerable.Range(xStart, xEnd - xStart + 1)
-            .Select(x => new Coordinate2D(x, y));
+            .Select(x => new Coordinate2D(x, y, coordinateSystem));
     }
 
-    public static IEnumerable<Coordinate2D> YRange(int yStart, int yEnd, long x)
+    public static IEnumerable<Coordinate2D> YRange(
+        int yStart,
+        int yEnd,
+        long x,
+        CoordinateSystem coordinateSystem = CoordinateSystem.Cartesian)
     {
         if (yEnd < yStart)
         {
@@ -135,7 +163,7 @@ public class Coordinate2D
         }
 
         return Enumerable.Range(yStart, yEnd - yStart + 1)
-            .Select(y => new Coordinate2D(x, y));
+            .Select(y => new Coordinate2D(x, y, coordinateSystem));
     }
 
     public override bool Equals(object obj)
@@ -146,6 +174,8 @@ public class Coordinate2D
             return false;
         }
 
-        return coordinate.X == X && coordinate.Y == Y;
+        return coordinate.X == X
+            && coordinate.Y == Y
+            && coordinate.CoordinateSystem == CoordinateSystem;
     }
 }

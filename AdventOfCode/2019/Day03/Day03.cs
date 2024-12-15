@@ -39,7 +39,7 @@ public class Day03 : Day
 
         var intersections = wire0.GetIntersections(wire1).ToList();
 
-        var result = intersections.Min(c => c.Key.ManhattanDistanceTo(Coordinate2D.Origin));
+        var result = intersections.Min(c => c.Key.ManhattanDistanceTo(Coordinate2D.CartesianOrigin));
 
         return result;
     }
@@ -68,7 +68,7 @@ public class Day03 : Day
         {
             var coordinates = new List<Coordinate2D>();
 
-            var location = Coordinate2D.Origin;
+            var location = Coordinate2D.CartesianOrigin;
 
             var directions = wireDescription.Split(",");
             foreach (var direction in directions)
