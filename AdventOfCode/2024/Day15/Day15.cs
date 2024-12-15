@@ -1,5 +1,7 @@
 ﻿using AdventOfCode.Shared;
 using AdventOfCode.Shared.Geometry;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace AdventOfCode._2024.Day15;
 
@@ -76,12 +78,23 @@ public class Day15 : Day
 
     public override string Part1()
     {
+        using var animationBuilder = new AnimationBuilder(
+            (int)_warehouse.Width,
+            (int)_warehouse.Height,
+            Color.Black,
+            "2024_15_1_all_frames.png",
+            8);
+
         // _warehouse.Render();
+        animationBuilder.CreateFrame(_warehouse.RenderFrame);
         foreach (var direction in _robotMovements)
         {
             _warehouse.Move(direction);
             // _warehouse.Render();
+            animationBuilder.CreateFrame(_warehouse.RenderFrame);
         }
+
+        animationBuilder.Save();
 
         var result = _warehouse.GetGpsCoordinateTotal();
 
@@ -90,10 +103,19 @@ public class Day15 : Day
 
     public override string Part2()
     {
+        using var animationBuilder = new AnimationBuilder(
+            (int)_warehousePartTwo.Width,
+            (int)_warehousePartTwo.Height,
+            Color.Black,
+            "2024_15_2_all_frames.png",
+            8);
+
+
         var step = 0;
 
         // Console.WriteLine($"Step {step}");
-        _warehousePartTwo.Render();
+        // _warehousePartTwo.Render();
+        animationBuilder.CreateFrame(_warehousePartTwo.RenderFrame);
         foreach (var direction in _robotMovements)
         {
             step += 1;
@@ -101,7 +123,10 @@ public class Day15 : Day
 
             // Console.WriteLine($"Step {step} {direction}");
             _warehousePartTwo.Render();
+            animationBuilder.CreateFrame(_warehousePartTwo.RenderFrame);
         }
+
+        animationBuilder.Save();
 
         var result = _warehousePartTwo.GetGpsCoordinateTotal();
 
@@ -110,6 +135,8 @@ public class Day15 : Day
 
     private class Warehouse
     {
+        public long Width => _warehouseMap.Width;
+        public long Height => _warehouseMap.Height;
         private Grid2D<WarehouseLocation> _warehouseMap;
         private Coordinate2D _robotLocation;
         public Warehouse(List<string> mapLines)
@@ -122,6 +149,18 @@ public class Day15 : Day
             _robotLocation = _warehouseMap.ReadAll()
                 .First(x => x.LocationType == LocationType.Robot)
                 .Location;
+        }
+
+        public void RenderFrame(AnimationFrame frame)
+        {
+            foreach (var y in _warehouseMap.YIndexes())
+            {
+                foreach (var x in _warehouseMap.XIndexes())
+                {
+                    var locationType = _warehouseMap.Read(x, y).LocationType;
+                    frame.SetColor((int)x, (int)y, LocationTypeColor(locationType));
+                }
+            }
         }
 
         public void Render()
@@ -137,6 +176,21 @@ public class Day15 : Day
                 Console.WriteLine();
             }
             Console.WriteLine();
+        }
+
+        private Color LocationTypeColor(LocationType locationType)
+        {
+            switch (locationType)
+            {
+                case LocationType.Wall: return Color.ForestGreen;
+                case LocationType.Box: return Color.SkyBlue;
+                case LocationType.Robot: return Color.Red;
+                case LocationType.Empty: return Color.Black;
+                case LocationType.BoxLeft: return Color.SkyBlue;
+                case LocationType.BoxRight: return Color.SkyBlue;
+            }
+
+            throw new Exception("Unknown location type");
         }
 
         private char LocationTypeChar(LocationType locationType)
