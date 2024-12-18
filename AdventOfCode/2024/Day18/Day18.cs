@@ -6,23 +6,13 @@ namespace AdventOfCode._2024.Day18;
 
 public class Day18 : Day
 {
-    public Day18() : base(2024, 18, "Day18/input_2024_18.txt", "270", "", true)
+    public Day18() : base(2024, 18, "Day18/input_2024_18.txt", "270", "51,40", false)
     {
     }
 
-    private Grid2D<GraphNode<Memory>> _memory;
     private List<Coordinate2D> _corruptionLocations;
     public override void Initialise()
     {
-        _memory = new Grid2D<GraphNode<Memory>>(71, 71);
-        foreach(var coordinate in _memory.AllCoordinates())
-        {
-            _memory.Write(coordinate, new GraphNode<Memory>(new Memory
-            {
-                Location = coordinate,
-                IsCorrupted = false
-            }));
-        }
         _corruptionLocations = InputLines
             .Select(ParseLine)
             .ToList();
@@ -36,35 +26,79 @@ public class Day18 : Day
 
     public override string Part1()
     {
-        foreach(var coordinate in _corruptionLocations.Take(1024))
+        return GetShortestPath(71, _corruptionLocations.Take(1024).ToList()).ToString();
+    }
+
+    public override string Part2()
+    {
+        var min = 0;
+        var max = _corruptionLocations.Count;
+
+        while (min < max - 1)
         {
-            var memory = _memory.Read(coordinate);
-            memory.Data.IsCorrupted = true;
+            var middle = (min + max) / 2;
+            var locationsToCorrupt = _corruptionLocations.Take(middle).ToList();
+            var lastLocation = locationsToCorrupt.Last();
+            var shortestPath = GetShortestPath(71, locationsToCorrupt);
+            
+            if (shortestPath == -1)
+            {
+                TraceLine($"[{min},{middle},{max}] up to and including {lastLocation} - blocked");
+                max = middle;
+            }
+            else
+            {
+                TraceLine($"[{min},{middle},{max}] up to and including {lastLocation} - passable");
+                min = middle;
+            }
+        }
+
+        var blockingLocation = _corruptionLocations.Take(max).Last();
+
+        return blockingLocation.ToString();
+    }
+
+    public int GetShortestPath(int size, List<Coordinate2D> corruptedLocations)
+    {
+        var memory = new Grid2D<GraphNode<Memory>>(size, size);
+        foreach(var coordinate in memory.AllCoordinates())
+        {
+            memory.Write(coordinate, new GraphNode<Memory>(new Memory
+            {
+                Location = coordinate,
+                IsCorrupted = false
+            }));
+        }
+
+        foreach(var coordinate in corruptedLocations)
+        {
+            var memoryLocation = memory.Read(coordinate);
+            memoryLocation.Data.IsCorrupted = true;
         }
 
         var graph = new Graph<Memory>();
         
-        foreach(var coordinate in _memory.AllCoordinates())
+        foreach(var coordinate in memory.AllCoordinates())
         {
-            var node = _memory.Read(coordinate);
+            var node = memory.Read(coordinate);
             graph.AddNode(node);
         }
 
-        foreach(var coordinate in _memory.AllCoordinates())
+        foreach(var coordinate in memory.AllCoordinates())
         {
-            var nodeData = _memory.Read(coordinate);
+            var nodeData = memory.Read(coordinate);
             if (nodeData.Data.IsCorrupted)
             {
                 continue;
             }
 
             var neighbourCoordinates = nodeData.Data.Location.Neighbours()
-                .Where(_memory.IsInGrid)
+                .Where(memory.IsInGrid)
                 .ToList();
 
             foreach (var neighbourCoordinate in neighbourCoordinates)
             {
-                var neighbour = _memory.Read(neighbourCoordinate);
+                var neighbour = memory.Read(neighbourCoordinate);
                 if (!neighbour.Data.IsCorrupted)
                 {
                     graph.AddEdge(new GraphEdge<Memory>
@@ -77,15 +111,16 @@ public class Day18 : Day
             }
         }
 
-        var start = _memory.Read(0, 0);
-        var end = _memory.Read(_memory.MaxX, _memory.MaxY);
-        var shortestPath = graph.GetShortestPathDistance(start, end, 10000);
-        return shortestPath.ToString();
-    }
-
-    public override string Part2()
-    {
-        return string.Empty;
+        var start = memory.Read(0, 0);
+        var end = memory.Read(memory.MaxX, memory.MaxY);
+        try
+        {
+            return graph.GetShortestPathDistance(start, end, 10000);
+        }
+        catch (Exception)
+        {
+            return -1;
+        }
     }
 
     private class Memory : IGraphNodeData
