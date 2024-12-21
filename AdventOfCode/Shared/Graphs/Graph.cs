@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AdventOfCode.Shared.DataStructures;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace AdventOfCode.Shared.Graphs;
 
@@ -12,6 +13,11 @@ public class Graph<TNode> where TNode : IGraphNodeData
     public void AddNode(GraphNode<TNode> node)
     {
         _nodes.Add(node.Data.GetIdentifier(), node);
+    }
+
+    public void RemoveNode(GraphNode<TNode> node)
+    {
+        _nodes.Remove(node.Data.GetIdentifier());
     }
 
     public List<GraphNode<TNode>> AllNodes()
@@ -34,6 +40,18 @@ public class Graph<TNode> where TNode : IGraphNodeData
 
         _neighbours[sourceIdentifier].Add(edge);
     }
+
+    public void RemoveEdge(GraphEdge<TNode> edge)
+    {
+        var sourceIdentifier = edge.Source.Data.GetIdentifier();
+        var destinationIdentifier = edge.Destination.Data.GetIdentifier();
+        if (!_neighbours.ContainsKey(sourceIdentifier))
+        {
+            return;
+        }
+
+        _neighbours[sourceIdentifier].RemoveAll(e => e.Destination.Data.GetIdentifier() == destinationIdentifier);
+    } 
 
     public int GetLongestPath(GraphNode<TNode> start, GraphNode<TNode> end, int maxDistance)
     {
