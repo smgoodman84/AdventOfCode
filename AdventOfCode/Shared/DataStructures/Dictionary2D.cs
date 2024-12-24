@@ -20,6 +20,13 @@ public class Dictionary2D<TKey1, TKey2, TValue>
         _dictionary[key1][key2] = value;
     }
 
+    public bool TryGetValue(TKey1 key1, TKey2 key2, out TValue value)
+    {
+        value = default;
+        return _dictionary.TryGetValue(key1, out var dictionary2)
+            && dictionary2.TryGetValue(key2, out value);
+    }
+
     public bool ContainsKey(TKey1 key1, TKey2 key2)
     {
         return _dictionary.ContainsKey(key1)
