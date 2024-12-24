@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using AdventOfCode.Shared.DataStructures;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace AdventOfCode.Shared.Graphs;
 
