@@ -17,69 +17,175 @@ public class Day06 : Day
     public override string Part1()
     {
         var lab = new Lab(InputLines);
+
+        (var outcome, var visitHistory) = lab.WalkRoute(lab.IntialGuardPosition, Direction.Up);
         
-        return lab.GetVisitedCount().ToString();
+        return visitHistory.GetLocationVisitCount().ToString();
     }
 
     public override string Part2()
     {
-        var loopCount = 0;
-        var y = InputLines.Count - 1;
-        foreach (var line in InputLines)
-        {
-            TraceLine($"Checking line {y}");
-            var x = 0;
-            foreach (var c in line)
-            {
-                var lab = new Lab(InputLines);
-                if (lab.TryBlock(x, y))
-                {
-                    var outcome = lab.GetRouteOutcome();
-                    if (outcome == RouteOutcome.Loop)
-                    {
-                        // TraceLine($"{x},{y} loops");
-                        loopCount += 1;
-                    }
-                    else
-                    {
-                        // TraceLine($"{x},{y} does not loop");
-                    }
-                }
+        // Need to move visited out of lab positions
+        // so we can have separate visit list per exploration
+        // only returning OffGrid at the moment
+        var lab = new Lab(InputLines);
 
-                x += 1;
-            }
-            y -= 1;
-        }
+        (var outcome, var visitHistory) = lab.WalkRoute(lab.IntialGuardPosition, Direction.Up);
 
+        var loopCount = lab.GetLoopCount(visitHistory);
+        
         return loopCount.ToString();
     }
 
     private class Position
     {
-        public char InitialValue { get; set; }
+        public Coordinate2D Location { get; set; }
         public bool IsOccupied { get; set; }
-        public bool Visited { get; set; }
-        public List<Direction> VisitDirections = new List<Direction>();
-        public Position(char c)
+        // public Dictionary<Direction, VisitHistory> VisitHistory { get; set; } = new();
+
+        public Position(char c, int x, int y)
         {
-            InitialValue = c;
+            Location = new Coordinate2D(x, y);
             IsOccupied = c == '#';
-            Visited = c == '^';
+            // VisitHistory = null;
         }
     }
 
     private enum RouteOutcome
     {
-        OnPath,
         OffGrid,
         Loop
     }
 
+    private class VisitHistory
+    {
+        public VisitHistory()
+        {
+            
+        }
+
+        private bool _hasBeenVisited = false;
+        private Coordinate2D _location;
+        private Direction _direction;
+        private VisitHistory _previousHistory;
+
+        private VisitHistory(Coordinate2D location, Direction direction, VisitHistory visitHistory)
+        {
+            _hasBeenVisited = true;
+            _location = location;
+            _direction = direction;
+            _previousHistory = visitHistory;
+        }
+
+        public int GetLocationVisitCount()
+        {
+            var allVisitedLocations = GetAllVisitedLocations().ToList();
+
+            return allVisitedLocations.Select(x => x.Location).Distinct().Count();
+        }
+
+        public IEnumerable<(Coordinate2D Location, Direction Direction)> GetAllVisitedLocations()
+        {
+            if (!_hasBeenVisited)
+            {
+                yield break;
+            }
+
+            yield return (_location, _direction);
+
+            foreach (var previousLocation in _previousHistory.GetAllVisitedLocations())
+            {
+                yield return previousLocation;
+            }
+        }
+
+        public bool HasBeenVisited(Coordinate2D location)
+        {
+            if (!_hasBeenVisited)
+            {
+                return false;
+            }
+
+            if (location.Equals(_location))
+            {
+                return true;
+            }
+
+            return _previousHistory.HasBeenVisited(location);
+        }
+
+        public bool HasBeenVisited(Coordinate2D location, Direction direction)
+        {
+            if (!_hasBeenVisited)
+            {
+                return false;
+            }
+
+            if (location.Equals(_location) && direction == _direction)
+            {
+                return true;
+            }
+
+            return _previousHistory.HasBeenVisited(location, direction);
+        }
+
+        public VisitHistory HistoryFor(Coordinate2D location, Direction direction)
+        {
+            if (!_hasBeenVisited)
+            {
+                throw new Exception($"No history for {location} {direction}");
+            }
+
+            if (location.Equals(_location) && direction == _direction)
+            {
+                return this;
+            }
+
+            return _previousHistory.HistoryFor(location, direction);
+        }
+
+        public VisitHistory RecordVisit(Coordinate2D location, Direction direction)
+        {
+            return new VisitHistory(location, direction, this);
+        }
+    }
+
+    private class VisitKey
+    {
+        public Coordinate2D Location { get; set; }
+        public Direction Direction { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Location}_{Direction}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            var visitKey = obj as VisitKey;
+            if (obj == null && visitKey == null)
+            {
+                return true;
+            }
+
+            if (obj == null || visitKey == null)
+            {
+                return false;
+            }
+
+            return ToString().Equals(visitKey.ToString());
+        }
+
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+    }
     private class Lab
     {
+        public Coordinate2D IntialGuardPosition;
+
         private Grid2D<Position> _map;
-        private Coordinate2D _guardPosition;
-        private Direction _guardDirection = Direction.Up;
 
         public Lab(List<string> inputLines)
         {
@@ -90,10 +196,10 @@ public class Day06 : Day
                 var x = 0;
                 foreach (var c in line)
                 {
-                    _map.Write(x, y, new Position(c));
+                    _map.Write(x, y, new Position(c, x, y));
                     if (c == '^')
                     {
-                        _guardPosition = new Coordinate2D(x, y);
+                        IntialGuardPosition = new Coordinate2D(x, y);
                     }
 
                     x += 1;
@@ -102,85 +208,120 @@ public class Day06 : Day
             }
         }
 
-        private RouteOutcome MoveNext()
+        public (RouteOutcome RouteOutcome, VisitHistory VisitHistory) WalkRoute(
+            Coordinate2D guardPosition,
+            Direction guardDirection,
+            VisitHistory visitHistory = null)
         {
-            var nextPosition = _guardPosition.Neighbour(_guardDirection);
+            visitHistory ??= new VisitHistory();
+
+            if (visitHistory.HasBeenVisited(guardPosition, guardDirection))
+            {
+                return (RouteOutcome.Loop, visitHistory);
+            }
+
+            var thisLocation = _map.Read(guardPosition);
+            visitHistory = visitHistory.RecordVisit(guardPosition, guardDirection);
+            //thisLocation.VisitHistory.Add(guardDirection, visitHistory);
+
+            var nextPosition = guardPosition.Neighbour(guardDirection);
             if (!_map.IsInGrid(nextPosition))
             {
-                // Console.WriteLine($"Gone off grid");
-                return RouteOutcome.OffGrid;
+                return (RouteOutcome.OffGrid, visitHistory);
             }
 
             var nextLocation = _map.Read(nextPosition);
             if (nextLocation.IsOccupied)
             {
-                TurnRight();
+                var newGuardDirection = RightTurn(guardDirection);
+
+                return WalkRoute(guardPosition, newGuardDirection, visitHistory);
                 // Console.WriteLine($"Turned to face {_guardDirection}");
-                return RouteOutcome.OnPath;
             }
 
-            _guardPosition = nextPosition;
-
-            if (nextLocation.Visited
-             && nextLocation.VisitDirections.Contains(_guardDirection))
-            {
-                return RouteOutcome.Loop;
-            }
-
-            nextLocation.Visited = true;
-            nextLocation.VisitDirections.Add(_guardDirection);
-
-            // Console.WriteLine($"Now at {nextPosition}");
-            return RouteOutcome.OnPath;
+            return WalkRoute(nextPosition, guardDirection, visitHistory);
         }
 
-        private void TurnRight()
+        private VisitKey VisitKey(Coordinate2D location, Direction direction)
         {
-            switch (_guardDirection)
+            return new VisitKey
             {
-                case Direction.Up: _guardDirection = Direction.Right; break;
-                case Direction.Right: _guardDirection = Direction.Down; break;
-                case Direction.Down: _guardDirection = Direction.Left; break;
-                case Direction.Left: _guardDirection = Direction.Up; break;
-            }
+                Location = location,
+                Direction = direction
+            };
         }
 
-        public RouteOutcome GetRouteOutcome()
+        private Direction RightTurn(Direction direction)
         {
-            while (true)
+            switch (direction)
             {
-                var outcome = MoveNext();
-                if (outcome != RouteOutcome.OnPath)
+                case Direction.Up: return Direction.Right;
+                case Direction.Right: return Direction.Down;
+                case Direction.Down: return Direction.Left;
+                case Direction.Left: return Direction.Up;
+            }
+
+            throw new Exception("Unknown direction");
+        }
+
+        public int GetLoopCount(VisitHistory visitHistory)
+        {
+            var loopCount = 0;
+
+            var visitedLocations = visitHistory
+                .GetAllVisitedLocations()
+                .ToList();
+
+            var locationDirections = visitedLocations
+                .GroupBy(x => x.Location)
+                .ToList();
+
+            foreach (var locationDirection in locationDirections)
+            //var locationDirection = (new Coordinate2D(4, 3), Direction.Left)
+            {
+                
+                var visited = locationDirection.Key;
+
+                var visitedDirections = locationDirection
+                    .Select(ovl => ovl.Direction)
+                    .ToList();
+                /*
+                var visited = new Coordinate2D(4, 3);
+                var visitedDirections = new [] { Direction.Left };
+    */
+                // Console.WriteLine($"Checking Visited Location {visited}");
+                foreach (var visitDirection in visitedDirections)
                 {
-                    return outcome;
+                    var history = visitHistory.HistoryFor(visited, visitDirection);
+                    // Console.WriteLine($"- Checking Direction {visitDirection}");
+                    var potentialBlockPositionLocation = visited.Neighbour(visitDirection);
+
+                    // Console.WriteLine($"  - Potential block {potentialBlockPositionLocation}");
+                    if (!_map.IsInGrid(potentialBlockPositionLocation))
+                    {
+                        // Console.WriteLine($"  - Off grid {potentialBlockPositionLocation}");
+                        continue;
+                    }
+
+                    var potentialBlockPosition = _map.Read(potentialBlockPositionLocation);
+                    if (potentialBlockPosition.IsOccupied)
+                    {
+                        // Console.WriteLine($"  - Already blocked {potentialBlockPositionLocation}");
+                        continue;
+                    }
+
+                    var potentialLoopDirection = RightTurn(visitDirection);
+                    (var potentialOutcome, var potentialHistory) = WalkRoute(visited, potentialLoopDirection, history);
+                    // Console.WriteLine($"  - Outcome {potentialOutcome}");
+                    if (potentialOutcome == RouteOutcome.Loop)
+                    {
+                        // Console.WriteLine($"  - Created Loop by blocking {potentialBlockPositionLocation}");
+                        loopCount += 1;
+                    }
                 }
             }
-        }
 
-        public int GetVisitedCount()
-        {
-            while (MoveNext() == RouteOutcome.OnPath);
-
-            var visitedCount = _map.ReadAll().Count(x => x.Visited);
-
-            return visitedCount;
-        }
-
-        public bool TryBlock(int x, int y)
-        {
-            var position = _map.Read(x, y);
-            if (position.IsOccupied)
-            {
-                return false;
-            }
-
-            if (_guardPosition.X == x && _guardPosition.Y == y)
-            {
-                return false;
-            }
-
-            position.IsOccupied = true;
-            return true;
+            return loopCount;
         }
     }
 }

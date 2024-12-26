@@ -10,14 +10,15 @@ public class Day17 : Day
     }
 
     private Computer _computer;
+    private string _programRaw;
     public override void Initialise()
     {
         var registerA = int.Parse(InputLines[0].Replace("Register A: ", ""));
         var registerB = int.Parse(InputLines[1].Replace("Register B: ", ""));
         var registerC = int.Parse(InputLines[2].Replace("Register C: ", ""));
-        var programString = InputLines[4].Replace("Program: ", "");
+        _programRaw = InputLines[4].Replace("Program: ", "");
 
-        var operations = programString
+        var operations = _programRaw
             .Split(",")
             .GroupsOfSize(2)
             .Select(op => 
@@ -33,28 +34,47 @@ public class Day17 : Day
 
     public override string Part1()
     {
-        var output = _computer.Execute();
-        var result = string.Join(",", output);
-        return result;
+        return string.Empty;
+        var output = _computer.Clone().Execute();
+        return output;
     }
 
     public override string Part2()
     {
+        var registerA = (2L << (15 * 3));
+        var registerAMax = (2L << (16 * 3));
+        TraceLine($"registerAMax {registerAMax}");
+        // while (registerA < registerAMax)
+        {
+            if (registerA % 1000 == 0)
+            {
+                TraceLine($"Trying {registerA}");
+            }
+            var output = _computer.Clone(registerA).Execute();
+            TraceLine($"{registerA}: {output}");
+            if (output.Equals(_programRaw))
+            {
+                return registerA.ToString();
+            }
+
+            registerA += 1;
+        }
+
         return string.Empty;
     }
 
     private class Computer
     {
-        private int _programCounter { get; set; }
-        private int _registerA { get; set; }
-        private int _registerB { get; set; }
-        private int _registerC { get; set; }
+        private long _programCounter { get; set; }
+        private long _registerA { get; set; }
+        private long _registerB { get; set; }
+        private long _registerC { get; set; }
         private Operation[] _program { get; set; }
 
         public Computer(
-            int registerA,
-            int registerB,
-            int registerC,
+            long registerA,
+            long registerB,
+            long registerC,
             Operation[] program
             )
         {
@@ -65,24 +85,44 @@ public class Day17 : Day
             _program = program;
         }
 
-        public List<int> Execute()
+        public Computer Clone()
         {
-            var output = new List<int>();
+            return new Computer(_registerA, _registerB, _registerC, _program)
+            {
+                _programCounter = _programCounter
+            };
+        }
+
+        public Computer Clone(long registerA)
+        {
+            return new Computer(registerA, _registerB, _registerC, _program)
+            {
+                _programCounter = _programCounter
+            };
+        }
+
+        public string Execute()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Starting...");
+            var output = new List<long>();
             while (_programCounter < _program.Length)
             {
-                Console.WriteLine($"ProgramCounter: {_programCounter}");
+                Console.WriteLine($"ProgramCounter: {_programCounter} A:{_registerA} B:{_registerB} C:{_registerC}");
                 var instructionOutput = ExecuteInstruction(_program[_programCounter]);
                 if (instructionOutput.HasValue)
                 {
                     output.Add(instructionOutput.Value);
                 }
             }
-            return output;
+
+            var result = string.Join(",", output);
+            return result;
         }
 
-        private int? ExecuteInstruction(Operation operation)
+        private long? ExecuteInstruction(Operation operation)
         {
-            int? output = null;
+            long? output = null;
 
             switch (operation.Instruction)
             {
@@ -100,27 +140,27 @@ public class Day17 : Day
             return output;
         }
 
-        private void Adv(int operand)
+        private void Adv(long operand)
         {
             Console.WriteLine($"Adv {operand}");
             var numerator = _registerA;
-            var denominator = (int)Math.Pow(2, operand);
+            var denominator = (long)Math.Pow(2, operand);
             var result = numerator / denominator;
 
             _registerA = result;
             _programCounter += 1;
         }
 
-        private void Bxl(int operand)
+        private void Bxl(long operand)
         {
-            Console.WriteLine($"Bxl {operand}");
+            Console.WriteLine($"Bxl Lit {operand}");
             var result = _registerB ^ operand;
 
             _registerB = result;
             _programCounter += 1;
         }
 
-        private void Bst(int operand)
+        private void Bst(long operand)
         {
             Console.WriteLine($"Bst {operand}");
             var result = operand % 8;
@@ -129,9 +169,9 @@ public class Day17 : Day
             _programCounter += 1;
         }
 
-        private void Jnz(int operand)
+        private void Jnz(long operand)
         {
-            Console.WriteLine($"Jnz {operand}");
+            Console.WriteLine($"Jnz Lit {operand}");
             if (_registerA != 0)
             {
                 _programCounter = operand;
@@ -151,7 +191,7 @@ public class Day17 : Day
             _programCounter += 1;
         }
 
-        private void Out(int operand, out int? output)
+        private void Out(long operand, out long? output)
         {
             Console.WriteLine($"Out {operand}");
             var result = operand % 8;
@@ -160,18 +200,18 @@ public class Day17 : Day
             _programCounter += 1;
         }
 
-        private void Bdv(int operand)
+        private void Bdv(long operand)
         {
             Console.WriteLine($"Bdv {operand}");
             var numerator = _registerA;
-            var denominator = (int)Math.Pow(2, operand);
+            var denominator = (long)Math.Pow(2, operand);
             var result = numerator / denominator;
 
             _registerB = result;
             _programCounter += 1;
         }
 
-        private void Cdv(int operand)
+        private void Cdv(long operand)
         {
             Console.WriteLine($"Cdv {operand}");
             var numerator = _registerA;
@@ -182,16 +222,17 @@ public class Day17 : Day
             _programCounter += 1;
         }
 
-        private int ReadComboOperand(int operand)
+        private long ReadComboOperand(long operand)
         {
             switch (operand)
             {
-                case 4: return _registerA;
-                case 5: return _registerB;
-                case 6: return _registerC;
+                case 4: Console.WriteLine($"Reg A {_registerA}");return _registerA;
+                case 5: Console.WriteLine($"Reg B {_registerB}");return _registerB;
+                case 6: Console.WriteLine($"Reg C {_registerC}");return _registerC;
                 case 7: throw new Exception($"Invalid Operand {operand}");
             }
 
+            Console.WriteLine($"Lit {operand}");
             return operand;
         }
     }
@@ -199,7 +240,7 @@ public class Day17 : Day
     private class Operation
     {
         public Instruction Instruction { get; set; }
-        public int Operand { get; set; }
+        public long Operand { get; set; }
     }
 
     private enum Instruction
