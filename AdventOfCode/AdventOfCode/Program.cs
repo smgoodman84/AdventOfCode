@@ -27,6 +27,7 @@ class Program
             typeof(_2022.Day01.Day01).Assembly,
             typeof(_2023.Day01.Day01).Assembly,
             typeof(_2024.Day01.Day01).Assembly,
+            typeof(_2025.Day01.Day01).Assembly,
         };
 
         var days = assemblies
@@ -38,8 +39,8 @@ class Program
             .ToList();
 
         // var runPredicate = RunDay(2023, 5);
-        var runPredicate = RunLatestDayInYear(2024, days);
-        // var runPredicate = RunYear(2023);
+        // var runPredicate = RunLatestDayInYear(2024, days);
+        var runPredicate = RunYear(2025);
         // var runPredicate = RunAll();
 
         var resultDetails = new List<Result>();
