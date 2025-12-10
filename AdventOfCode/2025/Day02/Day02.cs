@@ -4,7 +4,7 @@ namespace AdventOfCode._2025.Day01;
 
 public class Day02 : Day
 {
-    public Day02() : base(2025, 2, "Day02/input_2025_02.txt", "19386344315", "", false)
+    public Day02() : base(2025, 2, "Day02/input_2025_02.txt", "19386344315", "34421651192", false)
     {
 
     }
@@ -62,6 +62,48 @@ public class Day02 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        long total = 0;
+        foreach (var range in _ranges)
+        {
+            var invalidNumbers = LongRange(range.Start, range.End)
+                .Where(IsInvalid2)
+                .ToList();
+
+            total += invalidNumbers.Sum();
+        }
+
+        return total.ToString();
+    }
+    
+    private bool IsInvalid2(long number)
+    {
+        var numString = number.ToString();
+        for (var divisor = 2; divisor <= numString.Length; divisor++)
+        {
+            if (IsInvalid2(numString, divisor))
+            {
+                TraceLine($"{numString} Invalid");
+                return true;
+            }
+        }
+
+        TraceLine($"{numString} Valid");
+        return false;
+    }
+    
+    private static bool IsInvalid2(string numString, int partCount)
+    {
+        if (numString.Length % partCount != 0)
+        {
+            return false;
+        }
+
+        var partLength = numString.Length / partCount;
+
+        var parts = Enumerable.Range(0, partCount)
+            .Select(i => numString.Substring(i * partLength, partLength))
+            .ToList();
+
+        return parts.Distinct().Count() == 1;
     }
 }
