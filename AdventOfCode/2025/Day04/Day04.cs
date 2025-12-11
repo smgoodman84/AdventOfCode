@@ -5,7 +5,7 @@ namespace AdventOfCode._2025.Day04;
 
 public class Day04 : Day
 {
-    public Day04() : base(2025, 4, "Day04/input_2025_04.txt", "1527", "", true)
+    public Day04() : base(2025, 4, "Day04/input_2025_04.txt", "1527", "8690", false)
     {
 
     }
@@ -49,6 +49,46 @@ public class Day04 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        var totalRemoved = 0;
+        int removed = 0;
+        do
+        {
+            removed = RemoveRolls();
+            totalRemoved += removed;
+        } while (removed > 0);
+
+        TraceLine(_map.Print(x => x ? '@' : ' '));
+        
+        return totalRemoved.ToString();
+    }
+
+    private int RemoveRolls()
+    {
+        var removedCount = 0;
+        foreach (var coord in _map.AllCoordinates())
+        {
+            if (!_map.Read(coord))
+            {
+                continue;
+            }
+            
+            var surroundingPaperCount = 0;
+            foreach (var neighbour in coord.AllNeighbours())
+            {
+                if (_map.IsInGrid(neighbour) && _map.Read(neighbour))
+                {
+                    surroundingPaperCount += 1;
+                }
+            }
+
+            if (surroundingPaperCount < 4)
+            {
+                TraceLine($"{coord} is being removed");
+                _map.Write(coord, false);
+                removedCount += 1;
+            }
+        }
+
+        return removedCount;
     }
 }
