@@ -6,7 +6,7 @@ namespace AdventOfCode._2025.Day05;
 
 public class Day05 : Day
 {
-    public Day05() : base(2025, 5, "Day05/input_2025_05.txt", "558", "", false)
+    public Day05() : base(2025, 5, "Day05/input_2025_05.txt", "558", "344813017450467", false)
     {
 
     }
@@ -49,6 +49,8 @@ public class Day05 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        var mergedRanges = NumberRangeMerger.Merge(_freshRanges);
+        var total = mergedRanges.Sum(r => r.Length);
+        return total.ToString();
     }
 }
