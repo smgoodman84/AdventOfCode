@@ -6,7 +6,7 @@ namespace AdventOfCode._2025.Day07;
 
 public class Day07 : Day
 {
-    public Day07() : base(2025, 7, "Day07/input_2025_07.txt", "1678", "", true)
+    public Day07() : base(2025, 7, "Day07/input_2025_07.txt", "1678", "357525737893560", true)
     {
 
     }
@@ -56,6 +56,40 @@ public class Day07 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        return GetTimeLines(_start).ToString();
+    }
+
+    private Dictionary<Coordinate2D, long> _timeLineCache = new Dictionary<Coordinate2D, long>();
+    
+    private long GetTimeLinesCached(Coordinate2D coord)
+    {
+        if (_timeLineCache.TryGetValue(coord, out var cached))
+        {
+            return cached;
+        }
+
+        var result = GetTimeLines(coord);
+        _timeLineCache.Add(coord, result);
+        return result;
+    }
+    
+    private long GetTimeLines(Coordinate2D coord)
+    {
+        var down = coord.Down();
+        if (!_map.IsInGrid(coord))
+        {
+            return 1;
+        }
+        
+        var thisLocation = _map.Read(coord);
+        if (thisLocation != '^')
+        {
+            return GetTimeLinesCached(down);
+        }
+
+        var downLeft = down.Left();
+        var downRight = down.Right();
+
+        return GetTimeLinesCached(downLeft) + GetTimeLinesCached(downRight);
     }
 }
