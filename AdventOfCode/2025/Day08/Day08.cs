@@ -6,7 +6,7 @@ namespace AdventOfCode._2025.Day08;
 
 public class Day08 : Day
 {
-    public Day08() : base(2025, 8, "Day08/input_2025_08.txt", "57970", "", true)
+    public Day08() : base(2025, 8, "Day08/input_2025_08.txt", "57970", "8520040659", false)
     {
 
     }
@@ -85,6 +85,17 @@ public class Day08 : Day
 
     public override string Part2()
     {
+        var orderedDistances = _distances.OrderBy(d => d.Distance).ToList();
+        foreach (var connection in orderedDistances)
+        {
+            MergeCircuits(connection.Box1, connection.Box2);
+            if (connection.Box1.Circuit.Size == _junctionBoxes.Count)
+            {
+                var result = connection.Box1.Location.X * connection.Box2.Location.X;
+                return result.ToString();
+            }
+        }
+
         return string.Empty;
     }
     
