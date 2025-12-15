@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AdventOfCode.Shared.Geometry;
 
@@ -21,6 +22,16 @@ public class Coordinate3D
         X = long.Parse(split[0]);
         Y = long.Parse(split[1]);
         Z = long.Parse(split[2]);
+    }
+
+    public double DistanceTo(Coordinate3D that)
+    {
+        var dX = this.X - that.X;
+        var dY = this.Y - that.Y;
+        var dZ = this.Z - that.Z;
+
+        var sumSquares = dX * dX + dY * dY + dZ * dZ;
+        return Math.Sqrt(sumSquares);
     }
 
     public Coordinate3D Add(Vector3D vector)
