@@ -6,7 +6,7 @@ namespace AdventOfCode._2025.Day09;
 
 public class Day09 : Day
 {
-    public Day09() : base(2025, 9, "Day09/input_2025_09.txt", "4782151432", "", false)
+    public Day09() : base(2025, 9, "Day09/input_2025_09.txt", "4782151432", "", true)
     {
 
     }
@@ -43,6 +43,63 @@ public class Day09 : Day
 
     public override string Part2()
     {
-        return string.Empty;
+        var polygon = new Polygon(_redTiles);
+        var areas = new List<(Coordinate2D Start, Coordinate2D End, long Area)>();
+        long maxArea = 0;
+        for (var i=0; i < _redTiles.Count; i++)
+        {
+            for (var j=0; j < i; j++)
+            {
+                var start = _redTiles[i];
+                var end = _redTiles[j];
+                areas.Add((start, end, Area(start, end)));
+                if (InsidePolygon(polygon, start, end))
+                {
+                    maxArea = Math.Max(maxArea, Area(start, end));
+                }
+            }
+        }
+
+        var maxInsideArea = areas
+            .OrderByDescending(x => x.Area)
+            .First(x => InsidePolygon(polygon, x.Start, x.End));
+
+        return maxInsideArea.Area.ToString();
+    }
+
+    private bool InsidePolygon(Polygon polygon, Coordinate2D start, Coordinate2D end)
+    {
+        var minX = Math.Min(start.X, end.X);
+        var minY = Math.Min(start.Y, end.Y);
+        var maxX = Math.Max(start.X, end.X);
+        var maxY = Math.Max(start.Y, end.Y);
+        
+        TraceLine($"Checking {minX},{minY} to {maxX},{maxY}");
+
+        for (var x = minX; x <= maxX; x++)
+        {
+            
+            TraceLine($"    Checking x = {x}");
+            if (!InsidePolygon(polygon, x, minY) || !InsidePolygon(polygon, x, maxY))
+            {
+                return false;
+            }
+        }
+        
+        for (var y = minY; y <= maxY; y++)
+        {
+            TraceLine($"    Checking y = {y}");
+            if (!InsidePolygon(polygon, minX, y) || !InsidePolygon(polygon, maxX, y))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool InsidePolygon(Polygon polygon, long x, long y)
+    {
+        return polygon.ContainsUsingContext(new Coordinate2D(x, y));
     }
 }
